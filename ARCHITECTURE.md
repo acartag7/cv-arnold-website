@@ -1,7 +1,9 @@
 # System Architecture
+
 ## CV Website Technical Design
 
 ### Document Version
+
 - **Version**: 1.0
 - **Date**: August 3, 2025
 - **Purpose**: Define system architecture and data flow
@@ -17,19 +19,19 @@ graph TB
         UI[Next.js App]
         SW[Service Worker]
     end
-    
+
     subgraph "Cloudflare Edge"
         CP[Cloudflare Pages]
         CW[Workers API]
         KV[(Workers KV)]
         CDN[CDN Cache]
     end
-    
+
     subgraph "Development"
         GH[GitHub Repo]
         GA[GitHub Actions]
     end
-    
+
     UI --> CP
     UI --> CW
     CW --> KV
@@ -40,6 +42,7 @@ graph TB
 ```
 
 ### 1.1 Architecture Principles
+
 - **Edge-First**: Leverage Cloudflare's global network
 - **Static When Possible**: Pre-render for performance
 - **Dynamic Data**: API-driven personal information
@@ -47,6 +50,7 @@ graph TB
 - **Resilient**: Graceful degradation
 
 ### 1.2 Technology Stack
+
 ```yaml
 Frontend:
   - Framework: Next.js 15 (App Router)
@@ -73,7 +77,8 @@ DevOps:
 ## 2. Component Architecture
 
 ### 2.1 Directory Structure
-```
+
+```text
 cv-arnold-website/
 ├── src/
 │   ├── app/                    # Next.js App Router
@@ -106,6 +111,7 @@ cv-arnold-website/
 ```
 
 ### 2.2 Component Hierarchy
+
 ```typescript
 // Component dependency graph
 App
@@ -138,6 +144,7 @@ App
 ## 3. Data Architecture
 
 ### 3.1 Data Flow
+
 ```mermaid
 sequenceDiagram
     participant User
@@ -145,7 +152,7 @@ sequenceDiagram
     participant Worker
     participant KV
     participant Cache
-    
+
     User->>NextJS: Request Page
     NextJS->>Worker: Fetch CV Data
     Worker->>Cache: Check Cache
@@ -161,13 +168,14 @@ sequenceDiagram
 ```
 
 ### 3.2 Data Schema
+
 ```typescript
 // Main data structure in KV
 interface CVDataStore {
   version: string
   lastUpdated: string
   data: CVData
-  draft?: CVData  // For preview
+  draft?: CVData // For preview
 }
 
 interface CVData {
@@ -180,9 +188,9 @@ interface CVData {
     linkedin: string
     github?: string
   }
-  
+
   summary: string
-  
+
   experience: Array<{
     id: string
     company: string
@@ -194,7 +202,7 @@ interface CVData {
     achievements: string[]
     technologies: string[]
   }>
-  
+
   skills: Array<{
     category: string
     items: Array<{
@@ -202,7 +210,7 @@ interface CVData {
       proficiency: number // 1-10
     }>
   }>
-  
+
   certifications: Array<{
     name: string
     issuer: string
@@ -210,20 +218,20 @@ interface CVData {
     credentialId?: string
     verificationUrl?: string
   }>
-  
+
   achievements: Array<{
     title: string
     description: string
     impact: string
     icon: string
   }>
-  
+
   education: Array<{
     institution: string
     degree: string
     period: string
   }>
-  
+
   languages: Array<{
     language: string
     proficiency: string
@@ -232,6 +240,7 @@ interface CVData {
 ```
 
 ### 3.3 KV Storage Strategy
+
 ```typescript
 // KV namespace structure
 {
@@ -251,6 +260,7 @@ interface CVData {
 ## 4. API Design
 
 ### 4.1 Cloudflare Workers Endpoints
+
 ```typescript
 // Base URL: https://api.cv.arnoldcartagena.com
 
@@ -269,6 +279,7 @@ GET  /cv-data/history         // Get update history
 ```
 
 ### 4.2 API Response Format
+
 ```typescript
 // Success response
 {
@@ -296,6 +307,7 @@ GET  /cv-data/history         // Get update history
 ```
 
 ### 4.3 Authentication Strategy
+
 ```typescript
 // Simple bearer token for admin operations
 // Token stored in environment variables
@@ -313,6 +325,7 @@ async function authenticate(request: Request): Promise<boolean> {
 ## 5. Caching Strategy
 
 ### 5.1 Cache Layers
+
 ```yaml
 Browser Cache:
   - Static assets: 1 year
@@ -334,6 +347,7 @@ KV Cache:
 ```
 
 ### 5.2 Cache Implementation
+
 ```typescript
 // Worker caching example
 const CACHE_KEY = 'cv-data:cache'
@@ -344,22 +358,22 @@ async function getCVData(env: Env): Promise<CVData> {
   const cache = caches.default
   const cacheKey = new Request(CACHE_KEY)
   const cached = await cache.match(cacheKey)
-  
+
   if (cached) {
     return await cached.json()
   }
-  
+
   // Fetch from KV
   const data = await env.KV.get('cv-data:current', 'json')
-  
+
   // Cache the response
   const response = new Response(JSON.stringify(data), {
     headers: {
       'Cache-Control': `public, max-age=${CACHE_TTL}`,
-      'Content-Type': 'application/json'
-    }
+      'Content-Type': 'application/json',
+    },
   })
-  
+
   await cache.put(cacheKey, response.clone())
   return data
 }
@@ -370,6 +384,7 @@ async function getCVData(env: Env): Promise<CVData> {
 ## 6. State Management
 
 ### 6.1 Client State Architecture
+
 ```typescript
 // State hierarchy
 App State
@@ -390,6 +405,7 @@ App State
 ```
 
 ### 6.2 State Management Patterns
+
 ```typescript
 // Theme Context
 interface ThemeContextType {
@@ -398,7 +414,7 @@ interface ThemeContextType {
   resolvedTheme: 'light' | 'dark'
 }
 
-// Navigation Context  
+// Navigation Context
 interface NavigationContextType {
   activeSection: string
   scrollDirection: 'up' | 'down'
@@ -410,7 +426,7 @@ function useCVData() {
   return useSWR('/api/cv-data', fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    refreshInterval: 300000 // 5 minutes
+    refreshInterval: 300000, // 5 minutes
   })
 }
 ```
@@ -420,6 +436,7 @@ function useCVData() {
 ## 7. Performance Architecture
 
 ### 7.1 Optimization Strategy
+
 ```yaml
 Build Time:
   - Static generation for pages
@@ -441,31 +458,33 @@ Network:
 ```
 
 ### 7.2 Bundle Strategy
+
 ```javascript
 // Next.js config for optimization
 module.exports = {
   experimental: {
     optimizeCss: true,
-    optimizePackageImports: ['framer-motion', 'lucide-react']
+    optimizePackageImports: ['framer-motion', 'lucide-react'],
   },
-  
+
   images: {
     formats: ['image/avif', 'image/webp'],
-    minimumCacheTTL: 31536000
+    minimumCacheTTL: 31536000,
   },
-  
+
   compiler: {
-    removeConsole: process.env.NODE_ENV === 'production'
-  }
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
 }
 ```
 
 ### 7.3 Critical Path Optimization
+
 ```html
 <!-- Preload critical resources -->
-<link rel="preconnect" href="https://api.cv.arnoldcartagena.com">
-<link rel="dns-prefetch" href="https://cdn.cloudflare.com">
-<link rel="preload" href="/fonts/inter.woff2" as="font" crossorigin>
+<link rel="preconnect" href="https://api.cv.arnoldcartagena.com" />
+<link rel="dns-prefetch" href="https://cdn.cloudflare.com" />
+<link rel="preload" href="/fonts/inter.woff2" as="font" crossorigin />
 
 <!-- Inline critical CSS -->
 <style>
@@ -478,24 +497,27 @@ module.exports = {
 ## 8. Security Architecture
 
 ### 8.1 Security Headers
+
 ```typescript
 // Cloudflare Worker security headers
 const SECURITY_HEADERS = {
-  'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'",
+  'Content-Security-Policy':
+    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'",
   'X-Content-Type-Options': 'nosniff',
   'X-Frame-Options': 'DENY',
   'X-XSS-Protection': '1; mode=block',
   'Referrer-Policy': 'strict-origin-when-cross-origin',
-  'Permissions-Policy': 'camera=(), microphone=(), geolocation=()'
+  'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
 }
 ```
 
 ### 8.2 API Security
+
 ```typescript
 // Rate limiting implementation
 const RATE_LIMIT = {
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100 // requests per window
+  max: 100, // requests per window
 }
 
 // CORS configuration
@@ -503,7 +525,7 @@ const CORS_HEADERS = {
   'Access-Control-Allow-Origin': 'https://cv.arnoldcartagena.com',
   'Access-Control-Allow-Methods': 'GET, PUT, POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-  'Access-Control-Max-Age': '86400'
+  'Access-Control-Max-Age': '86400',
 }
 ```
 
@@ -512,6 +534,7 @@ const CORS_HEADERS = {
 ## 9. Deployment Architecture
 
 ### 9.1 CI/CD Pipeline
+
 ```mermaid
 graph LR
     Dev[Developer] --> GH[GitHub]
@@ -525,6 +548,7 @@ graph LR
 ```
 
 ### 9.2 Environment Configuration
+
 ```yaml
 Development:
   - Local Next.js dev server
@@ -548,6 +572,7 @@ Production:
 ## 10. Monitoring & Observability
 
 ### 10.1 Metrics Collection
+
 ```typescript
 // Key metrics to track
 interface Metrics {
@@ -556,12 +581,12 @@ interface Metrics {
   ttfb: number
   fcp: number
   lcp: number
-  
+
   // Business
   visits: number
   cvDownloads: number
   contactSubmissions: number
-  
+
   // Technical
   apiLatency: number
   errorRate: number
@@ -570,6 +595,7 @@ interface Metrics {
 ```
 
 ### 10.2 Error Handling
+
 ```typescript
 // Global error boundary
 class ErrorBoundary extends React.Component {
@@ -578,7 +604,7 @@ class ErrorBoundary extends React.Component {
     analytics.track('error', {
       message: error.message,
       stack: error.stack,
-      componentStack: errorInfo.componentStack
+      componentStack: errorInfo.componentStack,
     })
   }
 }
@@ -586,16 +612,15 @@ class ErrorBoundary extends React.Component {
 // Worker error handling
 addEventListener('fetch', event => {
   event.respondWith(
-    handleRequest(event.request)
-      .catch(err => {
-        // Log error
-        console.error('Worker error:', err)
-        
-        // Return fallback response
-        return new Response('Internal Server Error', { 
-          status: 500 
-        })
+    handleRequest(event.request).catch(err => {
+      // Log error
+      console.error('Worker error:', err)
+
+      // Return fallback response
+      return new Response('Internal Server Error', {
+        status: 500,
       })
+    })
   )
 })
 ```
@@ -605,12 +630,14 @@ addEventListener('fetch', event => {
 ## 11. Scalability Considerations
 
 ### 11.1 Traffic Handling
+
 - **CDN**: Unlimited bandwidth via Cloudflare
 - **Workers**: 100k requests/day (free tier)
 - **KV**: 100k reads/day, 1k writes/day
 - **Scaling Strategy**: Cache aggressively, minimize KV writes
 
 ### 11.2 Future Growth
+
 ```yaml
 Phase 1 (Current):
   - Single-page portfolio
@@ -632,4 +659,5 @@ Phase 3 (Scale):
 
 ---
 
-This architecture provides a solid foundation for a performant, scalable CV website while staying within Cloudflare's free tier limits.
+This architecture provides a solid foundation for a performant, scalable CV
+website while staying within Cloudflare's free tier limits.
