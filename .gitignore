@@ -33,6 +33,25 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# Wrangler
+.wrangler/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Cloudflare
+wrangler.toml.bak
+
+# Local development
+.env.example.bak
+
+# Temporary files
+*.tmp
+*.temp
+
 # vercel
 .vercel
 
