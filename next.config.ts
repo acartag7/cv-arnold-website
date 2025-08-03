@@ -1,7 +1,20 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
-  /* config options here */
-};
+  // Configure for static export to Cloudflare Pages
+  output: 'export',
+  trailingSlash: true,
 
-export default nextConfig;
+  // Disable image optimization for static export
+  images: {
+    unoptimized: true,
+  },
+
+  // Skip trailing slash for API routes (if any)
+  skipTrailingSlashRedirect: true,
+
+  // Optimize for static hosting
+  compress: false, // Cloudflare handles compression
+}
+
+export default nextConfig
