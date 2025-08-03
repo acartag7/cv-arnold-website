@@ -1,11 +1,11 @@
-'use client';
+'use client'
 
-import { motion } from 'framer-motion';
-import { ExternalLink, Award, Star } from 'lucide-react';
-import { CVData } from '@/types';
+import { motion } from 'framer-motion'
+import { ExternalLink, Award, Star } from 'lucide-react'
+import { CVData } from '@/types'
 
 interface CertificationsSectionProps {
-  data: CVData;
+  data: CVData
 }
 
 const certifications = [
@@ -17,7 +17,7 @@ const certifications = [
     level: 'Professional',
     logo: '/api/placeholder/60/60',
     credlyUrl: '#', // Will be replaced with actual URL
-    isKubestronaut: true
+    isKubestronaut: true,
   },
   {
     name: 'CKAD: Certified Kubernetes Application Developer',
@@ -27,7 +27,7 @@ const certifications = [
     level: 'Professional',
     logo: '/api/placeholder/60/60',
     credlyUrl: '#',
-    isKubestronaut: true
+    isKubestronaut: true,
   },
   {
     name: 'CKS: Certified Kubernetes Security Specialist',
@@ -37,7 +37,7 @@ const certifications = [
     level: 'Professional',
     logo: '/api/placeholder/60/60',
     credlyUrl: '#',
-    isKubestronaut: true
+    isKubestronaut: true,
   },
   {
     name: 'KCNA: Kubernetes and Cloud Native Associate',
@@ -47,7 +47,7 @@ const certifications = [
     level: 'Associate',
     logo: '/api/placeholder/60/60',
     credlyUrl: '#',
-    isKubestronaut: true
+    isKubestronaut: true,
   },
   {
     name: 'KCSA: Kubernetes and Cloud Native Security Associate',
@@ -57,7 +57,7 @@ const certifications = [
     level: 'Associate',
     logo: '/api/placeholder/60/60',
     credlyUrl: '#',
-    isKubestronaut: true
+    isKubestronaut: true,
   },
   {
     name: 'HashiCorp Certified Terraform Associate',
@@ -67,7 +67,7 @@ const certifications = [
     level: 'Associate',
     logo: '/api/placeholder/60/60',
     credlyUrl: '#',
-    isKubestronaut: false
+    isKubestronaut: false,
   },
   {
     name: 'GitOps Certified for Argo',
@@ -77,7 +77,7 @@ const certifications = [
     level: 'Professional',
     logo: '/api/placeholder/60/60',
     credlyUrl: '#',
-    isKubestronaut: false
+    isKubestronaut: false,
   },
   {
     name: 'Jenkins Level 1: Administration',
@@ -87,7 +87,7 @@ const certifications = [
     level: 'Professional',
     logo: '/api/placeholder/60/60',
     credlyUrl: '#',
-    isKubestronaut: false
+    isKubestronaut: false,
   },
   {
     name: 'Microsoft Certified: Azure Fundamentals',
@@ -97,21 +97,21 @@ const certifications = [
     level: 'Fundamentals',
     logo: '/api/placeholder/60/60',
     credlyUrl: '#',
-    isKubestronaut: false
-  }
-];
+    isKubestronaut: false,
+  },
+]
 
 const categories = [
   { name: 'Kubernetes', color: 'bg-blue-500', count: 5 },
   { name: 'Infrastructure', color: 'bg-green-500', count: 1 },
   { name: 'GitOps', color: 'bg-purple-500', count: 1 },
   { name: 'CI/CD', color: 'bg-orange-500', count: 1 },
-  { name: 'Cloud', color: 'bg-cyan-500', count: 1 }
-];
+  { name: 'Cloud', color: 'bg-cyan-500', count: 1 },
+]
 
-export default function CertificationsSection({ data }: CertificationsSectionProps) {
-  const kubestronautCerts = certifications.filter(cert => cert.isKubestronaut);
-  const otherCerts = certifications.filter(cert => !cert.isKubestronaut);
+export default function CertificationsSection({}: CertificationsSectionProps) {
+  const kubestronautCerts = certifications.filter(cert => cert.isKubestronaut)
+  const otherCerts = certifications.filter(cert => !cert.isKubestronaut)
 
   return (
     <section id="certifications" className="py-16 px-4">
@@ -127,7 +127,8 @@ export default function CertificationsSection({ data }: CertificationsSectionPro
             Professional Certifications
           </h2>
           <p className="text-lg text-[var(--text-muted)] max-w-2xl mx-auto">
-            Industry-recognized certifications demonstrating expertise in cloud-native technologies and platform engineering
+            Industry-recognized certifications demonstrating expertise in
+            cloud-native technologies and platform engineering
           </p>
         </motion.div>
 
@@ -144,8 +145,12 @@ export default function CertificationsSection({ data }: CertificationsSectionPro
               <Star size={24} />
             </div>
             <div className="text-center">
-              <h3 className="text-xl font-bold text-[var(--text)] mb-1">Kubestronaut Achievement</h3>
-              <p className="text-[var(--text-muted)]">All 5 Kubernetes Certifications Completed</p>
+              <h3 className="text-xl font-bold text-[var(--text)] mb-1">
+                Kubestronaut Achievement
+              </h3>
+              <p className="text-[var(--text-muted)]">
+                All 5 Kubernetes Certifications Completed
+              </p>
             </div>
           </div>
         </motion.div>
@@ -158,14 +163,20 @@ export default function CertificationsSection({ data }: CertificationsSectionPro
           viewport={{ once: true }}
           className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-12"
         >
-          {categories.map((category, index) => (
+          {categories.map(category => (
             <div
               key={category.name}
               className="p-4 rounded-lg bg-[var(--surface)]/60 border border-[var(--primary)]/10 text-center"
             >
-              <div className={`w-4 h-4 ${category.color} rounded-full mx-auto mb-2`}></div>
-              <div className="text-lg font-bold text-[var(--text)]">{category.count}</div>
-              <div className="text-sm text-[var(--text-muted)]">{category.name}</div>
+              <div
+                className={`w-4 h-4 ${category.color} rounded-full mx-auto mb-2`}
+              ></div>
+              <div className="text-lg font-bold text-[var(--text)]">
+                {category.count}
+              </div>
+              <div className="text-sm text-[var(--text-muted)]">
+                {category.name}
+              </div>
             </div>
           ))}
         </motion.div>
@@ -200,7 +211,9 @@ export default function CertificationsSection({ data }: CertificationsSectionPro
                     <h4 className="font-semibold text-[var(--text)] mb-1 text-sm group-hover:text-[var(--primary)] transition-colors">
                       {cert.name}
                     </h4>
-                    <p className="text-xs text-[var(--text-muted)] mb-2">{cert.issuer}</p>
+                    <p className="text-xs text-[var(--text-muted)] mb-2">
+                      {cert.issuer}
+                    </p>
                     <div className="flex items-center justify-between">
                       <span className="text-xs px-2 py-1 bg-[var(--primary)]/10 text-[var(--primary)] rounded-full">
                         {cert.level}
@@ -229,7 +242,9 @@ export default function CertificationsSection({ data }: CertificationsSectionPro
           transition={{ duration: 0.6, delay: 0.4 }}
           viewport={{ once: true }}
         >
-          <h3 className="text-xl font-semibold text-[var(--text)] mb-6">Additional Certifications</h3>
+          <h3 className="text-xl font-semibold text-[var(--text)] mb-6">
+            Additional Certifications
+          </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {otherCerts.map((cert, index) => (
               <motion.div
@@ -248,7 +263,9 @@ export default function CertificationsSection({ data }: CertificationsSectionPro
                     <h4 className="font-semibold text-[var(--text)] mb-1 text-sm group-hover:text-[var(--primary)] transition-colors">
                       {cert.name}
                     </h4>
-                    <p className="text-xs text-[var(--text-muted)] mb-2">{cert.issuer}</p>
+                    <p className="text-xs text-[var(--text-muted)] mb-2">
+                      {cert.issuer}
+                    </p>
                     <div className="flex items-center justify-between">
                       <span className="text-xs px-2 py-1 bg-[var(--primary)]/10 text-[var(--primary)] rounded-full">
                         {cert.level}
@@ -279,10 +296,11 @@ export default function CertificationsSection({ data }: CertificationsSectionPro
           className="mt-8 text-center"
         >
           <p className="text-sm text-[var(--text-muted)]">
-            All certifications are current and can be verified through Credly badges. Click the external link icons to view verification details.
+            All certifications are current and can be verified through Credly
+            badges. Click the external link icons to view verification details.
           </p>
         </motion.div>
       </div>
     </section>
-  );
+  )
 }
