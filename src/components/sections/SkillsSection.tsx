@@ -1,56 +1,56 @@
-'use client';
+'use client'
 
-import { motion } from 'framer-motion';
-import { CVData } from '@/types';
+import { motion } from 'framer-motion'
+import { CVData } from '@/types'
 
 interface SkillsSectionProps {
-  data: CVData;
+  data: CVData
 }
 
 const skillCategories = [
   {
     title: 'Cloud Platforms',
     skills: ['AWS', 'GCP', 'Azure'],
-    color: 'bg-blue-500'
+    color: 'bg-blue-500',
   },
   {
     title: 'Container Orchestration',
     skills: ['Kubernetes', 'OpenShift', 'EKS', 'GKE', 'TKG'],
-    color: 'bg-purple-500'
+    color: 'bg-purple-500',
   },
   {
     title: 'Infrastructure as Code',
     skills: ['Terraform', 'Ansible'],
-    color: 'bg-green-500'
+    color: 'bg-green-500',
   },
   {
     title: 'CI/CD & Automation',
     skills: ['GitLab CI', 'Jenkins', 'GitHub Actions', 'ArgoCD', 'GitOps'],
-    color: 'bg-orange-500'
+    color: 'bg-orange-500',
   },
   {
     title: 'Monitoring & Observability',
     skills: ['Grafana', 'Prometheus', 'ELK Stack', 'Splunk', 'Fluentd'],
-    color: 'bg-red-500'
+    color: 'bg-red-500',
   },
   {
     title: 'Event Streaming',
     skills: ['Kafka', 'Confluent Cloud'],
-    color: 'bg-indigo-500'
+    color: 'bg-indigo-500',
   },
   {
     title: 'Programming & Scripting',
     skills: ['Shell Scripting', 'Python', 'Java'],
-    color: 'bg-yellow-500'
+    color: 'bg-yellow-500',
   },
   {
     title: 'Security & DevSecOps',
     skills: ['Vault', 'Security Scanning', 'Vulnerability Assessment'],
-    color: 'bg-pink-500'
-  }
-];
+    color: 'bg-pink-500',
+  },
+]
 
-export default function SkillsSection({ data }: SkillsSectionProps) {
+export default function SkillsSection({}: SkillsSectionProps) {
   return (
     <section id="skills" className="py-16 px-4">
       <div className="container mx-auto max-w-6xl">
@@ -65,7 +65,8 @@ export default function SkillsSection({ data }: SkillsSectionProps) {
             Skills & Expertise
           </h2>
           <p className="text-lg text-[var(--text-muted)] max-w-2xl mx-auto">
-            Comprehensive technical skills spanning cloud platforms, infrastructure automation, and modern DevOps practices
+            Comprehensive technical skills spanning cloud platforms,
+            infrastructure automation, and modern DevOps practices
           </p>
         </motion.div>
 
@@ -85,14 +86,17 @@ export default function SkillsSection({ data }: SkillsSectionProps) {
                   {category.title}
                 </h3>
               </div>
-              
+
               <div className="flex flex-wrap gap-2">
                 {category.skills.map((skill, skillIndex) => (
                   <motion.span
                     key={skill}
                     initial={{ opacity: 0, scale: 0.8 }}
                     whileInView={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.3, delay: (index * 0.1) + (skillIndex * 0.05) }}
+                    transition={{
+                      duration: 0.3,
+                      delay: index * 0.1 + skillIndex * 0.05,
+                    }}
                     viewport={{ once: true }}
                     className="px-3 py-1 bg-[var(--primary)]/10 text-[var(--primary)] rounded-full text-sm font-medium border border-[var(--primary)]/20 hover:bg-[var(--primary)]/20 transition-colors cursor-default"
                   >
@@ -118,23 +122,33 @@ export default function SkillsSection({ data }: SkillsSectionProps) {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
             <div className="space-y-2">
               <div className="text-2xl font-bold text-[var(--primary)]">8+</div>
-              <div className="text-sm text-[var(--text-muted)]">Years Experience</div>
+              <div className="text-sm text-[var(--text-muted)]">
+                Years Experience
+              </div>
             </div>
             <div className="space-y-2">
-              <div className="text-2xl font-bold text-[var(--primary)]">Multi-Cloud</div>
-              <div className="text-sm text-[var(--text-muted)]">Architecture</div>
+              <div className="text-2xl font-bold text-[var(--primary)]">
+                Multi-Cloud
+              </div>
+              <div className="text-sm text-[var(--text-muted)]">
+                Architecture
+              </div>
             </div>
             <div className="space-y-2">
-              <div className="text-2xl font-bold text-[var(--primary)]">IaC</div>
+              <div className="text-2xl font-bold text-[var(--primary)]">
+                IaC
+              </div>
               <div className="text-sm text-[var(--text-muted)]">Frameworks</div>
             </div>
             <div className="space-y-2">
-              <div className="text-2xl font-bold text-[var(--primary)]">GitOps</div>
+              <div className="text-2xl font-bold text-[var(--primary)]">
+                GitOps
+              </div>
               <div className="text-sm text-[var(--text-muted)]">Workflows</div>
             </div>
           </div>
         </motion.div>
       </div>
     </section>
-  );
+  )
 }
