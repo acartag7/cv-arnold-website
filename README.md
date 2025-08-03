@@ -150,4 +150,3 @@ MIT License - See [LICENSE](./LICENSE) for details
 ---
 
 _This project showcases modern platform engineering practices through its implementation._
-Let's test markdownlint on README
