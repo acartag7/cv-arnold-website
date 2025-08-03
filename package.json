@@ -7,6 +7,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "lint:fix": "next lint --fix",
+    "lint:md": "markdownlint '**/*.md' --fix",
+    "format": "prettier --write '**/*.{js,jsx,ts,tsx,json,css,md,yaml,yml}'",
+    "format:check": "prettier --check '**/*.{js,jsx,ts,tsx,json,css,md,yaml,yml}'",
+    "typecheck": "tsc --noEmit",
     "prepare": "husky"
   },
   "dependencies": {
