@@ -1,7 +1,9 @@
 # Cloudflare Deployment Guide
+
 ## Complete Setup Instructions for CV Website
 
 ### Document Version
+
 - **Version**: 1.0
 - **Date**: August 3, 2025
 - **Purpose**: Step-by-step Cloudflare deployment instructions
@@ -12,18 +14,23 @@
 ## Prerequisites
 
 ### Required Accounts
+
 - [ ] Cloudflare account (free tier)
 - [ ] GitHub account
 - [ ] Domain already in Cloudflare (cv.arnoldcartagena.com)
 
 ### Required Tools
+
 ```bash
-# Node.js 18+ and npm
+# Node.js 18+ and pnpm
 node --version  # Should be 18.x or higher
-npm --version   # Should be 8.x or higher
+pnpm --version  # Should be 9.x or higher
+
+# Install pnpm globally (if not already installed)
+npm install -g pnpm
 
 # Wrangler CLI for Cloudflare Workers
-npm install -g wrangler
+pnpm install -g wrangler
 wrangler --version  # Should be 3.x
 
 # Git
@@ -35,19 +42,21 @@ git --version
 ## 1. Project Setup
 
 ### 1.1 Clone Repository
+
 ```bash
 # Clone the repository
 git clone https://github.com/yourusername/cv-arnold-website.git
 cd cv-arnold-website
 
 # Install dependencies
-npm install
+pnpm install
 
 # Test local development
-npm run dev
+pnpm run dev
 ```
 
 ### 1.2 Environment Variables
+
 ```bash
 # Create .env.local for development
 cp .env.example .env.local
@@ -71,6 +80,7 @@ ADMIN_AUTH_TOKEN=your_secure_admin_token
    - Select your account
 
 2. **Create Pages Project**
+
    ```
    Workers & Pages → Create application → Pages → Connect to Git
    ```
@@ -81,15 +91,16 @@ ADMIN_AUTH_TOKEN=your_secure_admin_token
    - Click "Begin setup"
 
 4. **Build Configuration**
+
    ```yaml
    Project name: cv-arnold-website
    Production branch: main
-   
+
    Build settings:
      Framework preset: Next.js
-     Build command: npm run build
+     Build command: pnpm run build
      Build output directory: .next
-     
+
    Environment variables:
      NODE_VERSION: 18
      NEXT_PUBLIC_API_URL: https://api.cv.arnoldcartagena.com
@@ -102,11 +113,13 @@ ADMIN_AUTH_TOKEN=your_secure_admin_token
 ### 2.2 Custom Domain Setup
 
 1. **Add Custom Domain**
+
    ```
    Pages project → Custom domains → Add custom domain
    ```
 
 2. **Configure Domain**
+
    ```
    Domain: cv.arnoldcartagena.com
    ```
@@ -136,6 +149,7 @@ wrangler init
 ```
 
 ### 3.2 Wrangler Configuration
+
 ```toml
 # workers/api/wrangler.toml
 name = "cv-api"
@@ -232,27 +246,32 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-          cache: 'npm'
-      
+          cache: 'pnpm'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
       - name: Install dependencies
-        run: npm ci
-      
+        run: pnpm install --frozen-lockfile
+
       - name: Run tests
-        run: npm test
-      
+        run: pnpm test
+
       - name: Build
-        run: npm run build
+        run: pnpm run build
         env:
           NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
-      
+
       - name: Deploy to Cloudflare Pages
         if: github.ref == 'refs/heads/main'
         uses: cloudflare/pages-action@v1
@@ -271,7 +290,7 @@ Repository → Settings → Secrets → Actions
 
 Add secrets:
 - CLOUDFLARE_API_TOKEN
-- CLOUDFLARE_ACCOUNT_ID  
+- CLOUDFLARE_ACCOUNT_ID
 - NEXT_PUBLIC_API_URL
 - ADMIN_AUTH_TOKEN
 ```
@@ -374,14 +393,11 @@ Analytics → Web Analytics →
 // Add to Workers
 addEventListener('fetch', event => {
   event.respondWith(
-    handleRequest(event.request)
-      .catch(err => {
-        // Log to Cloudflare Analytics
-        event.waitUntil(
-          logError(err, event.request)
-        )
-        return errorResponse(err)
-      })
+    handleRequest(event.request).catch(err => {
+      // Log to Cloudflare Analytics
+      event.waitUntil(logError(err, event.request))
+      return errorResponse(err)
+    })
   )
 })
 ```
@@ -405,7 +421,7 @@ addEventListener('fetch', event => {
 
 ```bash
 # Lighthouse CI
-npm install -g @lhci/cli
+pnpm install -g @lhci/cli
 lhci autorun
 
 # Speed test
@@ -442,7 +458,7 @@ curl -X PUT https://api.cv.arnoldcartagena.com/cv-data \
 
 ```bash
 # Pages rollback
-# Dashboard → Pages → cv-arnold-website → Deployments → 
+# Dashboard → Pages → cv-arnold-website → Deployments →
 # Find previous deployment → Rollback
 
 # Workers rollback
@@ -465,6 +481,7 @@ wrangler kv:key get --binding=CV_DATA "cv-data:current" > backup-$(date +%Y%m%d)
 ### Common Issues
 
 1. **Build Fails**
+
    ```bash
    # Check Node version
    # Verify environment variables
@@ -472,26 +489,29 @@ wrangler kv:key get --binding=CV_DATA "cv-data:current" > backup-$(date +%Y%m%d)
    ```
 
 2. **Custom Domain Not Working**
+
    ```bash
    # Verify DNS propagation
    dig cv.arnoldcartagena.com
-   
+
    # Check SSL certificate
    ```
 
 3. **API Not Responding**
+
    ```bash
    # Check Worker logs
    wrangler tail
-   
+
    # Verify KV binding
    ```
 
 4. **Performance Issues**
+
    ```bash
    # Check cache headers
    curl -I https://cv.arnoldcartagena.com
-   
+
    # Review Analytics for slow endpoints
    ```
 
@@ -500,12 +520,14 @@ wrangler kv:key get --binding=CV_DATA "cv-data:current" > backup-$(date +%Y%m%d)
 ## 13. Cost Monitoring (Free Tier Limits)
 
 ### Cloudflare Free Tier Includes:
+
 - **Pages**: Unlimited sites, 500 builds/month
 - **Workers**: 100,000 requests/day
 - **KV**: 100,000 reads/day, 1,000 writes/day
 - **Analytics**: Basic analytics included
 
 ### Monitoring Usage:
+
 ```
 Dashboard → Workers & Pages → cv-api → Analytics
 Dashboard → Workers & Pages → cv-arnold-website → Analytics
