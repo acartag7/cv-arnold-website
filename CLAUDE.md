@@ -128,6 +128,108 @@ analyze_project_complexity // = task-master analyze-complexity
 complexity_report // = task-master complexity-report
 ```
 
+## Git Workflow - Atomic Commits by TaskMaster Tasks
+
+### IMPORTANT: Always commit by TaskMaster task alignment
+
+When making changes that correspond to TaskMaster tasks, ALWAYS create atomic commits that align with specific completed tasks. This maintains clear project history and enables precise tracking.
+
+#### Atomic Commit Strategy
+
+1. **Analyze Changes**: Map all changes to specific TaskMaster tasks/subtasks
+2. **Group by Task**: Create separate commits for each completed TaskMaster task
+3. **Use Task References**: Include TaskMaster task IDs in commit messages
+4. **Logical Sequence**: Commit in dependency order when possible
+
+#### Commit Message Format
+
+```bash
+<type>: <description>
+
+- Detailed implementation notes
+- Key changes and features added
+- Technical decisions made
+
+TaskMaster: ✅ Task X.Y - <Task Title>
+```
+
+#### Example Workflow
+
+```bash
+# 1. Check TaskMaster task completion status
+get_task --id=1.1,1.2,1.3,1.8
+
+# 2. Create atomic commits by task
+git add tsconfig.json
+git commit -m "feat: configure Next.js 15 with TypeScript strict mode
+
+- Enable TypeScript strict mode compilation
+- Configure path aliases for clean imports (@/*)
+- Set up baseUrl and path mapping for Next.js 15
+- Enable App Router TypeScript integration
+
+TaskMaster: ✅ Task 1.1 - Initialize Next.js 15 with TypeScript"
+
+git add tailwind.config.ts
+git commit -m "feat: configure Tailwind CSS v4 with design tokens
+
+- Set up Tailwind CSS v4 with custom theme configuration
+- Configure design tokens for colors, spacing, and typography
+- Add CSS variables for dynamic theming support
+- Enable Tailwind utilities with modern configuration
+
+TaskMaster: ✅ Task 1.2 - Configure Tailwind CSS v4"
+
+# 3. Continue for each completed task...
+
+# 4. Push and create PR
+git push -u origin feature-branch-name
+gh pr create --title="feat: descriptive title" --body="PR description"
+```
+
+#### Pull Request Best Practices
+
+```markdown
+## 🚀 Summary
+
+Brief description of the overall change
+
+## 📋 TaskMaster Tasks Completed
+
+List each completed task with checkmarks:
+
+### ✅ Task X.Y - Task Title
+
+- Implementation details
+- Key changes
+
+## 🔧 Changes Made
+
+- Technical changes
+- New features added
+- Configuration updates
+
+## 🧪 Test Plan
+
+- [ ] Build succeeds
+- [ ] Tests pass
+- [ ] Functionality verified
+
+## 📊 Progress
+
+- TaskMaster progress update
+- Next steps
+```
+
+### /save Command Integration
+
+The `/save --pr` command should follow this atomic commit strategy:
+
+1. **Analyze**: Map changes to TaskMaster tasks
+2. **Commit**: Create separate commits per completed task
+3. **Push**: Push all commits together
+4. **PR**: Create PR with TaskMaster task references
+
 ## Claude Code Workflow Integration
 
 ### Standard Development Workflow
