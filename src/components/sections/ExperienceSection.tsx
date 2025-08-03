@@ -1,26 +1,26 @@
-'use client';
+'use client'
 
-import { motion } from 'framer-motion';
-import { Calendar, MapPin, ChevronDown, ChevronUp } from 'lucide-react';
-import { useState } from 'react';
-import { CVData } from '@/types';
+import { motion } from 'framer-motion'
+import { Calendar, MapPin, ChevronDown, ChevronUp } from 'lucide-react'
+import { useState } from 'react'
+import { CVData } from '@/types'
 
 interface ExperienceSectionProps {
-  data: CVData;
+  data: CVData
 }
 
 export default function ExperienceSection({ data }: ExperienceSectionProps) {
-  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set())
 
   const toggleExpanded = (id: string) => {
-    const newExpanded = new Set(expandedItems);
+    const newExpanded = new Set(expandedItems)
     if (newExpanded.has(id)) {
-      newExpanded.delete(id);
+      newExpanded.delete(id)
     } else {
-      newExpanded.add(id);
+      newExpanded.add(id)
     }
-    setExpandedItems(newExpanded);
-  };
+    setExpandedItems(newExpanded)
+  }
 
   return (
     <section id="experience" className="py-16 px-4 bg-[var(--surface)]">
@@ -36,14 +36,15 @@ export default function ExperienceSection({ data }: ExperienceSectionProps) {
             Professional Experience
           </h2>
           <p className="text-lg text-[var(--text-muted)] max-w-2xl mx-auto">
-            Platform engineering leadership with focus on cost optimization, team development, and technical excellence
+            Platform engineering leadership with focus on cost optimization,
+            team development, and technical excellence
           </p>
         </motion.div>
 
         <div className="space-y-8">
           {data.experience.map((exp, index) => {
-            const isExpanded = expandedItems.has(exp.id);
-            
+            const isExpanded = expandedItems.has(exp.id)
+
             return (
               <motion.div
                 key={exp.id}
@@ -65,7 +66,9 @@ export default function ExperienceSection({ data }: ExperienceSectionProps) {
                     <div className="flex flex-col sm:flex-row sm:items-center gap-4 text-sm text-[var(--text-muted)]">
                       <div className="flex items-center space-x-2">
                         <Calendar size={16} />
-                        <span>{exp.startDate} – {exp.endDate}</span>
+                        <span>
+                          {exp.startDate} – {exp.endDate}
+                        </span>
                       </div>
                       <div className="flex items-center space-x-2">
                         <MapPin size={16} />
@@ -73,7 +76,7 @@ export default function ExperienceSection({ data }: ExperienceSectionProps) {
                       </div>
                     </div>
                   </div>
-                  
+
                   <button
                     onClick={() => toggleExpanded(exp.id)}
                     className="mt-4 lg:mt-0 flex items-center space-x-2 px-4 py-2 bg-[var(--surface)] hover:bg-[var(--primary)] hover:text-white rounded-lg transition-all duration-200 no-print"
@@ -81,29 +84,42 @@ export default function ExperienceSection({ data }: ExperienceSectionProps) {
                     <span className="text-sm">
                       {isExpanded ? 'Show Less' : 'Show More'}
                     </span>
-                    {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                    {isExpanded ? (
+                      <ChevronUp size={16} />
+                    ) : (
+                      <ChevronDown size={16} />
+                    )}
                   </button>
                 </div>
 
                 {/* Key Achievements - Always Visible */}
                 <div className="mb-6">
-                  <h5 className="font-semibold text-[var(--text)] mb-3">Key Achievements</h5>
+                  <h5 className="font-semibold text-[var(--text)] mb-3">
+                    Key Achievements
+                  </h5>
                   <div className="grid gap-3">
-                    {exp.achievements.slice(0, isExpanded ? undefined : 3).map((achievement, achIndex) => (
-                      <div key={achIndex} className="flex items-start space-x-3">
-                        <div className="w-2 h-2 bg-[var(--primary)] rounded-full mt-2 flex-shrink-0"></div>
-                        <p className="text-[var(--text-muted)] leading-relaxed">{achievement}</p>
-                      </div>
-                    ))}
+                    {exp.achievements
+                      .slice(0, isExpanded ? undefined : 3)
+                      .map((achievement, achIndex) => (
+                        <div
+                          key={achIndex}
+                          className="flex items-start space-x-3"
+                        >
+                          <div className="w-2 h-2 bg-[var(--primary)] rounded-full mt-2 flex-shrink-0"></div>
+                          <p className="text-[var(--text-muted)] leading-relaxed">
+                            {achievement}
+                          </p>
+                        </div>
+                      ))}
                   </div>
                 </div>
 
                 {/* Expanded Content */}
                 <motion.div
                   initial={{ height: 0, opacity: 0 }}
-                  animate={{ 
-                    height: isExpanded ? 'auto' : 0, 
-                    opacity: isExpanded ? 1 : 0 
+                  animate={{
+                    height: isExpanded ? 'auto' : 0,
+                    opacity: isExpanded ? 1 : 0,
                   }}
                   transition={{ duration: 0.3 }}
                   className="overflow-hidden"
@@ -111,20 +127,31 @@ export default function ExperienceSection({ data }: ExperienceSectionProps) {
                   <div className="space-y-6 pt-6 border-t border-[var(--surface)]">
                     {/* Responsibilities */}
                     <div>
-                      <h5 className="font-semibold text-[var(--text)] mb-3">Core Responsibilities</h5>
+                      <h5 className="font-semibold text-[var(--text)] mb-3">
+                        Core Responsibilities
+                      </h5>
                       <div className="grid gap-3">
-                        {exp.responsibilities.map((responsibility, respIndex) => (
-                          <div key={respIndex} className="flex items-start space-x-3">
-                            <div className="w-2 h-2 bg-[var(--accent)] rounded-full mt-2 flex-shrink-0"></div>
-                            <p className="text-[var(--text-muted)] leading-relaxed">{responsibility}</p>
-                          </div>
-                        ))}
+                        {exp.responsibilities.map(
+                          (responsibility, respIndex) => (
+                            <div
+                              key={respIndex}
+                              className="flex items-start space-x-3"
+                            >
+                              <div className="w-2 h-2 bg-[var(--accent)] rounded-full mt-2 flex-shrink-0"></div>
+                              <p className="text-[var(--text-muted)] leading-relaxed">
+                                {responsibility}
+                              </p>
+                            </div>
+                          )
+                        )}
                       </div>
                     </div>
 
                     {/* Technologies */}
                     <div>
-                      <h5 className="font-semibold text-[var(--text)] mb-3">Technologies & Tools</h5>
+                      <h5 className="font-semibold text-[var(--text)] mb-3">
+                        Technologies & Tools
+                      </h5>
                       <div className="flex flex-wrap gap-2">
                         {exp.technologies.map((tech, techIndex) => (
                           <span
@@ -139,10 +166,10 @@ export default function ExperienceSection({ data }: ExperienceSectionProps) {
                   </div>
                 </motion.div>
               </motion.div>
-            );
+            )
           })}
         </div>
       </div>
     </section>
-  );
+  )
 }

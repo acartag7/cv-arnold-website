@@ -1,23 +1,23 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
-import { Menu, X, Download, Palette } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState } from 'react'
+import { Menu, X, Download, Palette } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 
 interface HeaderProps {
-  onThemeChange: (theme: string) => void;
-  currentTheme: string;
+  onThemeChange: (theme: string) => void
+  currentTheme: string
 }
 
 export default function Header({ onThemeChange, currentTheme }: HeaderProps) {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false)
 
   const themes = [
     { id: 'theme-1', name: 'Professional Teal', color: 'bg-cyan-600' },
     { id: 'theme-2', name: 'Modern Blue', color: 'bg-blue-600' },
     { id: 'theme-3', name: 'Tech Dark', color: 'bg-emerald-600' },
-  ];
+  ]
 
   const navItems = [
     { href: '#hero', label: 'About' },
@@ -25,11 +25,11 @@ export default function Header({ onThemeChange, currentTheme }: HeaderProps) {
     { href: '#skills', label: 'Skills' },
     { href: '#certifications', label: 'Certifications' },
     { href: '#contact', label: 'Contact' },
-  ];
+  ]
 
   const handleDownloadPDF = () => {
-    window.print();
-  };
+    window.print()
+  }
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-[var(--background)]/95 border-b border-[var(--surface)] backdrop-blur-sm no-print">
@@ -46,7 +46,7 @@ export default function Header({ onThemeChange, currentTheme }: HeaderProps) {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-4 xl:space-x-8 flex-1 justify-center max-w-2xl mx-4">
-            {navItems.map((item) => (
+            {navItems.map(item => (
               <a
                 key={item.href}
                 href={item.href}
@@ -77,18 +77,20 @@ export default function Header({ onThemeChange, currentTheme }: HeaderProps) {
                     exit={{ opacity: 0, y: -10 }}
                     className="absolute right-0 top-12 bg-[var(--background)] border border-[var(--surface)] rounded-lg shadow-lg p-2 min-w-48"
                   >
-                    {themes.map((theme) => (
+                    {themes.map(theme => (
                       <button
                         key={theme.id}
                         onClick={() => {
-                          onThemeChange(theme.id);
-                          setIsThemeMenuOpen(false);
+                          onThemeChange(theme.id)
+                          setIsThemeMenuOpen(false)
                         }}
                         className={`w-full flex items-center space-x-3 px-3 py-2 rounded-md hover:bg-[var(--surface)] transition-colors ${
                           currentTheme === theme.id ? 'bg-[var(--surface)]' : ''
                         }`}
                       >
-                        <div className={`w-4 h-4 rounded-full ${theme.color}`} />
+                        <div
+                          className={`w-4 h-4 rounded-full ${theme.color}`}
+                        />
                         <span className="text-sm">{theme.name}</span>
                       </button>
                     ))}
@@ -128,7 +130,7 @@ export default function Header({ onThemeChange, currentTheme }: HeaderProps) {
               className="lg:hidden mt-4 py-4 border-t border-[var(--surface)]"
             >
               <div className="flex flex-col space-y-3">
-                {navItems.map((item) => (
+                {navItems.map(item => (
                   <a
                     key={item.href}
                     href={item.href}
@@ -151,5 +153,5 @@ export default function Header({ onThemeChange, currentTheme }: HeaderProps) {
         </AnimatePresence>
       </div>
     </header>
-  );
+  )
 }

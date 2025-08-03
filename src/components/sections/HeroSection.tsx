@@ -1,19 +1,19 @@
-'use client';
+'use client'
 
-import { motion } from 'framer-motion';
-import { MapPin, Mail, Phone, Linkedin, Github, Download } from 'lucide-react';
-import { CVData } from '@/types';
+import { motion } from 'framer-motion'
+import { MapPin, Mail, Phone, Linkedin, Github, Download } from 'lucide-react'
+import { CVData } from '@/types'
 
 interface HeroSectionProps {
-  data: CVData;
+  data: CVData
 }
 
 export default function HeroSection({ data }: HeroSectionProps) {
-  const { personalInfo, achievements } = data;
+  const { personalInfo, achievements } = data
 
   const handleDownloadPDF = () => {
-    window.print();
-  };
+    window.print()
+  }
 
   const contactLinks = [
     {
@@ -36,14 +36,14 @@ export default function HeroSection({ data }: HeroSectionProps) {
       text: personalInfo.linkedin,
       href: `https://${personalInfo.linkedin}`,
     },
-  ];
+  ]
 
   if (personalInfo.github) {
     contactLinks.push({
       icon: Github,
       text: personalInfo.github,
       href: `https://github.com/${personalInfo.github}`,
-    });
+    })
   }
 
   return (
@@ -76,29 +76,38 @@ export default function HeroSection({ data }: HeroSectionProps) {
               className="space-y-2"
             >
               {contactLinks.map((contact, index) => {
-                const IconComponent = contact.icon;
+                const IconComponent = contact.icon
                 const content = (
                   <div className="flex items-center space-x-3 p-2.5 rounded-lg bg-[var(--surface)]/50 hover:bg-[var(--primary)] hover:text-white transition-all duration-200 group border border-[var(--primary)]/10">
-                    <IconComponent size={18} className="text-[var(--primary)] group-hover:text-white flex-shrink-0" />
+                    <IconComponent
+                      size={18}
+                      className="text-[var(--primary)] group-hover:text-white flex-shrink-0"
+                    />
                     <span className="text-sm text-[var(--text)] group-hover:text-white font-medium">
                       {contact.text}
                     </span>
                   </div>
-                );
+                )
 
                 return contact.href ? (
                   <a
                     key={index}
                     href={contact.href}
-                    target={contact.href.startsWith('http') ? '_blank' : undefined}
-                    rel={contact.href.startsWith('http') ? 'noopener noreferrer' : undefined}
+                    target={
+                      contact.href.startsWith('http') ? '_blank' : undefined
+                    }
+                    rel={
+                      contact.href.startsWith('http')
+                        ? 'noopener noreferrer'
+                        : undefined
+                    }
                     className="block"
                   >
                     {content}
                   </a>
                 ) : (
                   <div key={index}>{content}</div>
-                );
+                )
               })}
             </motion.div>
 
@@ -163,5 +172,5 @@ export default function HeroSection({ data }: HeroSectionProps) {
         </div>
       </div>
     </section>
-  );
+  )
 }
