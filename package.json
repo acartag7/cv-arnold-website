@@ -48,7 +48,7 @@
       "prettier --write"
     ],
     "*.md": [
-      "markdownlint --fix",
+      "bash -c 'if [[ \"$0\" != *\"CLAUDE.md\" ]]; then markdownlint --fix \"$0\"; fi'",
       "prettier --write"
     ],
     "*.{json,css,yaml,yml}": [

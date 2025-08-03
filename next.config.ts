@@ -1,20 +1,25 @@
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
-  // Configure for static export to Cloudflare Pages
-  output: 'export',
-  trailingSlash: true,
+  // Static export configuration for Cloudflare Pages (disabled for development)
+  // Uncomment when infrastructure repository is ready
+  // output: 'export',
+  // trailingSlash: true,
+  // images: {
+  //   unoptimized: true,
+  // },
+  // skipTrailingSlashRedirect: true,
+  // compress: false, // Cloudflare handles compression
 
-  // Disable image optimization for static export
+  // Development configuration
   images: {
-    unoptimized: true,
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+    ],
   },
-
-  // Skip trailing slash for API routes (if any)
-  skipTrailingSlashRedirect: true,
-
-  // Optimize for static hosting
-  compress: false, // Cloudflare handles compression
 }
 
 export default nextConfig
