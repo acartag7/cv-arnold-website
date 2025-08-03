@@ -145,8 +145,9 @@ MIT License - See [LICENSE](./LICENSE) for details
 
 - LinkedIn: [arnold-cartagena](https://linkedin.com/in/arnold-cartagena)
 - GitHub: [acartag7](https://github.com/acartag7)
-- Email: cartagena.arnold@gmail.com
+- Email: <cartagena.arnold@gmail.com>
 
 ---
 
 _This project showcases modern platform engineering practices through its implementation._
+Let's test markdownlint on README
