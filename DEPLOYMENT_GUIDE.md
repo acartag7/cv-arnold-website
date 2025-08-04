@@ -81,7 +81,7 @@ ADMIN_AUTH_TOKEN=your_secure_admin_token
 
 2. **Create Pages Project**
 
-   ```
+   ```text
    Workers & Pages → Create application → Pages → Connect to Git
    ```
 
@@ -114,18 +114,19 @@ ADMIN_AUTH_TOKEN=your_secure_admin_token
 
 1. **Add Custom Domain**
 
-   ```
+   ```text
    Pages project → Custom domains → Add custom domain
    ```
 
 2. **Configure Domain**
 
-   ```
+   ```text
    Domain: cv.arnoldcartagena.com
    ```
 
 3. **DNS Configuration** (Should auto-configure if domain is in Cloudflare)
-   ```
+
+   ```text
    Type: CNAME
    Name: cv
    Content: cv-arnold-website.pages.dev
@@ -224,7 +225,8 @@ wrangler kv:key get --binding=CV_DATA "cv-data:current"
 wrangler kv:key put --binding=CV_DATA "cv-data:version" "1.0.0"
 
 # Set metadata
-wrangler kv:key put --binding=CV_DATA "cv-data:metadata" '{"lastUpdated":"2025-08-03T10:00:00Z","updateCount":1}'
+wrangler kv:key put --binding=CV_DATA "cv-data:metadata" \
+  '{"lastUpdated":"2025-08-03T10:00:00Z","updateCount":1}'
 ```
 
 ---
@@ -285,7 +287,7 @@ jobs:
 
 ### 5.2 Configure GitHub Secrets
 
-```
+```text
 Repository → Settings → Secrets → Actions
 
 Add secrets:
@@ -324,7 +326,7 @@ wrangler secret put ADMIN_AUTH_TOKEN
 
 ### 7.1 Required DNS Records
 
-```
+```text
 # Main site
 Type: CNAME
 Name: cv
@@ -340,7 +342,7 @@ Proxy: Yes
 
 ### 7.2 SSL/TLS Settings
 
-```
+```text
 SSL/TLS → Overview → Full (strict)
 SSL/TLS → Edge Certificates → Always Use HTTPS: ON
 ```
@@ -351,7 +353,7 @@ SSL/TLS → Edge Certificates → Always Use HTTPS: ON
 
 ### 8.1 Page Rules
 
-```
+```text
 # Cache static assets
 URL: cv.arnoldcartagena.com/static/*
 Settings:
@@ -367,7 +369,7 @@ Settings:
 
 ### 8.2 Optimization Settings
 
-```
+```text
 Speed → Optimization →
   - Auto Minify: HTML, CSS, JS
   - Brotli: On
@@ -381,7 +383,7 @@ Speed → Optimization →
 
 ### 9.1 Analytics
 
-```
+```text
 Analytics → Web Analytics →
   - Add site: cv.arnoldcartagena.com
   - Install JS snippet (automatic with Pages)
@@ -519,16 +521,16 @@ wrangler kv:key get --binding=CV_DATA "cv-data:current" > backup-$(date +%Y%m%d)
 
 ## 13. Cost Monitoring (Free Tier Limits)
 
-### Cloudflare Free Tier Includes:
+### Cloudflare Free Tier Includes
 
 - **Pages**: Unlimited sites, 500 builds/month
 - **Workers**: 100,000 requests/day
 - **KV**: 100,000 reads/day, 1,000 writes/day
 - **Analytics**: Basic analytics included
 
-### Monitoring Usage:
+### Monitoring Usage
 
-```
+```text
 Dashboard → Workers & Pages → cv-api → Analytics
 Dashboard → Workers & Pages → cv-arnold-website → Analytics
 ```
@@ -556,4 +558,5 @@ After deployment:
 
 ---
 
-This guide provides everything needed to deploy and maintain the CV website on Cloudflare's free tier. Follow each section carefully and test thoroughly at each step.
+This guide provides everything needed to deploy and maintain the CV website on
+Cloudflare's free tier. Follow each section carefully and test thoroughly at each step.
