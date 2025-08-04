@@ -10,78 +10,81 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Primary Colors
-        primary: {
-          DEFAULT: 'var(--color-primary)',
-          hover: 'var(--color-primary-hover)',
-          active: 'var(--color-primary-active)',
-          subtle: 'var(--color-primary-subtle)',
-          muted: 'var(--color-primary-muted)',
+        // Simple compatibility names (matches main branch expectations)
+        primary: 'var(--primary)',
+        secondary: 'var(--secondary)',
+        accent: 'var(--accent)',
+        background: 'var(--background)',
+        surface: 'var(--surface)',
+        text: 'var(--text)',
+        'text-muted': 'var(--text-muted)',
+
+        // Semantic design system colors (comprehensive token system)
+        semantic: {
+          primary: {
+            DEFAULT: 'var(--color-primary)',
+            hover: 'var(--color-primary-hover)',
+            active: 'var(--color-primary-active)',
+            subtle: 'var(--color-primary-subtle)',
+            muted: 'var(--color-primary-muted)',
+          },
+          secondary: {
+            DEFAULT: 'var(--color-secondary)',
+            hover: 'var(--color-secondary-hover)',
+            active: 'var(--color-secondary-active)',
+            subtle: 'var(--color-secondary-subtle)',
+            muted: 'var(--color-secondary-muted)',
+          },
+          accent: {
+            DEFAULT: 'var(--color-accent)',
+            hover: 'var(--color-accent-hover)',
+            active: 'var(--color-accent-active)',
+            subtle: 'var(--color-accent-subtle)',
+            muted: 'var(--color-accent-muted)',
+          },
+          background: {
+            DEFAULT: 'var(--color-background)',
+            subtle: 'var(--color-background-subtle)',
+            muted: 'var(--color-background-muted)',
+          },
+          surface: {
+            DEFAULT: 'var(--color-surface)',
+            subtle: 'var(--color-surface-subtle)',
+            muted: 'var(--color-surface-muted)',
+            hover: 'var(--color-surface-hover)',
+            active: 'var(--color-surface-active)',
+          },
+          text: {
+            DEFAULT: 'var(--color-text)',
+            subtle: 'var(--color-text-subtle)',
+            muted: 'var(--color-text-muted)',
+            disabled: 'var(--color-text-disabled)',
+            placeholder: 'var(--color-text-placeholder)',
+            inverse: 'var(--color-text-inverse)',
+          },
+          border: {
+            DEFAULT: 'var(--color-border)',
+            subtle: 'var(--color-border-subtle)',
+            muted: 'var(--color-border-muted)',
+            strong: 'var(--color-border-strong)',
+          },
+          success: {
+            DEFAULT: 'var(--color-success)',
+            subtle: 'var(--color-success-subtle)',
+            muted: 'var(--color-success-muted)',
+          },
+          warning: {
+            DEFAULT: 'var(--color-warning)',
+            subtle: 'var(--color-warning-subtle)',
+            muted: 'var(--color-warning-muted)',
+          },
+          error: {
+            DEFAULT: 'var(--color-error)',
+            subtle: 'var(--color-error-subtle)',
+            muted: 'var(--color-error-muted)',
+          },
+          focus: 'var(--color-focus)',
         },
-        // Secondary Colors
-        secondary: {
-          DEFAULT: 'var(--color-secondary)',
-          hover: 'var(--color-secondary-hover)',
-          active: 'var(--color-secondary-active)',
-          subtle: 'var(--color-secondary-subtle)',
-          muted: 'var(--color-secondary-muted)',
-        },
-        // Accent Colors
-        accent: {
-          DEFAULT: 'var(--color-accent)',
-          hover: 'var(--color-accent-hover)',
-          active: 'var(--color-accent-active)',
-          subtle: 'var(--color-accent-subtle)',
-          muted: 'var(--color-accent-muted)',
-        },
-        // Background Colors
-        background: {
-          DEFAULT: 'var(--color-background)',
-          subtle: 'var(--color-background-subtle)',
-          muted: 'var(--color-background-muted)',
-        },
-        // Surface Colors
-        surface: {
-          DEFAULT: 'var(--color-surface)',
-          subtle: 'var(--color-surface-subtle)',
-          muted: 'var(--color-surface-muted)',
-          hover: 'var(--color-surface-hover)',
-          active: 'var(--color-surface-active)',
-        },
-        // Text Colors
-        text: {
-          DEFAULT: 'var(--color-text)',
-          subtle: 'var(--color-text-subtle)',
-          muted: 'var(--color-text-muted)',
-          disabled: 'var(--color-text-disabled)',
-          placeholder: 'var(--color-text-placeholder)',
-          inverse: 'var(--color-text-inverse)',
-        },
-        // Border Colors
-        border: {
-          DEFAULT: 'var(--color-border)',
-          subtle: 'var(--color-border-subtle)',
-          muted: 'var(--color-border-muted)',
-          strong: 'var(--color-border-strong)',
-        },
-        // State Colors
-        success: {
-          DEFAULT: 'var(--color-success)',
-          subtle: 'var(--color-success-subtle)',
-          muted: 'var(--color-success-muted)',
-        },
-        warning: {
-          DEFAULT: 'var(--color-warning)',
-          subtle: 'var(--color-warning-subtle)',
-          muted: 'var(--color-warning-muted)',
-        },
-        error: {
-          DEFAULT: 'var(--color-error)',
-          subtle: 'var(--color-error-subtle)',
-          muted: 'var(--color-error-muted)',
-        },
-        // Focus
-        focus: 'var(--color-focus)',
       },
       fontFamily: {
         sans: 'var(--font-family-sans)',

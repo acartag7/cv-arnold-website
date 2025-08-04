@@ -289,6 +289,15 @@
   /* Focus Ring */
   --color-focus: var(--primary-500);
   --color-focus-ring: var(--primary-500);
+
+  /* Simple Variable Names (Compatibility with existing components) */
+  --primary: var(--color-primary);
+  --secondary: var(--color-secondary);
+  --accent: var(--color-accent);
+  --background: var(--color-background);
+  --surface: var(--color-surface);
+  --text: var(--color-text);
+  --text-muted: var(--color-text-muted);
 }
 
 /* Dark Theme */
@@ -353,6 +362,15 @@
   /* Focus Ring */
   --color-focus: var(--primary-400);
   --color-focus-ring: var(--primary-400);
+
+  /* Simple Variable Names (Compatibility with existing components) */
+  --primary: var(--color-primary);
+  --secondary: var(--color-secondary);
+  --accent: var(--color-accent);
+  --background: var(--color-background);
+  --surface: var(--color-surface);
+  --text: var(--color-text);
+  --text-muted: var(--color-text-muted);
 }
 
 /* High Contrast Theme */
@@ -417,6 +435,15 @@
   /* Focus Ring */
   --color-focus: #0000ff;
   --color-focus-ring: #0000ff;
+
+  /* Simple Variable Names (Compatibility with existing components) */
+  --primary: var(--color-primary);
+  --secondary: var(--color-secondary);
+  --accent: var(--color-accent);
+  --background: var(--color-background);
+  --surface: var(--color-surface);
+  --text: var(--color-text);
+  --text-muted: var(--color-text-muted);
 }
 
 /* System Theme Detection */
@@ -479,6 +506,15 @@
 
     --color-focus: var(--primary-400);
     --color-focus-ring: var(--primary-400);
+
+    /* Simple Variable Names (Compatibility with existing components) */
+    --primary: var(--color-primary);
+    --secondary: var(--color-secondary);
+    --accent: var(--color-accent);
+    --background: var(--color-background);
+    --surface: var(--color-surface);
+    --text: var(--color-text);
+    --text-muted: var(--color-text-muted);
   }
 }
 
