@@ -1,23 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { Menu, X, Download, Palette } from 'lucide-react'
+import { Menu, X, Download } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { ThemeSwitcher } from '@/components/ui'
 
-interface HeaderProps {
-  onThemeChange: (theme: string) => void
-  currentTheme: string
-}
-
-export default function Header({ onThemeChange, currentTheme }: HeaderProps) {
+export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false)
-
-  const themes = [
-    { id: 'theme-1', name: 'Professional Teal', color: 'bg-cyan-600' },
-    { id: 'theme-2', name: 'Modern Blue', color: 'bg-blue-600' },
-    { id: 'theme-3', name: 'Tech Dark', color: 'bg-emerald-600' },
-  ]
 
   const navItems = [
     { href: '#hero', label: 'About' },
@@ -32,17 +21,18 @@ export default function Header({ onThemeChange, currentTheme }: HeaderProps) {
   }
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-[var(--background)]/95 border-b border-[var(--surface)] backdrop-blur-sm no-print">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-[var(--color-background)]/95 border-b border-[var(--color-border)] backdrop-blur-sm no-print">
       <div className="container mx-auto px-4 lg:px-6 py-3 lg:py-4">
         <div className="flex items-center justify-between">
           {/* Logo/Name */}
-          <motion.div
+          <motion.a
+            href="#hero"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="text-lg lg:text-xl font-bold text-[var(--primary)] flex-shrink-0"
+            className="text-lg lg:text-xl font-bold text-[var(--color-primary)] flex-shrink-0 hover:text-[var(--color-primary-hover)] transition-colors duration-200 cursor-pointer"
           >
             Arnold Cartagena
-          </motion.div>
+          </motion.a>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-4 xl:space-x-8 flex-1 justify-center max-w-2xl mx-4">
@@ -50,7 +40,7 @@ export default function Header({ onThemeChange, currentTheme }: HeaderProps) {
               <a
                 key={item.href}
                 href={item.href}
-                className="text-[var(--text-muted)] hover:text-[var(--primary)] transition-colors duration-200 whitespace-nowrap text-sm font-medium"
+                className="text-[var(--color-text-muted)] hover:text-[var(--color-primary)] transition-colors duration-200 whitespace-nowrap text-sm font-medium"
               >
                 {item.label}
               </a>
@@ -59,50 +49,13 @@ export default function Header({ onThemeChange, currentTheme }: HeaderProps) {
 
           {/* Actions */}
           <div className="flex items-center space-x-2 lg:space-x-3 flex-shrink-0">
-            {/* Theme Selector */}
-            <div className="relative">
-              <button
-                onClick={() => setIsThemeMenuOpen(!isThemeMenuOpen)}
-                className="p-2 rounded-lg bg-[var(--surface)] hover:bg-[var(--primary)] hover:text-white transition-all duration-200"
-                aria-label="Change theme"
-              >
-                <Palette size={20} />
-              </button>
-
-              <AnimatePresence>
-                {isThemeMenuOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="absolute right-0 top-12 bg-[var(--background)] border border-[var(--surface)] rounded-lg shadow-lg p-2 min-w-48"
-                  >
-                    {themes.map(theme => (
-                      <button
-                        key={theme.id}
-                        onClick={() => {
-                          onThemeChange(theme.id)
-                          setIsThemeMenuOpen(false)
-                        }}
-                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-md hover:bg-[var(--surface)] transition-colors ${
-                          currentTheme === theme.id ? 'bg-[var(--surface)]' : ''
-                        }`}
-                      >
-                        <div
-                          className={`w-4 h-4 rounded-full ${theme.color}`}
-                        />
-                        <span className="text-sm">{theme.name}</span>
-                      </button>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+            {/* Theme Switcher */}
+            <ThemeSwitcher className="hidden sm:flex" />
 
             {/* PDF Download */}
             <button
               onClick={handleDownloadPDF}
-              className="hidden md:flex items-center space-x-1 lg:space-x-2 px-3 lg:px-4 py-2 bg-[var(--primary)] text-white rounded-lg hover:bg-[var(--secondary)] transition-all duration-200 text-sm font-medium"
+              className="hidden md:flex items-center space-x-1 lg:space-x-2 px-3 lg:px-4 py-2 bg-[var(--color-primary)] text-[var(--color-text-inverse)] rounded-lg hover:bg-[var(--color-primary-hover)] transition-all duration-200 text-sm font-medium"
             >
               <Download size={16} />
               <span className="hidden lg:inline">Download CV</span>
@@ -112,7 +65,7 @@ export default function Header({ onThemeChange, currentTheme }: HeaderProps) {
             {/* Mobile Menu Toggle */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="md:hidden p-2 rounded-lg bg-[var(--surface)] hover:bg-[var(--primary)] hover:text-white transition-all duration-200"
+              className="md:hidden p-2 rounded-lg bg-[var(--color-surface)] hover:bg-[var(--color-primary)] hover:text-[var(--color-text-inverse)] transition-all duration-200"
               aria-label="Toggle menu"
             >
               {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
@@ -127,7 +80,7 @@ export default function Header({ onThemeChange, currentTheme }: HeaderProps) {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="lg:hidden mt-4 py-4 border-t border-[var(--surface)]"
+              className="lg:hidden mt-4 py-4 border-t border-[var(--color-border)]"
             >
               <div className="flex flex-col space-y-3">
                 {navItems.map(item => (
@@ -135,14 +88,20 @@ export default function Header({ onThemeChange, currentTheme }: HeaderProps) {
                     key={item.href}
                     href={item.href}
                     onClick={() => setIsMenuOpen(false)}
-                    className="text-[var(--text-muted)] hover:text-[var(--primary)] transition-colors duration-200 py-2 text-sm font-medium"
+                    className="text-[var(--color-text-muted)] hover:text-[var(--color-primary)] transition-colors duration-200 py-2 text-sm font-medium"
                   >
                     {item.label}
                   </a>
                 ))}
+
+                {/* Mobile Theme Switcher */}
+                <div className="py-2">
+                  <ThemeSwitcher showLabels={true} />
+                </div>
+
                 <button
                   onClick={handleDownloadPDF}
-                  className="flex items-center space-x-2 px-4 py-2 bg-[var(--primary)] text-white rounded-lg hover:bg-[var(--secondary)] transition-all duration-200 mt-4 text-sm font-medium"
+                  className="flex items-center space-x-2 px-4 py-2 bg-[var(--color-primary)] text-[var(--color-text-inverse)] rounded-lg hover:bg-[var(--color-primary-hover)] transition-all duration-200 mt-4 text-sm font-medium"
                 >
                   <Download size={16} />
                   <span>Download CV</span>

@@ -166,7 +166,7 @@ export default function CertificationsSection({}: CertificationsSectionProps) {
           {categories.map(category => (
             <div
               key={category.name}
-              className="p-4 rounded-lg bg-[var(--surface)]/60 border border-[var(--primary)]/10 text-center"
+              className="p-4 rounded-lg bg-[var(--surface)]/60 border border-[var(--color-border)] text-center"
             >
               <div
                 className={`w-4 h-4 ${category.color} rounded-full mx-auto mb-2`}
@@ -201,7 +201,7 @@ export default function CertificationsSection({}: CertificationsSectionProps) {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: index * 0.1 }}
                 viewport={{ once: true }}
-                className="p-6 rounded-xl bg-[var(--surface)]/60 hover:bg-[var(--surface)] border border-[var(--primary)]/10 hover:border-[var(--primary)]/30 transition-all duration-300 group"
+                className="p-6 rounded-xl bg-[var(--surface)]/60 hover:bg-[var(--surface)] border border-[var(--color-border)] hover:border-[var(--color-primary)]/30 transition-all duration-300 group"
               >
                 <div className="flex items-start space-x-4">
                   <div className="w-12 h-12 bg-[var(--primary)]/10 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -253,7 +253,7 @@ export default function CertificationsSection({}: CertificationsSectionProps) {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: index * 0.1 }}
                 viewport={{ once: true }}
-                className="p-6 rounded-xl bg-[var(--surface)]/60 hover:bg-[var(--surface)] border border-[var(--primary)]/10 hover:border-[var(--primary)]/30 transition-all duration-300 group"
+                className="p-6 rounded-xl bg-[var(--surface)]/60 hover:bg-[var(--surface)] border border-[var(--color-border)] hover:border-[var(--color-primary)]/30 transition-all duration-300 group"
               >
                 <div className="flex items-start space-x-4">
                   <div className="w-12 h-12 bg-[var(--primary)]/10 rounded-lg flex items-center justify-center flex-shrink-0">

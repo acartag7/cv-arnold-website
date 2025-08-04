@@ -71,11 +71,39 @@ export function ThemeProvider({
     return null
   }
 
+  // Auto-detect system theme preference with dark mode as fallback
+  const getInitialTheme = () => {
+    if (typeof window === 'undefined') return 'dark'
+
+    try {
+      // Try to detect system preference
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+      const systemPrefersDark = mediaQuery.matches
+
+      // If system explicitly prefers light, use light; otherwise default to dark
+      const hasLightPreference = window.matchMedia(
+        '(prefers-color-scheme: light)'
+      ).matches
+
+      if (hasLightPreference && !systemPrefersDark) {
+        return 'light'
+      }
+
+      return 'dark' // Default to dark mode
+    } catch (error) {
+      // If system detection fails, default to dark mode
+      console.warn(
+        'Failed to detect system theme preference, defaulting to dark mode'
+      )
+      return 'dark'
+    }
+  }
+
   return (
     <NextThemesProvider
       attribute="data-theme"
-      defaultTheme="system"
-      enableSystem
+      defaultTheme={getInitialTheme()}
+      enableSystem={false}
       themes={['light', 'dark', 'high-contrast']}
       storageKey="cv-theme"
       disableTransitionOnChange={false}
