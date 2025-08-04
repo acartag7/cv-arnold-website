@@ -1,79 +1,14 @@
 @import 'tailwindcss';
+@import '../styles/tokens.css';
 
-:root {
-  /* Theme 1: Professional Teal */
-  --theme-1-primary: #0891b2;
-  --theme-1-secondary: #06b6d4;
-  --theme-1-accent: #67e8f9;
-  --theme-1-background: #ffffff;
-  --theme-1-surface: #f8fafc;
-  --theme-1-text: #1e293b;
-  --theme-1-text-muted: #64748b;
-
-  /* Theme 2: Modern Blue Gradient */
-  --theme-2-primary: #3b82f6;
-  --theme-2-secondary: #1d4ed8;
-  --theme-2-accent: #60a5fa;
-  --theme-2-background: #ffffff;
-  --theme-2-surface: #f1f5f9;
-  --theme-2-text: #1e293b;
-  --theme-2-text-muted: #64748b;
-
-  /* Theme 3: Tech-Forward Dark with Teal */
-  --theme-3-primary: #14b8a6;
-  --theme-3-secondary: #0891b2;
-  --theme-3-accent: #22d3ee;
-  --theme-3-background: #0f172a;
-  --theme-3-surface: #1e293b;
-  --theme-3-text: #f1f5f9;
-  --theme-3-text-muted: #94a3b8;
-
-  /* Default to Theme 1 */
-  --primary: var(--theme-1-primary);
-  --secondary: var(--theme-1-secondary);
-  --accent: var(--theme-1-accent);
-  --background: var(--theme-1-background);
-  --surface: var(--theme-1-surface);
-  --text: var(--theme-1-text);
-  --text-muted: var(--theme-1-text-muted);
-}
-
-.theme-1 {
-  --primary: var(--theme-1-primary);
-  --secondary: var(--theme-1-secondary);
-  --accent: var(--theme-1-accent);
-  --background: var(--theme-1-background);
-  --surface: var(--theme-1-surface);
-  --text: var(--theme-1-text);
-  --text-muted: var(--theme-1-text-muted);
-}
-
-.theme-2 {
-  --primary: var(--theme-2-primary);
-  --secondary: var(--theme-2-secondary);
-  --accent: var(--theme-2-accent);
-  --background: var(--theme-2-background);
-  --surface: var(--theme-2-surface);
-  --text: var(--theme-2-text);
-  --text-muted: var(--theme-2-text-muted);
-}
-
-.theme-3 {
-  --primary: var(--theme-3-primary);
-  --secondary: var(--theme-3-secondary);
-  --accent: var(--theme-3-accent);
-  --background: var(--theme-3-background);
-  --surface: var(--theme-3-surface);
-  --text: var(--theme-3-text);
-  --text-muted: var(--theme-3-text-muted);
-}
-
+/* Apply design tokens to body */
 body {
   background: var(--background);
   color: var(--text);
+  font-family: var(--font-family-sans);
   transition:
-    background-color 0.3s ease,
-    color 0.3s ease;
+    background-color var(--duration-normal) var(--ease-out),
+    color var(--duration-normal) var(--ease-out);
 }
 
 /* Smooth scrolling */

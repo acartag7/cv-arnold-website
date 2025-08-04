@@ -59,3 +59,6 @@ export interface CVData {
     proficiency: string
   }[]
 }
+
+// Design token system types
+export * from './design-tokens'
