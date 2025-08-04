@@ -62,3 +62,6 @@ export interface CVData {
 
 // Design token system types
 export * from './design-tokens'
+
+// Responsive system types
+export * from './responsive'

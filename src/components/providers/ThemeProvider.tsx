@@ -100,7 +100,7 @@ export function ThemeProvider({
       }
 
       return 'dark' // Default to dark mode
-    } catch (error) {
+    } catch {
       // If system detection fails, default to dark mode
       console.warn(
         'Failed to detect system theme preference, defaulting to dark mode'
