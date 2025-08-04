@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import '../styles/tokens.css';
+@import '../styles/theme-transitions.css';
 
 /* Apply design tokens to body */
 body {
