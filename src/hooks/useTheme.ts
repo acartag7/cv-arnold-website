@@ -4,6 +4,7 @@ import { useTheme as useNextTheme } from 'next-themes'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { ThemeVariant } from '@/types/design-tokens'
 import { getSystemTheme } from '@/types/design-tokens'
+import { isValidTheme } from '@/utils/theme'
 
 interface UseThemeReturn {
   /** Current active theme */
@@ -109,9 +110,8 @@ export function useTheme(): UseThemeReturn {
     (newTheme: ThemeVariant | 'system') => {
       if (!mounted) return
 
-      // Validate theme value
-      const validThemes = ['light', 'dark', 'high-contrast', 'system']
-      if (!validThemes.includes(newTheme)) {
+      // Validate theme value using centralized validation
+      if (newTheme !== 'system' && !isValidTheme(newTheme)) {
         console.warn(`Invalid theme: ${newTheme}. Using 'light' as fallback.`)
         nextSetTheme('light')
         return
