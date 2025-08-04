@@ -52,7 +52,7 @@ jobs:
         run: pnpm run format:check
 
       - name: Run markdown lint
-        run: pnpm run lint:md || true # Allow markdown lint to fail for now
+        run: pnpm run lint:md
 
       - name: Build application
         run: pnpm run build
