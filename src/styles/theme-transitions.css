@@ -5,11 +5,24 @@
  * user accessibility preferences and maintaining performance.
  */
 
-/* Theme transition class applied during theme switching */
-.theme-transition,
-.theme-transition *,
-.theme-transition *:before,
-.theme-transition *:after {
+/* Theme transition class applied during theme switching - scoped for performance */
+.theme-transition {
+  transition-property:
+    background-color, border-color, color, fill, stroke, opacity, box-shadow;
+  transition-duration: var(--duration-normal, 300ms);
+  transition-timing-function: var(--ease-in-out, cubic-bezier(0.4, 0, 0.2, 1));
+}
+
+/* Apply transitions only to specific interactive elements for performance */
+.theme-transition button,
+.theme-transition [role='button'],
+.theme-transition a,
+.theme-transition input,
+.theme-transition textarea,
+.theme-transition select,
+.theme-transition svg,
+.theme-transition [data-icon],
+.theme-transition .icon {
   transition-property:
     background-color, border-color, color, fill, stroke, opacity, box-shadow;
   transition-duration: var(--duration-normal, 300ms);
@@ -154,7 +167,13 @@
 
 /* High contrast theme - instant transitions for better UX */
 [data-theme='high-contrast'] .theme-transition,
-[data-theme='high-contrast'] .theme-transition * {
+[data-theme='high-contrast'] .theme-transition button,
+[data-theme='high-contrast'] .theme-transition [role='button'],
+[data-theme='high-contrast'] .theme-transition a,
+[data-theme='high-contrast'] .theme-transition input,
+[data-theme='high-contrast'] .theme-transition textarea,
+[data-theme='high-contrast'] .theme-transition select,
+[data-theme='high-contrast'] .theme-transition svg {
   transition-duration: var(--duration-fast, 150ms);
 }
 
@@ -167,8 +186,15 @@
   perspective: 1000px;
 }
 
-/* Disable transitions on first load to prevent flashing */
-.preload * {
+/* Disable transitions on first load to prevent flashing - scoped for performance */
+.preload,
+.preload button,
+.preload [role='button'],
+.preload a,
+.preload input,
+.preload textarea,
+.preload select,
+.preload svg {
   transition: none !important;
 }
 
@@ -180,12 +206,18 @@
   }
 }
 
-/* Respect reduced motion preference */
+/* Respect reduced motion preference - scoped for performance */
 @media (prefers-reduced-motion: reduce) {
   .theme-transition,
-  .theme-transition *,
-  .theme-transition *:before,
-  .theme-transition *:after {
+  .theme-transition button,
+  .theme-transition [role='button'],
+  .theme-transition a,
+  .theme-transition input,
+  .theme-transition textarea,
+  .theme-transition select,
+  .theme-transition svg,
+  .theme-transition [data-icon],
+  .theme-transition .icon {
     transition-duration: 0ms !important;
     animation-duration: 0ms !important;
   }
