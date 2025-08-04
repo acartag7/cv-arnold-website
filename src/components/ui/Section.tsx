@@ -1,10 +1,18 @@
 import { cn } from '@/utils/cn'
 
+/**
+ * Semantic section component with consistent vertical spacing and background variants
+ */
 interface SectionProps {
+  /** Section content */
   children: React.ReactNode
+  /** Vertical padding size */
   spacing?: 'sm' | 'md' | 'lg' | 'xl'
+  /** Background color variant */
   background?: 'default' | 'muted' | 'accent'
+  /** Additional CSS classes */
   className?: string
+  /** Section ID for navigation/anchoring */
   id?: string
 }
 

@@ -1,12 +1,24 @@
 import { cn } from '@/utils/cn'
 
+/**
+ * Flexible layout component with comprehensive flexbox controls
+ */
 interface FlexProps {
+  /** Items to arrange in flex layout */
   children: React.ReactNode
+  /** Flex direction */
   direction?: 'row' | 'col' | 'row-reverse' | 'col-reverse'
+  /** Cross-axis alignment */
   align?: 'start' | 'center' | 'end' | 'stretch' | 'baseline'
+  /** Main-axis justification */
   justify?: 'start' | 'center' | 'end' | 'between' | 'around' | 'evenly'
+  /** Gap between items (8px units) */
   gap?: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 8 | 10 | 12
+  /** Allow items to wrap */
   wrap?: boolean
+  /** HTML element to render as */
+  as?: React.ElementType
+  /** Additional CSS classes */
   className?: string
 }
 
@@ -54,10 +66,11 @@ export function Flex({
   justify = 'start',
   gap = 0,
   wrap = false,
+  as: Component = 'div',
   className,
 }: FlexProps) {
   return (
-    <div
+    <Component
       className={cn(
         'flex',
         directionMap[direction],
@@ -69,6 +82,6 @@ export function Flex({
       )}
     >
       {children}
-    </div>
+    </Component>
   )
 }

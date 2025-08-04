@@ -1,58 +1,50 @@
 import { cn } from '@/utils/cn'
 
+/**
+ * CSS Grid component with responsive column control and 8px-aligned gaps
+ */
 interface GridProps {
+  /** Grid items to display */
   children: React.ReactNode
+  /** Number of columns on mobile (base) */
   cols?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12
+  /** Gap between grid items (8px units) */
   gap?: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 8 | 10 | 12
+  /** Number of columns on small screens (640px+) */
+  smCols?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12
+  /** Number of columns on medium screens (768px+) */
   mdCols?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12
+  /** Number of columns on large screens (1024px+) */
   lgCols?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12
+  /** HTML element to render as */
+  as?: React.ElementType
+  /** Additional CSS classes */
   className?: string
 }
 
-const gridColsMap = {
-  1: 'grid-cols-1',
-  2: 'grid-cols-2',
-  3: 'grid-cols-3',
-  4: 'grid-cols-4',
-  5: 'grid-cols-5',
-  6: 'grid-cols-6',
-  7: 'grid-cols-7',
-  8: 'grid-cols-8',
-  9: 'grid-cols-9',
-  10: 'grid-cols-10',
-  11: 'grid-cols-11',
-  12: 'grid-cols-12',
+// Helper function to generate grid column classes
+const createGridColsMap = (prefix = '') => {
+  const prefixStr = prefix ? `${prefix}:` : ''
+  return {
+    1: `${prefixStr}grid-cols-1`,
+    2: `${prefixStr}grid-cols-2`,
+    3: `${prefixStr}grid-cols-3`,
+    4: `${prefixStr}grid-cols-4`,
+    5: `${prefixStr}grid-cols-5`,
+    6: `${prefixStr}grid-cols-6`,
+    7: `${prefixStr}grid-cols-7`,
+    8: `${prefixStr}grid-cols-8`,
+    9: `${prefixStr}grid-cols-9`,
+    10: `${prefixStr}grid-cols-10`,
+    11: `${prefixStr}grid-cols-11`,
+    12: `${prefixStr}grid-cols-12`,
+  } as const
 }
 
-const gridMdColsMap = {
-  1: 'md:grid-cols-1',
-  2: 'md:grid-cols-2',
-  3: 'md:grid-cols-3',
-  4: 'md:grid-cols-4',
-  5: 'md:grid-cols-5',
-  6: 'md:grid-cols-6',
-  7: 'md:grid-cols-7',
-  8: 'md:grid-cols-8',
-  9: 'md:grid-cols-9',
-  10: 'md:grid-cols-10',
-  11: 'md:grid-cols-11',
-  12: 'md:grid-cols-12',
-}
-
-const gridLgColsMap = {
-  1: 'lg:grid-cols-1',
-  2: 'lg:grid-cols-2',
-  3: 'lg:grid-cols-3',
-  4: 'lg:grid-cols-4',
-  5: 'lg:grid-cols-5',
-  6: 'lg:grid-cols-6',
-  7: 'lg:grid-cols-7',
-  8: 'lg:grid-cols-8',
-  9: 'lg:grid-cols-9',
-  10: 'lg:grid-cols-10',
-  11: 'lg:grid-cols-11',
-  12: 'lg:grid-cols-12',
-}
+const gridColsMap = createGridColsMap()
+const gridSmColsMap = createGridColsMap('sm')
+const gridMdColsMap = createGridColsMap('md')
+const gridLgColsMap = createGridColsMap('lg')
 
 const gapMap = {
   0: 'gap-0',
@@ -71,15 +63,18 @@ export function Grid({
   children,
   cols = 1,
   gap = 4,
+  smCols,
   mdCols,
   lgCols,
+  as: Component = 'div',
   className,
 }: GridProps) {
   return (
-    <div
+    <Component
       className={cn(
         'grid',
         gridColsMap[cols],
+        smCols && gridSmColsMap[smCols],
         mdCols && gridMdColsMap[mdCols],
         lgCols && gridLgColsMap[lgCols],
         gapMap[gap],
@@ -87,6 +82,6 @@ export function Grid({
       )}
     >
       {children}
-    </div>
+    </Component>
   )
 }
