@@ -1,0 +1,8 @@
+# Ignore Claude Code context file (internal documentation)
+CLAUDE.md
+
+# Ignore node_modules and build outputs
+node_modules/
+.next/
+out/
+dist/

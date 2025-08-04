@@ -57,7 +57,21 @@
         "Delivering comprehensive observability and robust incident response capabilities",
         "Mentored engineering teams on software development best practices, infrastructure architecture, IaC, and AI-powered automation"
       ],
-      "technologies": ["Kafka", "Confluent Cloud", "OpenShift", "EKS", "VMware", "Grafana", "Prometheus", "ELK", "Splunk", "Terraform", "GitLab CI", "DevSecOps", "AI Automation"]
+      "technologies": [
+        "Kafka",
+        "Confluent Cloud",
+        "OpenShift",
+        "EKS",
+        "VMware",
+        "Grafana",
+        "Prometheus",
+        "ELK",
+        "Splunk",
+        "Terraform",
+        "GitLab CI",
+        "DevSecOps",
+        "AI Automation"
+      ]
     },
     {
       "id": "vmware",
@@ -78,7 +92,23 @@
         "Ensuring secure, scalable, and reliable platforms across multi-cloud environments",
         "Mentored junior engineers on industry best practices and the introduction of new technologies"
       ],
-      "technologies": ["Terraform", "AWS", "GCP", "Azure", "Kubernetes", "EKS", "KOPS", "GKE", "TKG", "ArgoCD", "GitLab CI", "Prometheus", "Grafana", "Fluentd", "ELK"]
+      "technologies": [
+        "Terraform",
+        "AWS",
+        "GCP",
+        "Azure",
+        "Kubernetes",
+        "EKS",
+        "KOPS",
+        "GKE",
+        "TKG",
+        "ArgoCD",
+        "GitLab CI",
+        "Prometheus",
+        "Grafana",
+        "Fluentd",
+        "ELK"
+      ]
     },
     {
       "id": "hitachi",
@@ -97,7 +127,19 @@
         "Including automated QA workflows with Cypress and seamless GCP environment provisioning with terraform",
         "Proactive incident management and comprehensive system monitoring"
       ],
-      "technologies": ["GitLab CI", "Vault", "Ansible", "ELK Stack", "Prometheus", "Alertmanager", "Grafana", "GKE", "Kubernetes", "Terraform", "Cypress"]
+      "technologies": [
+        "GitLab CI",
+        "Vault",
+        "Ansible",
+        "ELK Stack",
+        "Prometheus",
+        "Alertmanager",
+        "Grafana",
+        "GKE",
+        "Kubernetes",
+        "Terraform",
+        "Cypress"
+      ]
     },
     {
       "id": "atsistemas",
@@ -115,7 +157,18 @@
       "achievements": [
         "Contributed to the design and troubleshooting of infrastructure-as-code solutions"
       ],
-      "technologies": ["Terraform", "Jenkins", "AWS", "GCP", "GitHub", "Java", "Helm", "Kubernetes", "GKE", "EKS"]
+      "technologies": [
+        "Terraform",
+        "Jenkins",
+        "AWS",
+        "GCP",
+        "GitHub",
+        "Java",
+        "Helm",
+        "Kubernetes",
+        "GKE",
+        "EKS"
+      ]
     },
     {
       "id": "orange-spain-senior",
@@ -136,7 +189,17 @@
         "Successfully mentored and developed junior team members",
         "Streamlined operations through automation and monitoring improvements"
       ],
-      "technologies": ["Bash", "Python", "Ansible", "NetApp", "EMC", "F5", "Fortinet", "TV Platform", "Infrastructure"]
+      "technologies": [
+        "Bash",
+        "Python",
+        "Ansible",
+        "NetApp",
+        "EMC",
+        "F5",
+        "Fortinet",
+        "TV Platform",
+        "Infrastructure"
+      ]
     },
     {
       "id": "orange-spain-support",
@@ -157,7 +220,17 @@
         "Successfully managed critical live broadcast events",
         "Improved content distribution through CDN optimization"
       ],
-      "technologies": ["IPTV", "OTT", "VOD", "Harmonic", "Ericsson", "Edgeware", "Akamai", "CDN", "Middleware"]
+      "technologies": [
+        "IPTV",
+        "OTT",
+        "VOD",
+        "Harmonic",
+        "Ericsson",
+        "Edgeware",
+        "Akamai",
+        "CDN",
+        "Middleware"
+      ]
     },
     {
       "id": "roche",
@@ -176,7 +249,14 @@
         "Ensured continuous operations for mission-critical services",
         "Successfully managed complex global infrastructure"
       ],
-      "technologies": ["VMware", "Windows Server", "Linux", "Middleware", "Application Deployment", "Global Infrastructure"]
+      "technologies": [
+        "VMware",
+        "Windows Server",
+        "Linux",
+        "Middleware",
+        "Application Deployment",
+        "Global Infrastructure"
+      ]
     }
   ],
   "skills": [
@@ -209,21 +289,21 @@
       "badge": "kubestronaut"
     },
     {
-      "name": "CKAD: Certified Kubernetes Application Developer", 
+      "name": "CKAD: Certified Kubernetes Application Developer",
       "issuer": "The Linux Foundation",
       "date": "Current",
       "badge": "kubestronaut"
     },
     {
       "name": "CKS: Certified Kubernetes Security Specialist",
-      "issuer": "The Linux Foundation", 
+      "issuer": "The Linux Foundation",
       "date": "Current",
       "badge": "kubestronaut"
     },
     {
       "name": "KCNA: Kubernetes and Cloud Native Associate",
       "issuer": "The Linux Foundation",
-      "date": "Current", 
+      "date": "Current",
       "badge": "kubestronaut"
     },
     {
@@ -246,7 +326,7 @@
       "proficiency": "Native"
     },
     {
-      "language": "English", 
+      "language": "English",
       "proficiency": "Native"
     },
     {

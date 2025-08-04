@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 :root {
   /* Theme 1: Professional Teal */
@@ -71,7 +71,9 @@
 body {
   background: var(--background);
   color: var(--text);
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
 /* Smooth scrolling */
@@ -87,7 +89,7 @@ html {
     box-shadow: none !important;
     text-shadow: none !important;
   }
-  
+
   body {
     background: white !important;
     color: black !important;
@@ -96,45 +98,49 @@ html {
     margin: 0;
     padding: 0;
   }
-  
+
   .no-print {
     display: none !important;
   }
-  
+
   .print-break-before {
     page-break-before: always;
   }
-  
+
   .print-break-after {
     page-break-after: always;
   }
-  
+
   .print-break-inside-avoid {
     page-break-inside: avoid;
   }
-  
+
   /* Ensure content fits properly */
   .container {
     max-width: none !important;
     margin: 0 !important;
     padding: 0.5in !important;
   }
-  
+
   /* Remove animations and transforms */
-  *, *:before, *:after {
+  *,
+  *:before,
+  *:after {
     animation: none !important;
     transition: none !important;
     transform: none !important;
   }
-  
+
   /* Make sure sections don't create unnecessary page breaks */
   section {
     page-break-inside: avoid;
     margin-bottom: 1rem !important;
   }
-  
+
   /* Hide decorative elements */
-  [class*="animate"], [class*="motion"], .rounded-full[class*="bg-"] {
+  [class*='animate'],
+  [class*='motion'],
+  .rounded-full[class*='bg-'] {
     display: none !important;
   }
 }

@@ -1,7 +1,9 @@
 # Product Requirements Document (PRD)
+
 ## CV Website - Professional Portfolio
 
 ### Document Version
+
 - **Version**: 1.0
 - **Date**: August 3, 2025
 - **Author**: Arnold Cartagena
@@ -12,9 +14,13 @@
 ## 1. Executive Summary
 
 ### Project Vision
-Transform the existing CV website into a world-class professional portfolio that showcases technical expertise through its implementation, while serving as a dynamic, maintainable platform for career presentation.
+
+Transform the existing CV website into a world-class professional portfolio
+that showcases technical expertise through its implementation, while serving
+as a dynamic, maintainable platform for career presentation.
 
 ### Key Objectives
+
 1. **Professional Presence**: Deploy a polished portfolio at cv.arnoldcartagena.com
 2. **Technical Showcase**: Demonstrate platform engineering skills through implementation
 3. **Dynamic Content**: Move personal data to Cloudflare KV for easy updates
@@ -22,6 +28,7 @@ Transform the existing CV website into a world-class professional portfolio that
 5. **Open Source Template**: Create reusable template for community (Phase 2)
 
 ### Success Criteria
+
 - ✅ Deployed on custom domain via Cloudflare Pages
 - ✅ All personal data externalized to Cloudflare KV
 - ✅ Lighthouse scores >95 across all metrics
@@ -33,11 +40,13 @@ Transform the existing CV website into a world-class professional portfolio that
 ## 2. User Stories & Requirements
 
 ### Primary User: Professional Visitors
+
 **As a** recruiter, hiring manager, or colleague  
 **I want to** quickly understand Arnold's expertise and experience  
 **So that I** can evaluate fit for opportunities
 
-#### Acceptance Criteria
+#### Acceptance Criteria - Professional Visitors
+
 - [ ] Load complete above-fold content in <1.5s
 - [ ] Clear professional summary visible immediately
 - [ ] Easy navigation to all sections
@@ -45,17 +54,20 @@ Transform the existing CV website into a world-class professional portfolio that
 - [ ] Professional contact options
 
 ### Secondary User: Arnold (Content Manager)
+
 **As the** portfolio owner  
 **I want to** update my information without code changes  
 **So that I** can keep content current
 
-#### Acceptance Criteria
+#### Acceptance Criteria - Content Manager
+
 - [ ] Update CV data via Cloudflare KV
 - [ ] Preview changes before publishing
 - [ ] Version history of updates
 - [ ] No deployment needed for content changes
 
 ### Tertiary User: Open Source Users (Phase 2)
+
 **As a** developer  
 **I want to** use this template for my own portfolio  
 **So that I** can have a professional presence quickly
@@ -67,6 +79,7 @@ Transform the existing CV website into a world-class professional portfolio that
 ### 3.1 Core Features
 
 #### Header & Navigation
+
 - **Fixed Header**: Scroll-aware with size reduction
 - **Navigation**: Smooth scroll with active section highlighting
 - **Theme System**: 3+ professional themes with system preference detection
@@ -74,6 +87,7 @@ Transform the existing CV website into a world-class professional portfolio that
 - **Accessibility**: Full keyboard navigation
 
 #### Content Sections
+
 1. **Hero Section**
    - Dynamic greeting based on time
    - Professional summary
@@ -107,18 +121,21 @@ Transform the existing CV website into a world-class professional portfolio that
 ### 3.2 Advanced Features
 
 #### Command Palette (⌘K)
+
 - Quick navigation
 - Search across content
 - Theme switching
 - Contact shortcuts
 
 #### Analytics Dashboard
+
 - Visitor insights
 - Popular sections
 - Download tracking
 - Geographic distribution
 
 #### PDF Generation
+
 - Custom styled PDF
 - Version tracking
 - Watermark option
@@ -129,6 +146,7 @@ Transform the existing CV website into a world-class professional portfolio that
 ## 4. Non-Functional Requirements
 
 ### 4.1 Performance
+
 - **Initial Load**: <1.5s (measured at 90th percentile)
 - **Time to Interactive**: <3.5s
 - **Bundle Size**: <200KB gzipped
@@ -136,6 +154,7 @@ Transform the existing CV website into a world-class professional portfolio that
 - **Caching**: Aggressive CDN caching
 
 ### 4.2 SEO & Discoverability
+
 - **Meta Tags**: Dynamic OG images
 - **Structured Data**: JSON-LD for rich snippets
 - **Sitemap**: Auto-generated
@@ -143,11 +162,13 @@ Transform the existing CV website into a world-class professional portfolio that
 - **Social Cards**: Platform-specific optimization
 
 ### 4.3 Browser Support
+
 - **Modern Browsers**: Last 2 versions
 - **Safari**: Special attention to iOS
 - **Progressive Enhancement**: Core content accessible everywhere
 
 ### 4.4 Security
+
 - **Content Security Policy**: Strict CSP headers
 - **HTTPS**: Enforced via Cloudflare
 - **API Security**: Rate limiting on Workers
@@ -158,12 +179,14 @@ Transform the existing CV website into a world-class professional portfolio that
 ## 5. Technical Constraints
 
 ### Cloudflare Free Tier Limits
+
 - **Workers**: 100,000 requests/day
 - **KV**: 100,000 reads/day, 1,000 writes/day
 - **Pages**: Unlimited builds
 - **Bandwidth**: Unlimited
 
 ### Technology Stack
+
 - **Frontend**: Next.js 15, React 19, TypeScript
 - **Styling**: Tailwind CSS v4
 - **Animations**: Framer Motion
@@ -177,6 +200,7 @@ Transform the existing CV website into a world-class professional portfolio that
 ## 6. Data Requirements
 
 ### CV Data Structure
+
 ```typescript
 interface CVData {
   personalInfo: PersonalInfo
@@ -195,6 +219,7 @@ interface CVData {
 ```
 
 ### Storage Strategy
+
 - **Primary**: Cloudflare Workers KV
 - **Backup**: GitHub repository (encrypted)
 - **Cache**: Cloudflare CDN
@@ -205,6 +230,7 @@ interface CVData {
 ## 7. Design Requirements
 
 ### Visual Design
+
 - **Style**: Modern, professional, clean
 - **Colors**: Theme-based with brand consistency
 - **Typography**: System fonts with fallbacks
@@ -212,12 +238,14 @@ interface CVData {
 - **Icons**: Lucide React library
 
 ### Responsive Design
+
 - **Mobile First**: 320px minimum
 - **Breakpoints**: 640px, 768px, 1024px, 1280px
 - **Touch Targets**: 44px minimum
 - **Gestures**: Swipe for mobile navigation
 
 ### Motion Design
+
 - **Principle**: Purposeful, not decorative
 - **Performance**: GPU-accelerated only
 - **Accessibility**: Respect prefers-reduced-motion
@@ -228,24 +256,28 @@ interface CVData {
 ## 8. Timeline & Milestones
 
 ### Week 1: Foundation
+
 - ✓ Infrastructure setup
 - ✓ Design system implementation
 - ✓ Base component library
 - ✓ Header fixes
 
 ### Week 2: Core Features
+
 - ✓ Content sections
 - ✓ Data layer implementation
 - ✓ API development
 - ✓ Theme system
 
 ### Week 3: Enhancement
+
 - ✓ Advanced features
 - ✓ Performance optimization
 - ✓ Animation implementation
 - ✓ Testing
 
 ### Week 4: Launch
+
 - ✓ Deployment
 - ✓ Domain configuration
 - ✓ Monitoring setup
@@ -256,18 +288,21 @@ interface CVData {
 ## 9. Success Metrics
 
 ### Performance KPIs
+
 - Page Speed Insights: >95
 - First Contentful Paint: <1.5s
 - Cumulative Layout Shift: <0.1
 - Time to Interactive: <3.5s
 
 ### User Engagement
+
 - Bounce Rate: <30%
 - Average Session: >2 minutes
 - CV Downloads: Track monthly
 - Contact Form: >5% conversion
 
 ### Technical Health
+
 - Build Time: <2 minutes
 - Zero runtime errors
 - 100% uptime
@@ -278,11 +313,13 @@ interface CVData {
 ## 10. Risk Mitigation
 
 ### Technical Risks
+
 1. **Cloudflare Limits**: Monitor usage, implement caching
 2. **Performance**: Progressive enhancement, code splitting
 3. **Browser Compatibility**: Feature detection, polyfills
 
 ### Content Risks
+
 1. **Data Loss**: Regular backups, version control
 2. **Stale Content**: Update reminders, automation
 3. **Privacy**: Data minimization, encryption
@@ -292,6 +329,7 @@ interface CVData {
 ## 11. Future Enhancements (Phase 2)
 
 ### Open Source Template
+
 - Configuration wizard
 - Theme marketplace
 - Plugin system
@@ -302,6 +340,7 @@ interface CVData {
 - Example gallery
 
 ### Advanced Features
+
 - Blog integration
 - Project portfolio
 - Testimonials system
@@ -316,16 +355,19 @@ interface CVData {
 ## Appendix
 
 ### A. Competitive Analysis
+
 - Analyzed 20+ developer portfolios
 - Key differentiators: Performance, theme system, data management
 
 ### B. Technical Decisions
+
 - Next.js for SEO and performance
 - Cloudflare for global edge deployment
 - Framer Motion for professional animations
 - TypeScript for type safety
 
 ### C. References
+
 - [Cloudflare Pages Docs](https://developers.cloudflare.com/pages)
 - [Next.js Documentation](https://nextjs.org/docs)
 - [Web Performance Best Practices](https://web.dev/performance)
