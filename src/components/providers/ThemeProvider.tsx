@@ -33,7 +33,7 @@ export function ThemeProvider({
     setMounted(true)
   }, [])
 
-  // Add transition class to document for smooth theme changes
+  // Add transition class to document for smooth theme changes (event-based approach)
   useEffect(() => {
     if (mounted && enableTransitions) {
       const handleThemeChange = () => {
@@ -45,24 +45,34 @@ export function ThemeProvider({
         }, 300) // Match CSS transition duration
       }
 
-      // Listen for theme changes
-      const observer = new MutationObserver(mutations => {
-        mutations.forEach(mutation => {
-          if (
-            mutation.type === 'attributes' &&
-            mutation.attributeName === 'data-theme'
-          ) {
-            handleThemeChange()
-          }
-        })
-      })
+      // Listen for custom theme change events (more performant than MutationObserver)
+      const handleCustomThemeChange = (event: CustomEvent) => {
+        if (event.detail?.theme) {
+          handleThemeChange()
+        }
+      }
 
-      observer.observe(document.documentElement, {
-        attributes: true,
-        attributeFilter: ['data-theme'],
-      })
+      // Listen for storage changes (cross-tab theme synchronization)
+      const handleStorageChange = (event: StorageEvent) => {
+        if (event.key === 'cv-theme' && event.newValue !== event.oldValue) {
+          handleThemeChange()
+        }
+      }
 
-      return () => observer.disconnect()
+      // Add event listeners
+      window.addEventListener(
+        'themeChange',
+        handleCustomThemeChange as EventListener
+      )
+      window.addEventListener('storage', handleStorageChange)
+
+      return () => {
+        window.removeEventListener(
+          'themeChange',
+          handleCustomThemeChange as EventListener
+        )
+        window.removeEventListener('storage', handleStorageChange)
+      }
     }
     return undefined
   }, [mounted, enableTransitions])

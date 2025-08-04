@@ -67,7 +67,15 @@ export function ThemeSwitcher({
         return (
           <button
             key={id}
-            onClick={() => setTheme(id)}
+            onClick={() => {
+              setTheme(id)
+              // Dispatch custom event for theme change (performance optimization)
+              window.dispatchEvent(
+                new CustomEvent('themeChange', {
+                  detail: { theme: id, timestamp: Date.now() },
+                })
+              )
+            }}
             className={cn(
               'relative p-2 rounded-md transition-all duration-200',
               'hover:bg-[var(--color-surface-hover)] focus:outline-none',
