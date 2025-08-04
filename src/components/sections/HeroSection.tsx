@@ -1,7 +1,18 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { MapPin, Mail, Phone, Linkedin, Github, Download } from 'lucide-react'
+import {
+  MapPin,
+  Mail,
+  Phone,
+  Linkedin,
+  Github,
+  Download,
+  Zap,
+  Users,
+  Shield,
+  Cpu,
+} from 'lucide-react'
 import { CVData } from '@/types'
 
 interface HeroSectionProps {
@@ -78,7 +89,7 @@ export default function HeroSection({ data }: HeroSectionProps) {
               {contactLinks.map((contact, index) => {
                 const IconComponent = contact.icon
                 const content = (
-                  <div className="flex items-center space-x-3 p-2.5 rounded-lg bg-[var(--surface)]/50 hover:bg-[var(--primary)] hover:text-white transition-all duration-200 group border border-[var(--primary)]/10">
+                  <div className="flex items-center space-x-3 p-2.5 rounded-lg bg-[var(--surface)]/50 hover:bg-[var(--primary)] hover:text-white transition-all duration-200 group border border-[var(--color-border)]">
                     <IconComponent
                       size={18}
                       className="text-[var(--primary)] group-hover:text-white flex-shrink-0"
@@ -120,14 +131,14 @@ export default function HeroSection({ data }: HeroSectionProps) {
             >
               <button
                 onClick={handleDownloadPDF}
-                className="flex items-center justify-center space-x-2 px-6 py-3 bg-[var(--primary)] text-white rounded-lg hover:bg-[var(--secondary)] transition-all duration-200 font-semibold"
+                className="flex items-center justify-center space-x-2 px-6 py-3 bg-[var(--color-primary)] text-[var(--color-text-inverse)] rounded-lg hover:bg-[var(--color-primary-hover)] transition-all duration-200 font-semibold"
               >
                 <Download size={20} />
                 <span>Download CV</span>
               </button>
               <a
                 href="#contact"
-                className="flex items-center justify-center px-6 py-3 border-2 border-[var(--primary)] text-[var(--primary)] rounded-lg hover:bg-[var(--primary)] hover:text-white transition-all duration-200 font-semibold"
+                className="flex items-center justify-center px-6 py-3 border-2 border-[var(--color-primary)] text-[var(--color-primary)] rounded-lg hover:bg-[var(--color-primary)] hover:text-[var(--color-text-inverse)] transition-all duration-200 font-semibold"
               >
                 Let&apos;s Connect
               </a>
@@ -141,33 +152,61 @@ export default function HeroSection({ data }: HeroSectionProps) {
             transition={{ duration: 0.6, delay: 0.3 }}
             className="lg:col-span-2 space-y-3"
           >
-            {achievements.map((achievement, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: 0.5 + index * 0.1 }}
-                className="p-4 rounded-lg bg-[var(--surface)]/60 hover:bg-[var(--surface)] border border-[var(--primary)]/10 hover:border-[var(--primary)]/30 transition-all duration-300 group"
-              >
-                <div className="flex items-start space-x-3">
-                  <div className="p-1.5 rounded-md bg-[var(--primary)]/10 text-[var(--primary)] group-hover:bg-[var(--primary)] group-hover:text-white transition-all duration-200">
-                    {/* Icon placeholder - will be replaced with actual icons */}
-                    <div className="w-4 h-4 bg-current rounded opacity-60"></div>
+            {achievements.map((achievement, index) => {
+              // Map achievement titles to appropriate icons
+              const getAchievementIcon = (title: string) => {
+                if (
+                  title.toLowerCase().includes('platform') ||
+                  title.toLowerCase().includes('integration')
+                )
+                  return Users
+                if (
+                  title.toLowerCase().includes('monitoring') ||
+                  title.toLowerCase().includes('cloud')
+                )
+                  return Zap
+                if (
+                  title.toLowerCase().includes('infrastructure') ||
+                  title.toLowerCase().includes('code')
+                )
+                  return Cpu
+                if (
+                  title.toLowerCase().includes('security') ||
+                  title.toLowerCase().includes('devsecops')
+                )
+                  return Shield
+                return Zap // Default icon
+              }
+
+              const IconComponent = getAchievementIcon(achievement.title)
+
+              return (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 0.5 + index * 0.1 }}
+                  className="p-4 rounded-lg bg-[var(--surface)]/60 hover:bg-[var(--surface)] border border-[var(--color-border)] hover:border-[var(--color-primary)]/30 transition-all duration-300 group"
+                >
+                  <div className="flex items-start space-x-3">
+                    <div className="p-1.5 rounded-md bg-[var(--primary)]/10 text-[var(--primary)] group-hover:bg-[var(--primary)] group-hover:text-white transition-all duration-200">
+                      <IconComponent size={16} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-[var(--text)] mb-1 text-xs group-hover:text-[var(--primary)] transition-colors">
+                        {achievement.title}
+                      </h3>
+                      <p className="text-xs text-[var(--text-muted)] mb-1 leading-tight">
+                        {achievement.description}
+                      </p>
+                      <p className="text-xs text-[var(--primary)] font-medium">
+                        {achievement.impact}
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-[var(--text)] mb-1 text-xs group-hover:text-[var(--primary)] transition-colors">
-                      {achievement.title}
-                    </h3>
-                    <p className="text-xs text-[var(--text-muted)] mb-1 leading-tight">
-                      {achievement.description}
-                    </p>
-                    <p className="text-xs text-[var(--primary)] font-medium">
-                      {achievement.impact}
-                    </p>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
+                </motion.div>
+              )
+            })}
           </motion.div>
         </div>
       </div>

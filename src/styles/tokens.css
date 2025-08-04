@@ -3,7 +3,7 @@
 :root {
   /* Color Primitives - Base Palette */
 
-  /* Primary Scale */
+  /* Primary Scale - Professional Blue */
   --primary-50: #eff6ff;
   --primary-100: #dbeafe;
   --primary-200: #bfdbfe;
@@ -203,9 +203,9 @@
 
   /* Animation Durations */
   --duration-instant: 0ms;
-  --duration-fast: 150ms;
-  --duration-normal: 300ms;
-  --duration-slow: 500ms;
+  --duration-fast: 100ms;
+  --duration-normal: 150ms;
+  --duration-slow: 250ms;
 
   /* Animation Easing */
   --ease-linear: linear;
@@ -375,66 +375,66 @@
 
 /* High Contrast Theme */
 [data-theme='high-contrast'] {
-  /* Semantic Color Tokens - High Contrast Theme */
-  --color-primary: #0000ff;
-  --color-primary-hover: #0000cc;
-  --color-primary-active: #000099;
-  --color-primary-subtle: #f0f0ff;
-  --color-primary-muted: #e6e6ff;
+  /* Semantic Color Tokens - High Contrast Theme (Professional high contrast) */
+  --color-primary: #4a90e2;
+  --color-primary-hover: #357abd;
+  --color-primary-active: #2968a3;
+  --color-primary-subtle: #000000;
+  --color-primary-muted: #1a1a1a;
 
-  --color-secondary: #008080;
-  --color-secondary-hover: #006666;
-  --color-secondary-active: #004d4d;
-  --color-secondary-subtle: #f0ffff;
-  --color-secondary-muted: #e6ffff;
+  --color-secondary: #50c8a3;
+  --color-secondary-hover: #3eb892;
+  --color-secondary-active: #359f7e;
+  --color-secondary-subtle: #000000;
+  --color-secondary-muted: #1a1a1a;
 
-  --color-accent: #800080;
-  --color-accent-hover: #660066;
-  --color-accent-active: #4d004d;
-  --color-accent-subtle: #fff0ff;
-  --color-accent-muted: #ffe6ff;
+  --color-accent: #f5a623;
+  --color-accent-hover: #e8951c;
+  --color-accent-active: #d18516;
+  --color-accent-subtle: #000000;
+  --color-accent-muted: #1a1a1a;
 
-  /* Surface & Background */
-  --color-background: #ffffff;
-  --color-background-subtle: #f8f8f8;
-  --color-background-muted: #f0f0f0;
+  /* Surface & Background - Pure black backgrounds */
+  --color-background: #000000;
+  --color-background-subtle: #1a1a1a;
+  --color-background-muted: #2d2d2d;
 
-  --color-surface: #ffffff;
-  --color-surface-subtle: #f8f8f8;
-  --color-surface-muted: #f0f0f0;
-  --color-surface-hover: #f0f0f0;
-  --color-surface-active: #e8e8e8;
+  --color-surface: #000000;
+  --color-surface-subtle: #1a1a1a;
+  --color-surface-muted: #2d2d2d;
+  --color-surface-hover: #333333;
+  --color-surface-active: #404040;
 
-  /* Text Colors */
-  --color-text: #000000;
-  --color-text-subtle: #333333;
-  --color-text-muted: #666666;
-  --color-text-disabled: #999999;
-  --color-text-placeholder: #777777;
-  --color-text-inverse: #ffffff;
+  /* Text Colors - Pure white text */
+  --color-text: #ffffff;
+  --color-text-subtle: #e6e6e6;
+  --color-text-muted: #cccccc;
+  --color-text-disabled: #808080;
+  --color-text-placeholder: #999999;
+  --color-text-inverse: #000000;
 
-  /* Border Colors */
-  --color-border: #000000;
-  --color-border-subtle: #333333;
-  --color-border-muted: #666666;
-  --color-border-strong: #000000;
+  /* Border Colors - More subtle borders */
+  --color-border: #666666;
+  --color-border-subtle: #444444;
+  --color-border-muted: #555555;
+  --color-border-strong: #888888;
 
-  /* State Colors */
-  --color-success: #008000;
-  --color-success-subtle: #f0fff0;
-  --color-success-muted: #e6ffe6;
+  /* State Colors - Professional state colors */
+  --color-success: #5cb85c;
+  --color-success-subtle: #000000;
+  --color-success-muted: #1a1a1a;
 
-  --color-warning: #ff8000;
-  --color-warning-subtle: #fff8f0;
-  --color-warning-muted: #fff0e6;
+  --color-warning: #f0ad4e;
+  --color-warning-subtle: #000000;
+  --color-warning-muted: #1a1a1a;
 
-  --color-error: #ff0000;
-  --color-error-subtle: #fff0f0;
-  --color-error-muted: #ffe6e6;
+  --color-error: #d9534f;
+  --color-error-subtle: #000000;
+  --color-error-muted: #1a1a1a;
 
-  /* Focus Ring */
-  --color-focus: #0000ff;
-  --color-focus-ring: #0000ff;
+  /* Focus Ring - Professional focus indicator */
+  --color-focus: #4a90e2;
+  --color-focus-ring: #4a90e2;
 
   /* Simple Variable Names (Compatibility with existing components) */
   --primary: var(--color-primary);

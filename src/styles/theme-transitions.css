@@ -1,0 +1,275 @@
+/**
+ * Theme Transition Animations
+ * 
+ * Provides smooth transitions between theme changes while respecting
+ * user accessibility preferences and maintaining performance.
+ */
+
+/* Theme transition class applied during theme switching - scoped for performance */
+.theme-transition {
+  transition-property:
+    background-color, border-color, color, fill, stroke, opacity, box-shadow;
+  transition-duration: var(--duration-normal, 300ms);
+  transition-timing-function: var(--ease-in-out, cubic-bezier(0.4, 0, 0.2, 1));
+}
+
+/* Apply transitions only to specific interactive elements for performance */
+.theme-transition button,
+.theme-transition [role='button'],
+.theme-transition a,
+.theme-transition input,
+.theme-transition textarea,
+.theme-transition select,
+.theme-transition svg,
+.theme-transition [data-icon],
+.theme-transition .icon {
+  transition-property:
+    background-color, border-color, color, fill, stroke, opacity, box-shadow;
+  transition-duration: var(--duration-normal, 300ms);
+  transition-timing-function: var(--ease-in-out, cubic-bezier(0.4, 0, 0.2, 1));
+}
+
+/* Specific transitions for common properties */
+.theme-transition {
+  /* Background transitions */
+  background-color: var(--color-background);
+  transition: background-color var(--duration-normal, 300ms)
+    var(--ease-in-out, cubic-bezier(0.4, 0, 0.2, 1));
+}
+
+/* Text color transitions */
+.theme-transition,
+.theme-transition h1,
+.theme-transition h2,
+.theme-transition h3,
+.theme-transition h4,
+.theme-transition h5,
+.theme-transition h6,
+.theme-transition p,
+.theme-transition span,
+.theme-transition div {
+  color: var(--color-text);
+  transition: color var(--duration-normal, 300ms)
+    var(--ease-in-out, cubic-bezier(0.4, 0, 0.2, 1));
+}
+
+/* Border color transitions */
+.theme-transition,
+.theme-transition *[class*='border'] {
+  border-color: var(--color-border);
+  transition: border-color var(--duration-normal, 300ms)
+    var(--ease-in-out, cubic-bezier(0.4, 0, 0.2, 1));
+}
+
+/* SVG and icon transitions */
+.theme-transition svg,
+.theme-transition [data-icon],
+.theme-transition .icon {
+  transition:
+    fill var(--duration-normal, 300ms)
+      var(--ease-in-out, cubic-bezier(0.4, 0, 0.2, 1)),
+    stroke var(--duration-normal, 300ms)
+      var(--ease-in-out, cubic-bezier(0.4, 0, 0.2, 1));
+}
+
+/* Component-specific transitions */
+
+/* Button transitions */
+.theme-transition button,
+.theme-transition [role='button'] {
+  transition:
+    background-color var(--duration-fast, 150ms)
+      var(--ease-in-out, cubic-bezier(0.4, 0, 0.2, 1)),
+    border-color var(--duration-fast, 150ms)
+      var(--ease-in-out, cubic-bezier(0.4, 0, 0.2, 1)),
+    color var(--duration-fast, 150ms)
+      var(--ease-in-out, cubic-bezier(0.4, 0, 0.2, 1));
+}
+
+/* Input and form element transitions */
+.theme-transition input,
+.theme-transition textarea,
+.theme-transition select {
+  transition:
+    background-color var(--duration-normal, 300ms)
+      var(--ease-in-out, cubic-bezier(0.4, 0, 0.2, 1)),
+    border-color var(--duration-normal, 300ms)
+      var(--ease-in-out, cubic-bezier(0.4, 0, 0.2, 1)),
+    color var(--duration-normal, 300ms)
+      var(--ease-in-out, cubic-bezier(0.4, 0, 0.2, 1));
+}
+
+/* Card and surface element transitions */
+.theme-transition [class*='card'],
+.theme-transition [class*='surface'],
+.theme-transition [data-surface] {
+  background-color: var(--color-surface);
+  transition:
+    background-color var(--duration-normal, 300ms)
+      var(--ease-in-out, cubic-bezier(0.4, 0, 0.2, 1)),
+    box-shadow var(--duration-normal, 300ms)
+      var(--ease-in-out, cubic-bezier(0.4, 0, 0.2, 1));
+}
+
+/* Navigation and header transitions */
+.theme-transition nav,
+.theme-transition header,
+.theme-transition [role='navigation'] {
+  background-color: var(--color-surface);
+  transition:
+    background-color var(--duration-normal, 300ms)
+      var(--ease-in-out, cubic-bezier(0.4, 0, 0.2, 1)),
+    backdrop-filter var(--duration-normal, 300ms)
+      var(--ease-in-out, cubic-bezier(0.4, 0, 0.2, 1));
+}
+
+/* Code block transitions */
+.theme-transition pre,
+.theme-transition code,
+.theme-transition [class*='code'] {
+  background-color: var(--color-surface-muted);
+  color: var(--color-text);
+  transition:
+    background-color var(--duration-normal, 300ms)
+      var(--ease-in-out, cubic-bezier(0.4, 0, 0.2, 1)),
+    color var(--duration-normal, 300ms)
+      var(--ease-in-out, cubic-bezier(0.4, 0, 0.2, 1));
+}
+
+/* Focus ring transitions */
+.theme-transition *:focus-visible {
+  outline-color: var(--color-focus-ring);
+  transition: outline-color var(--duration-fast, 150ms)
+    var(--ease-in-out, cubic-bezier(0.4, 0, 0.2, 1));
+}
+
+/* Selection color transitions */
+.theme-transition ::selection {
+  background-color: var(--color-primary-subtle);
+  transition: background-color var(--duration-normal, 300ms)
+    var(--ease-in-out, cubic-bezier(0.4, 0, 0.2, 1));
+}
+
+/* Scrollbar transitions (webkit browsers) */
+.theme-transition ::-webkit-scrollbar-track {
+  background-color: var(--color-surface);
+  transition: background-color var(--duration-normal, 300ms)
+    var(--ease-in-out, cubic-bezier(0.4, 0, 0.2, 1));
+}
+
+.theme-transition ::-webkit-scrollbar-thumb {
+  background-color: var(--color-border-muted);
+  transition: background-color var(--duration-normal, 300ms)
+    var(--ease-in-out, cubic-bezier(0.4, 0, 0.2, 1));
+}
+
+/* Theme-specific optimizations */
+
+/* High contrast theme - instant transitions for better UX */
+[data-theme='high-contrast'] .theme-transition,
+[data-theme='high-contrast'] .theme-transition button,
+[data-theme='high-contrast'] .theme-transition [role='button'],
+[data-theme='high-contrast'] .theme-transition a,
+[data-theme='high-contrast'] .theme-transition input,
+[data-theme='high-contrast'] .theme-transition textarea,
+[data-theme='high-contrast'] .theme-transition select,
+[data-theme='high-contrast'] .theme-transition svg {
+  transition-duration: var(--duration-fast, 150ms);
+}
+
+/* Performance optimizations */
+
+/* Use transform3d to enable hardware acceleration for theme transitions */
+.theme-transition {
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Disable transitions on first load to prevent flashing - scoped for performance */
+.preload,
+.preload button,
+.preload [role='button'],
+.preload a,
+.preload input,
+.preload textarea,
+.preload select,
+.preload svg {
+  transition: none !important;
+}
+
+/* Remove preload class after DOM is ready */
+@media (prefers-reduced-motion: no-preference) {
+  html:not(.preload) .theme-transition {
+    transition-property:
+      background-color, border-color, color, fill, stroke, opacity, box-shadow;
+  }
+}
+
+/* Respect reduced motion preference - scoped for performance */
+@media (prefers-reduced-motion: reduce) {
+  .theme-transition,
+  .theme-transition button,
+  .theme-transition [role='button'],
+  .theme-transition a,
+  .theme-transition input,
+  .theme-transition textarea,
+  .theme-transition select,
+  .theme-transition svg,
+  .theme-transition [data-icon],
+  .theme-transition .icon {
+    transition-duration: 0ms !important;
+    animation-duration: 0ms !important;
+  }
+}
+
+/* Dark theme specific adjustments */
+[data-theme='dark'] .theme-transition {
+  color-scheme: dark;
+}
+
+[data-theme='light'] .theme-transition {
+  color-scheme: light;
+}
+
+[data-theme='high-contrast'] .theme-transition {
+  color-scheme: light; /* High contrast typically works better with light color scheme */
+}
+
+/* Smooth backdrop-filter transitions for glass effects */
+.theme-transition [class*='backdrop'],
+.theme-transition [data-backdrop] {
+  transition:
+    backdrop-filter var(--duration-normal, 300ms)
+      var(--ease-in-out, cubic-bezier(0.4, 0, 0.2, 1)),
+    background-color var(--duration-normal, 300ms)
+      var(--ease-in-out, cubic-bezier(0.4, 0, 0.2, 1));
+}
+
+/* Utility classes for manual transition control */
+.theme-transition-instant {
+  transition-duration: 0ms !important;
+}
+
+.theme-transition-fast {
+  transition-duration: var(--duration-fast, 150ms) !important;
+}
+
+.theme-transition-slow {
+  transition-duration: var(--duration-slow, 500ms) !important;
+}
+
+/* Fade effect during theme switches */
+@keyframes theme-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.theme-fade-in {
+  animation: theme-fade-in var(--duration-normal, 300ms)
+    var(--ease-out, cubic-bezier(0, 0, 0.2, 1));
+}

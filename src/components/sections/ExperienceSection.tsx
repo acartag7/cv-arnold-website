@@ -52,7 +52,7 @@ export default function ExperienceSection({ data }: ExperienceSectionProps) {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
                 viewport={{ once: true }}
-                className="bg-[var(--background)] rounded-xl p-6 lg:p-8 shadow-sm hover:shadow-md transition-all duration-300 print-break-inside-avoid"
+                className="bg-[var(--background)] rounded-xl p-6 lg:p-8 border border-[var(--color-border)] shadow-sm hover:shadow-md hover:border-[var(--color-primary)]/30 transition-all duration-300 print-break-inside-avoid"
               >
                 {/* Header */}
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-6">

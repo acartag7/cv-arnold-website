@@ -1,0 +1,193 @@
+/**
+ * Theme Improvements
+ * 
+ * Specific styling improvements for better button appearance
+ * and overall visual clarity across all themes, with special
+ * focus on high-contrast mode.
+ */
+
+/* Global theme switcher improvements for all themes */
+.theme-switcher button {
+  border: 1px solid transparent !important;
+  transition: all 0.15s ease !important;
+  position: relative !important;
+  border-radius: 0.375rem !important;
+  background-color: transparent !important;
+}
+
+.theme-switcher button:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+  background-color: var(--color-surface-hover) !important;
+  border-color: var(--color-border-muted) !important;
+}
+
+.theme-switcher button:active {
+  transform: translateY(0px) !important;
+  transition: all 0.1s ease !important;
+  background-color: var(--color-surface-active) !important;
+  border-color: var(--color-border-strong) !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Active/pressed button state */
+.theme-switcher button[aria-pressed='true'] {
+  background-color: var(--color-primary) !important;
+  color: var(--color-text-inverse) !important;
+  border-color: var(--color-primary) !important;
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3) !important;
+}
+
+.theme-switcher button[aria-pressed='true']:hover {
+  background-color: var(--color-primary-hover) !important;
+  border-color: var(--color-primary-hover) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 8px rgba(59, 130, 246, 0.25) !important;
+}
+
+.theme-switcher button[aria-pressed='true']:active {
+  background-color: var(--color-primary-active) !important;
+  border-color: var(--color-primary-active) !important;
+  transform: translateY(0px) !important;
+  box-shadow: 0 1px 2px rgba(59, 130, 246, 0.4) !important;
+}
+
+/* Dark theme specific improvements */
+[data-theme='dark'] .theme-switcher button:hover {
+  box-shadow: 0 2px 4px rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-theme='dark'] .theme-switcher button:active {
+  box-shadow: 0 1px 2px rgba(255, 255, 255, 0.15) !important;
+}
+
+[data-theme='dark'] .theme-switcher button[aria-pressed='true'] {
+  box-shadow: 0 2px 4px rgba(96, 165, 250, 0.3) !important;
+}
+
+[data-theme='dark'] .theme-switcher button[aria-pressed='true']:hover {
+  box-shadow: 0 4px 8px rgba(96, 165, 250, 0.25) !important;
+}
+
+/* Button improvements for high-contrast theme */
+[data-theme='high-contrast'] {
+  /* Improve button focus rings */
+  button:focus {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+  }
+
+  /* Improve primary/accent button visibility */
+  button[class*='bg-'][class*='primary'],
+  button[style*='background-color'] {
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transition: all 0.15s ease;
+  }
+
+  /* Improve hover states for better feedback */
+  button:hover {
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-1px);
+  }
+
+  /* Improve active/click states */
+  button:active,
+  button[aria-pressed='true']:active {
+    transform: translateY(0px);
+    box-shadow: 0 1px 2px rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.7);
+    transition: all 0.1s ease;
+  }
+
+  /* Ensure text contrast on buttons */
+  button {
+    color: var(--color-text);
+  }
+
+  /* Improve Download CV and action button styling */
+  button[class*='bg-'],
+  a[class*='bg-'] {
+    box-shadow: 0 2px 4px rgba(255, 255, 255, 0.1);
+    transition: all 0.15s ease;
+  }
+
+  button[class*='bg-']:hover,
+  a[class*='bg-']:hover {
+    box-shadow: 0 4px 8px rgba(255, 255, 255, 0.15);
+    transform: translateY(-1px);
+  }
+
+  button[class*='bg-']:active,
+  a[class*='bg-']:active {
+    box-shadow: 0 1px 2px rgba(255, 255, 255, 0.2);
+    transform: translateY(0px);
+  }
+
+  /* Improve border visibility for cards and sections */
+  [class*='border'],
+  .card,
+  .section {
+    border-color: var(--color-border);
+  }
+
+  /* Improve theme switcher buttons specifically */
+  .theme-switcher button {
+    border: 1px solid transparent;
+    transition: all 0.15s ease;
+    position: relative;
+    border-radius: 0.375rem;
+  }
+
+  .theme-switcher button:hover {
+    border-color: var(--color-border);
+    background-color: var(--color-surface-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(255, 255, 255, 0.1);
+  }
+
+  .theme-switcher button:active {
+    transform: translateY(0px);
+    background-color: var(--color-surface-active);
+    border-color: var(--color-border-strong);
+    box-shadow: 0 1px 2px rgba(255, 255, 255, 0.15);
+    transition: all 0.1s ease;
+  }
+
+  .theme-switcher button[aria-pressed='true'] {
+    border-color: var(--color-primary);
+    background-color: var(--color-primary);
+    color: var(--color-text-inverse);
+    box-shadow: 0 2px 4px rgba(74, 144, 226, 0.4);
+  }
+
+  .theme-switcher button[aria-pressed='true']:hover {
+    background-color: var(--color-primary-hover);
+    border-color: var(--color-primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(74, 144, 226, 0.3);
+  }
+
+  .theme-switcher button[aria-pressed='true']:active {
+    background-color: var(--color-primary-active);
+    border-color: var(--color-primary-active);
+    transform: translateY(0px);
+    box-shadow: 0 1px 2px rgba(74, 144, 226, 0.5);
+    transition: all 0.1s ease;
+  }
+
+  /* Improve form elements if any */
+  input,
+  textarea,
+  select {
+    border-color: var(--color-border);
+    background-color: var(--color-surface);
+    color: var(--color-text);
+  }
+
+  input:focus,
+  textarea:focus,
+  select:focus {
+    border-color: var(--color-focus-ring);
+    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.3);
+  }
+}

@@ -103,7 +103,7 @@ export default function ContactSection({ data }: ContactSectionProps) {
                 {contactMethods.map((contact, index) => {
                   const IconComponent = contact.icon
                   const content = (
-                    <div className="flex items-center space-x-4 p-4 rounded-xl bg-[var(--background)]/60 hover:bg-[var(--background)] border border-[var(--primary)]/10 hover:border-[var(--primary)]/30 transition-all duration-300 group">
+                    <div className="flex items-center space-x-4 p-4 rounded-xl bg-[var(--background)]/60 hover:bg-[var(--background)] border border-[var(--color-border)] hover:border-[var(--color-primary)]/30 transition-all duration-300 group">
                       <div className="p-3 rounded-lg bg-[var(--primary)]/10 text-[var(--primary)] group-hover:bg-[var(--primary)] group-hover:text-white transition-all duration-200">
                         <IconComponent size={20} />
                       </div>
@@ -157,7 +157,7 @@ export default function ContactSection({ data }: ContactSectionProps) {
                       href={social.href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center space-x-4 p-4 rounded-xl bg-[var(--background)]/60 hover:bg-[var(--background)] border border-[var(--primary)]/10 hover:border-[var(--primary)]/30 transition-all duration-300 group"
+                      className="flex items-center space-x-4 p-4 rounded-xl bg-[var(--background)]/60 hover:bg-[var(--background)] border border-[var(--color-border)] hover:border-[var(--color-primary)]/30 transition-all duration-300 group"
                     >
                       <div className="p-3 rounded-lg bg-[var(--primary)]/10 text-[var(--primary)] group-hover:bg-[var(--primary)] group-hover:text-white transition-all duration-200">
                         <IconComponent size={20} />
@@ -188,7 +188,7 @@ export default function ContactSection({ data }: ContactSectionProps) {
             viewport={{ once: true }}
             className="space-y-8"
           >
-            <div className="p-8 rounded-xl bg-[var(--background)]/60 border border-[var(--primary)]/10">
+            <div className="p-8 rounded-xl bg-[var(--background)]/60 border border-[var(--color-border)]">
               <h3 className="text-xl font-semibold text-[var(--text)] mb-4">
                 Ready to Collaborate?
               </h3>
@@ -201,7 +201,7 @@ export default function ContactSection({ data }: ContactSectionProps) {
               <div className="space-y-4">
                 <a
                   href={`mailto:${personalInfo.email}?subject=Professional Inquiry&body=Hi Arnold,%0A%0AI'd like to discuss...`}
-                  className="flex items-center justify-center space-x-2 w-full px-6 py-3 bg-[var(--primary)] text-white rounded-lg hover:bg-[var(--secondary)] transition-all duration-200 font-semibold"
+                  className="flex items-center justify-center space-x-2 w-full px-6 py-3 bg-[var(--color-primary)] text-[var(--color-text-inverse)] rounded-lg hover:bg-[var(--color-primary-hover)] transition-all duration-200 font-semibold"
                 >
                   <Send size={18} />
                   <span>Send Message</span>
@@ -209,7 +209,7 @@ export default function ContactSection({ data }: ContactSectionProps) {
 
                 <button
                   onClick={handleDownloadPDF}
-                  className="flex items-center justify-center space-x-2 w-full px-6 py-3 border-2 border-[var(--primary)] text-[var(--primary)] rounded-lg hover:bg-[var(--primary)] hover:text-white transition-all duration-200 font-semibold"
+                  className="flex items-center justify-center space-x-2 w-full px-6 py-3 border-2 border-[var(--color-primary)] text-[var(--color-primary)] rounded-lg hover:bg-[var(--color-primary)] hover:text-[var(--color-text-inverse)] transition-all duration-200 font-semibold"
                 >
                   <Download size={18} />
                   <span>Download CV</span>
@@ -219,7 +219,7 @@ export default function ContactSection({ data }: ContactSectionProps) {
 
             {/* Quick Stats */}
             <div className="grid grid-cols-2 gap-4">
-              <div className="p-6 rounded-xl bg-[var(--background)]/60 border border-[var(--primary)]/10 text-center">
+              <div className="p-6 rounded-xl bg-[var(--background)]/60 border border-[var(--color-border)] text-center">
                 <div className="text-2xl font-bold text-[var(--primary)] mb-1">
                   8+
                 </div>
@@ -227,7 +227,7 @@ export default function ContactSection({ data }: ContactSectionProps) {
                   Years Experience
                 </div>
               </div>
-              <div className="p-6 rounded-xl bg-[var(--background)]/60 border border-[var(--primary)]/10 text-center">
+              <div className="p-6 rounded-xl bg-[var(--background)]/60 border border-[var(--color-border)] text-center">
                 <div className="text-2xl font-bold text-[var(--primary)] mb-1">
                   9
                 </div>

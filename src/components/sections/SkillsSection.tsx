@@ -78,7 +78,7 @@ export default function SkillsSection({}: SkillsSectionProps) {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: index * 0.1 }}
               viewport={{ once: true }}
-              className="p-6 rounded-xl bg-[var(--surface)]/60 hover:bg-[var(--surface)] border border-[var(--primary)]/10 hover:border-[var(--primary)]/30 transition-all duration-300 group"
+              className="p-6 rounded-xl bg-[var(--surface)]/60 hover:bg-[var(--surface)] border border-[var(--color-border)] hover:border-[var(--color-primary)]/30 transition-all duration-300 group"
             >
               <div className="flex items-center space-x-3 mb-4">
                 <div className={`w-3 h-3 rounded-full ${category.color}`}></div>
