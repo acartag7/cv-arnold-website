@@ -46,7 +46,6 @@ export function useTheme(): UseThemeReturn {
     theme: nextTheme,
     setTheme: nextSetTheme,
     themes: nextThemes,
-    systemTheme: nextSystemTheme,
     resolvedTheme: nextResolvedTheme,
   } = useNextTheme()
 
