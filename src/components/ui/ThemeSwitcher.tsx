@@ -24,7 +24,7 @@ export function ThemeSwitcher({
   className,
   showLabels = false,
 }: ThemeSwitcherProps) {
-  const { setTheme, resolvedTheme, isLoading, isSystemTheme } = useTheme()
+  const { setTheme, resolvedTheme, isLoading } = useTheme()
 
   if (isLoading) {
     return (

@@ -179,7 +179,6 @@ export const themeClasses = {
   getTextClasses: (
     variant: 'default' | 'muted' | 'subtle' = 'default'
   ): string => {
-    const theme = getCurrentTheme()
     const baseClasses = 'transition-colors duration-200'
 
     switch (variant) {
@@ -272,7 +271,8 @@ export const themeA11y = {
   /**
    * Ensures sufficient color contrast for accessibility
    */
-  ensureContrast: (foreground: string, background: string): boolean => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  ensureContrast: (_foreground: string, _background: string): boolean => {
     // This is a simplified implementation
     // In a production app, you might want to use a proper contrast calculation library
     if (typeof window === 'undefined') return true
