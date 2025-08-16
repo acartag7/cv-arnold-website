@@ -45,6 +45,14 @@ export function useBreakpoint(): UseBreakpointResult {
     return getCurrentBreakpoint(getWindowWidth())
   })
 
+  const [currentWidth, setCurrentWidth] = useState(() => {
+    // SSR-safe width initialization
+    if (typeof window === 'undefined') {
+      return 375 // Mobile-first default width
+    }
+    return getWindowWidth()
+  })
+
   const [isHydrated, setIsHydrated] = useState<boolean>(
     typeof window !== 'undefined'
   )
@@ -64,6 +72,11 @@ export function useBreakpoint(): UseBreakpointResult {
       setCurrent(prevCurrent => {
         // Only update if breakpoint actually changed
         return prevCurrent !== newBreakpoint ? newBreakpoint : prevCurrent
+      })
+
+      // Update cached width for utility functions
+      setCurrentWidth(prevWidth => {
+        return prevWidth !== width ? width : prevWidth
       })
     }, 16) // ~60fps debouncing
   }, [])
@@ -105,17 +118,15 @@ export function useBreakpoint(): UseBreakpointResult {
     }
   }, [handleResize])
 
-  // Utility functions with current width caching
-  const getCurrentWidth = useCallback(() => getWindowWidth(), [])
-
+  // Utility functions using cached width for optimal performance
   const isAbove = useCallback(
     (breakpoint: BreakpointKey): boolean => {
       if (!isHydrated) {
         return false // Mobile-first SSR default
       }
-      return isAboveBreakpoint(getCurrentWidth(), breakpoint)
+      return isAboveBreakpoint(currentWidth, breakpoint)
     },
-    [isHydrated, getCurrentWidth]
+    [isHydrated, currentWidth]
   )
 
   const isBelow = useCallback(
@@ -123,9 +134,9 @@ export function useBreakpoint(): UseBreakpointResult {
       if (!isHydrated) {
         return true // Mobile-first SSR default
       }
-      return isBelowBreakpoint(getCurrentWidth(), breakpoint)
+      return isBelowBreakpoint(currentWidth, breakpoint)
     },
-    [isHydrated, getCurrentWidth]
+    [isHydrated, currentWidth]
   )
 
   const isBetween = useCallback(
@@ -133,9 +144,9 @@ export function useBreakpoint(): UseBreakpointResult {
       if (!isHydrated) {
         return false // Conservative SSR default
       }
-      return isBetweenBreakpoints(getCurrentWidth(), min, max)
+      return isBetweenBreakpoints(currentWidth, min, max)
     },
-    [isHydrated, getCurrentWidth]
+    [isHydrated, currentWidth]
   )
 
   const isOnly = useCallback(
@@ -143,9 +154,9 @@ export function useBreakpoint(): UseBreakpointResult {
       if (!isHydrated) {
         return false // Conservative SSR default
       }
-      return isOnlyBreakpoint(getCurrentWidth(), breakpoint)
+      return isOnlyBreakpoint(currentWidth, breakpoint)
     },
-    [isHydrated, getCurrentWidth]
+    [isHydrated, currentWidth]
   )
 
   return {
