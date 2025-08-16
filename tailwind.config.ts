@@ -125,6 +125,14 @@ const config: Config = {
         extrabold: 'var(--font-weight-extrabold)',
         black: 'var(--font-weight-black)',
       },
+      letterSpacing: {
+        tighter: 'var(--letter-spacing-tighter)',
+        tight: 'var(--letter-spacing-tight)',
+        normal: 'var(--letter-spacing-normal)',
+        wide: 'var(--letter-spacing-wide)',
+        wider: 'var(--letter-spacing-wider)',
+        widest: 'var(--letter-spacing-widest)',
+      },
       spacing: {
         0: 'var(--space-0)',
         1: 'var(--space-1)',

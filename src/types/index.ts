@@ -65,3 +65,6 @@ export * from './design-tokens'
 
 // Responsive system types
 export * from './responsive'
+
+// Typography system types
+export * from './typography'
