@@ -13,11 +13,13 @@ interface ErrorBoundaryProps {
   children: ReactNode
   fallback?: ReactNode
   showError?: boolean
+  onError?: (error: Error, errorInfo: ErrorInfo) => void
 }
 
 interface ErrorBoundaryState {
   hasError: boolean
   error?: Error
+  errorInfo?: ErrorInfo
 }
 
 export class ErrorBoundary extends Component<
@@ -34,12 +36,31 @@ export class ErrorBoundary extends Component<
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    // Log error for debugging (only in development)
+    // Store error info for detailed reporting
+    this.setState({ errorInfo })
+
+    // Call optional error handler
+    this.props.onError?.(error, errorInfo)
+
+    // Enhanced error logging for debugging
     if (process.env.NODE_ENV === 'development') {
       console.group('🚨 Component Error Boundary')
       console.error('Error caught by boundary:', error)
-      console.error('Error info:', errorInfo)
+      console.error('Component stack trace:', errorInfo.componentStack)
+      console.error('Error stack trace:', error.stack)
       console.groupEnd()
+
+      // Log additional context
+      console.table({
+        'Error Message': error.message,
+        'Error Name': error.name,
+        Component:
+          errorInfo.componentStack?.split('\n')[1]?.trim() || 'Unknown',
+        Time: new Date().toISOString(),
+      })
+    } else {
+      // Production error reporting (could integrate with service like Sentry)
+      console.error('Component error:', error.message)
     }
   }
 
@@ -59,12 +80,24 @@ export class ErrorBoundary extends Component<
               Something went wrong rendering this component.
             </Typography>
             {this.props.showError && this.state.error && (
-              <Typography
-                variant="caption"
-                className="text-red-500 font-mono text-xs"
-              >
-                {this.state.error.message}
-              </Typography>
+              <div className="mt-4 p-3 bg-red-100 border border-red-300 rounded">
+                <Typography
+                  variant="caption"
+                  className="text-red-700 font-mono text-xs block mb-2"
+                >
+                  <strong>Error:</strong> {this.state.error.message}
+                </Typography>
+                {this.state.errorInfo && (
+                  <details className="text-xs text-red-600">
+                    <summary className="cursor-pointer font-semibold mb-1">
+                      Stack Trace
+                    </summary>
+                    <pre className="whitespace-pre-wrap text-xs overflow-x-auto">
+                      {this.state.error.stack}
+                    </pre>
+                  </details>
+                )}
+              </div>
             )}
           </div>
         </Card>

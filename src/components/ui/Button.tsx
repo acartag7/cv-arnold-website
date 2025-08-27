@@ -190,17 +190,46 @@ const buttonUtils = {
   },
 }
 
-// Cache for class name combinations with size limit
-const MAX_CACHE_SIZE = 100
+// Cache for class name combinations with configurable size limit
+const MAX_CACHE_SIZE = process.env.NEXT_PUBLIC_COMPONENT_CACHE_SIZE
+  ? parseInt(process.env.NEXT_PUBLIC_COMPONENT_CACHE_SIZE, 10)
+  : 100
 const classCache = new Map<string, string>()
+
+// Performance monitoring for cache
+const cacheStats = {
+  hits: 0,
+  misses: 0,
+  evictions: 0,
+}
 
 const addToCache = (key: string, value: string) => {
   if (classCache.size >= MAX_CACHE_SIZE) {
     // Remove oldest entries (first inserted)
     const firstKey = classCache.keys().next().value
-    if (firstKey) classCache.delete(firstKey)
+    if (firstKey) {
+      classCache.delete(firstKey)
+      cacheStats.evictions++
+    }
   }
   classCache.set(key, value)
+}
+
+const getCacheStats = () => {
+  const hitRate =
+    cacheStats.hits + cacheStats.misses > 0
+      ? (
+          (cacheStats.hits / (cacheStats.hits + cacheStats.misses)) *
+          100
+        ).toFixed(2)
+      : 0
+
+  return {
+    ...cacheStats,
+    size: classCache.size,
+    maxSize: MAX_CACHE_SIZE,
+    hitRate: `${hitRate}%`,
+  }
 }
 
 // Main Button component with polymorphic support
@@ -273,8 +302,11 @@ const ButtonComponent = forwardRef<
     // Build CSS classes with caching
     const classes = useMemo(() => {
       if (classCache.has(cacheKey)) {
+        cacheStats.hits++
         return cn(classCache.get(cacheKey)!, className)
       }
+
+      cacheStats.misses++
 
       const baseClasses = cn(
         // Base button styles
@@ -496,7 +528,17 @@ export const buttonUtilsExport = {
   /**
    * Clear the class cache (useful for testing)
    */
-  clearCache: () => classCache.clear(),
+  clearCache: () => {
+    classCache.clear()
+    cacheStats.hits = 0
+    cacheStats.misses = 0
+    cacheStats.evictions = 0
+  },
+
+  /**
+   * Get cache performance statistics
+   */
+  getCacheStats,
 } as const
 
 export default Button

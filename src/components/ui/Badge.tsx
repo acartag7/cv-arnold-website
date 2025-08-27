@@ -104,8 +104,10 @@ const BADGE_SIZES: Record<BadgeSize, BadgeSizeConfig> = {
   },
 }
 
-// Cache for class name combinations with size limit
-const MAX_CACHE_SIZE = 100
+// Cache for class name combinations with configurable size limit
+const MAX_CACHE_SIZE = process.env.NEXT_PUBLIC_COMPONENT_CACHE_SIZE
+  ? parseInt(process.env.NEXT_PUBLIC_COMPONENT_CACHE_SIZE, 10)
+  : 100
 const classCache = new Map<string, string>()
 
 const addToCache = (key: string, value: string) => {
