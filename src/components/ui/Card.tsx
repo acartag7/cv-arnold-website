@@ -78,8 +78,18 @@ const CARD_PADDING: Record<CardPadding, string> = {
   lg: 'p-8',
 }
 
-// Cache for class name combinations to improve performance
+// Cache for class name combinations with size limit
+const MAX_CACHE_SIZE = 100
 const classCache = new Map<string, string>()
+
+const addToCache = (key: string, value: string) => {
+  if (classCache.size >= MAX_CACHE_SIZE) {
+    // Remove oldest entries (first inserted)
+    const firstKey = classCache.keys().next().value
+    if (firstKey) classCache.delete(firstKey)
+  }
+  classCache.set(key, value)
+}
 
 // Main Card component with polymorphic support
 const CardComponent = forwardRef<HTMLElement, CardComponentProps<ElementType>>(
@@ -153,7 +163,7 @@ const CardComponent = forwardRef<HTMLElement, CardComponentProps<ElementType>>(
         'forced-colors:bg-[Canvas]'
       )
 
-      classCache.set(cacheKey, baseClasses)
+      addToCache(cacheKey, baseClasses)
       return cn(baseClasses, className)
     }, [
       cacheKey,

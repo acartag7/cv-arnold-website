@@ -17,6 +17,7 @@ import {
   Badge,
   Stack,
 } from '@/components/ui'
+import { ErrorBoundary } from '@/components/common/ErrorBoundary'
 
 interface PropDoc {
   name: string
@@ -135,7 +136,18 @@ export function ComponentShowcase({
                   {/* Component Preview */}
                   <div className="border border-semantic-border rounded-lg p-8 mb-6 bg-semantic-surface">
                     <div className="flex items-center justify-center min-h-32">
-                      {examples[activeExample].component}
+                      <ErrorBoundary
+                        fallback={
+                          <div className="text-center text-red-600">
+                            <Typography variant="body2">
+                              Example failed to render
+                            </Typography>
+                          </div>
+                        }
+                        showError={process.env.NODE_ENV === 'development'}
+                      >
+                        {examples[activeExample].component}
+                      </ErrorBoundary>
                     </div>
                   </div>
 
