@@ -204,11 +204,19 @@ const FONT_FAMILY_CLASSES: Record<FontFamily, string> = {
   mono: 'font-mono',
 }
 
+// Cache for fluid typography calculations to improve performance
+const fluidSizeCache = new Map<TypographySize, string>()
+
 /**
  * Generate fluid typography using CSS clamp()
- * Provides smooth scaling between breakpoints
+ * Provides smooth scaling between breakpoints with performance optimization
  */
 function generateFluidSize(size: TypographySize): string {
+  // Return cached value if available
+  if (fluidSizeCache.has(size)) {
+    return fluidSizeCache.get(size)!
+  }
+
   const sizeConfigs = {
     xs: { min: 12, max: 12 },
     sm: { min: 14, max: 14 },
@@ -232,7 +240,11 @@ function generateFluidSize(size: TypographySize): string {
   const slope = (maxRem - minRem) / (maxVw - minVw)
   const intersection = -minVw * slope + minRem
 
-  return `clamp(${minRem}rem, ${intersection.toFixed(4)}rem + ${(slope * 100).toFixed(4)}vw, ${maxRem}rem)`
+  const result = `clamp(${minRem}rem, ${intersection.toFixed(4)}rem + ${(slope * 100).toFixed(4)}vw, ${maxRem}rem)`
+
+  // Cache the result for future use
+  fluidSizeCache.set(size, result)
+  return result
 }
 
 // Forward ref component with proper typing
@@ -303,6 +315,39 @@ const TypographyComponent = forwardRef<
           )
         : undefined
 
+    // Development-time validation for type safety
+    if (process.env.NODE_ENV === 'development') {
+      if (!SIZE_CLASSES[resolvedSize as TypographySize]) {
+        console.warn(`Invalid typography size: ${resolvedSize}`)
+      }
+      if (!WEIGHT_CLASSES[resolvedWeight as FontWeight]) {
+        console.warn(`Invalid typography weight: ${resolvedWeight}`)
+      }
+      if (!LINE_HEIGHT_CLASSES[resolvedLineHeight as LineHeight]) {
+        console.warn(`Invalid typography line height: ${resolvedLineHeight}`)
+      }
+      if (!LETTER_SPACING_CLASSES[resolvedLetterSpacing as LetterSpacing]) {
+        console.warn(
+          `Invalid typography letter spacing: ${resolvedLetterSpacing}`
+        )
+      }
+      if (!FONT_FAMILY_CLASSES[resolvedFamily as FontFamily]) {
+        console.warn(`Invalid typography font family: ${resolvedFamily}`)
+      }
+      if (!TEXT_COLOR_CLASSES[resolvedColor as TextColor]) {
+        console.warn(`Invalid typography color: ${resolvedColor}`)
+      }
+      if (resolvedAlign && !TEXT_ALIGN_CLASSES[resolvedAlign as TextAlign]) {
+        console.warn(`Invalid typography align: ${resolvedAlign}`)
+      }
+      if (
+        resolvedTransform &&
+        !TEXT_TRANSFORM_CLASSES[resolvedTransform as TextTransform]
+      ) {
+        console.warn(`Invalid typography transform: ${resolvedTransform}`)
+      }
+    }
+
     // Build CSS classes
     const classes = cn(
       // Base typography classes
@@ -323,12 +368,7 @@ const TypographyComponent = forwardRef<
       overflow === 'ellipsis' && 'text-ellipsis',
 
       // Line clamping for multi-line truncation
-      maxLines && [
-        'overflow-hidden',
-        'display-box',
-        'box-orient-vertical',
-        `line-clamp-${maxLines}`,
-      ],
+      maxLines && `line-clamp-${maxLines}`,
 
       // Decoration
       decoration === 'underline' && 'underline',

@@ -1,7 +1,7 @@
 'use client'
 
 import { useTheme } from '@/hooks/useTheme'
-import { Moon, Sun, Contrast } from 'lucide-react'
+import { Moon, Sun } from 'lucide-react'
 import { cn } from '@/utils/cn'
 import type { ThemeVariant } from '@/types/design-tokens'
 
@@ -11,7 +11,7 @@ interface ThemeSwitcherProps {
 }
 
 /**
- * Theme switcher component for changing between light, dark, and high-contrast themes
+ * Theme switcher component for changing between light and dark themes
  *
  * Features:
  * - Visual icons for each theme option
@@ -31,7 +31,6 @@ export function ThemeSwitcher({
       <div className={cn('flex items-center space-x-2', className)}>
         <div className="w-8 h-8 rounded-md bg-gray-200 animate-pulse" />
         <div className="w-8 h-8 rounded-md bg-gray-200 animate-pulse" />
-        <div className="w-8 h-8 rounded-md bg-gray-200 animate-pulse" />
       </div>
     )
   }
@@ -48,12 +47,6 @@ export function ThemeSwitcher({
       label: 'Dark',
       icon: Moon,
       description: 'Dark theme',
-    },
-    {
-      id: 'high-contrast' as ThemeVariant,
-      label: 'High Contrast',
-      icon: Contrast,
-      description: 'High contrast theme',
     },
   ]
 
