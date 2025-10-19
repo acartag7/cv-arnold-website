@@ -1,0 +1,43 @@
+# Cloudflare Workers configuration for CV Arnold Website
+# https://developers.cloudflare.com/workers/configuration/
+
+name = "cv-arnold-website"
+main = "src/index.ts"
+compatibility_date = "2025-01-19"
+compatibility_flags = ["nodejs_compat"]
+
+# Workers Site configuration (for static assets)
+[site]
+bucket = "./out"  # Next.js static export output directory
+
+# KV Namespace Bindings
+#
+# TO CREATE THE NAMESPACE (choose one method):
+#
+# Method 1 - Wrangler CLI (in your terminal, not Claude Code):
+#   npx wrangler login
+#   npx wrangler kv namespace create CV_DATA
+#   # Copy the ID from output
+#
+# Method 2 - Cloudflare Dashboard:
+#   1. Go to Cloudflare dashboard → Workers & Pages → KV
+#   2. Click "Create namespace" → Name it "CV_DATA"
+#   3. Copy the namespace ID from the list
+#
+# Then replace "YOUR_KV_NAMESPACE_ID" below with the actual ID
+#
+# For local development, Miniflare will automatically emulate KV (no setup needed)
+
+[[kv_namespaces]]
+binding = "CV_DATA"
+id = "YOUR_KV_NAMESPACE_ID"  # TODO: Replace with actual namespace ID
+
+# Build configuration
+[build]
+command = "pnpm build"
+cwd = "."
+watch_dirs = ["src"]
+
+# Observability (available on all plans)
+[observability]
+enabled = true
