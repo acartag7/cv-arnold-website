@@ -1,30 +1,100 @@
 # CV Arnold Website - Claude Code Context
 
-## 🧠 MEMORY-FIRST WORKFLOW (NEW!)
+## 🚨 MANDATORY SESSION START CHECKLIST
 
-**CRITICAL: Always check MCP Memory before starting any task!**
+**⚠️ DO THIS FIRST - Before responding to ANY user request:**
 
 ```javascript
-// Start EVERY session by recalling relevant memories
+// 1. Testing procedures (REQUIRED - Contains standard verification steps)
 mcp__memory__recall_memory({
   tags: ['cv-arnold-website', 'testing-procedure'],
   limit: 5,
 })
 
+// 2. Workflow & TaskMaster philosophy (REQUIRED - How to document and track work)
 mcp__memory__recall_memory({
   tags: ['cv-arnold-website', 'workflow'],
   limit: 5,
 })
+
+// 3. Current project state (RECOMMENDED - Recent completions and context)
+mcp__memory__recall_memory({
+  tags: ['cv-arnold-website', 'current-state'],
+  limit: 3,
+})
 ```
 
-**Why:** MCP Memory contains:
+**✅ Checklist Complete?** Now proceed with your work.
 
-- ✅ Standard testing & verification procedures
-- ✅ TaskMaster philosophy and best practices
-- ✅ Architecture patterns and migration guides
-- ✅ Project status and recent completions
+**Why this matters:**
 
-**Search tags:** `testing-procedure`, `workflow`, `architecture`, `patterns`, `current-state`
+- 🎯 Ensures consistency across all sessions
+- 📋 Prevents skipping critical testing steps
+- 🧠 Loads lessons learned from previous tasks
+- ⚡ Faster decisions with established patterns
+
+---
+
+## 📚 MEMORY TAG REGISTRY
+
+**Quick tag reference for finding the right context:**
+
+### Core Tags (Use These Regularly)
+
+| Tag                 | Content                                            | When to Use                                       |
+| ------------------- | -------------------------------------------------- | ------------------------------------------------- |
+| `testing-procedure` | Standard testing & verification steps              | Every task completion, before PR, troubleshooting |
+| `workflow`          | TaskMaster philosophy, git workflow, PR process    | Session start, documentation decisions            |
+| `architecture`      | Design patterns, code organization, service layers | Implementing features, refactoring                |
+| `current-state`     | Recent completions, project status, blockers       | Session start, understanding context              |
+
+### Task-Specific Tags
+
+| Tag        | Content                                           | When to Use                            |
+| ---------- | ------------------------------------------------- | -------------------------------------- |
+| `task-3.1` | TypeScript data layer completion, migration notes | Reference for type system work         |
+| `task-3.2` | Zod schemas implementation, validation patterns   | Runtime validation, schema work        |
+| `meta`     | Memory-first workflow instructions                | Understanding how to use memory system |
+
+### Scenario-Based Search Guide
+
+**Starting a new session?**
+
+```javascript
+mcp__memory__recall_memory({ tags: ['testing-procedure'], limit: 5 })
+mcp__memory__recall_memory({ tags: ['workflow'], limit: 5 })
+```
+
+**Starting a new task?**
+
+```javascript
+mcp__memory__recall_memory({
+  tags: ['testing-procedure', 'workflow'],
+  limit: 5,
+})
+mcp__memory__recall_memory({ tags: ['architecture'], limit: 3 })
+```
+
+**Hit an error or need patterns?**
+
+```javascript
+mcp__memory__recall_memory({ tags: ['architecture', 'task-3.1'], limit: 3 })
+```
+
+**Creating a PR?**
+
+```javascript
+mcp__memory__recall_memory({
+  tags: ['testing-procedure', 'workflow'],
+  limit: 5,
+})
+```
+
+**Need project status?**
+
+```javascript
+mcp__memory__recall_memory({ tags: ['current-state'], limit: 3 })
+```
 
 ---
 
