@@ -109,8 +109,8 @@ export async function withRetry<T>(
         error,
       })
 
-      // Invoke retry callback
-      opts.onRetry(error, attempt)
+      // Invoke retry callback (with next attempt number)
+      opts.onRetry(error, attempt + 1)
 
       // Wait with exponential backoff
       await sleep(delay)

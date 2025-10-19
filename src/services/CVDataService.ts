@@ -164,9 +164,15 @@ export class CVDataService {
 
       logger.info('CV data updated successfully')
     } catch (error) {
+      // Re-throw validation errors
       if (error instanceof CVValidationError) {
         throw error
       }
+      // Convert ZodError to CVValidationError
+      if (error instanceof z.ZodError) {
+        throw new CVValidationError('CV data validation failed', error)
+      }
+      // All other errors become CVStorageError
       logger.error('Failed to update CV data', error)
       throw new CVStorageError('Failed to update CV data', 'write', error)
     }

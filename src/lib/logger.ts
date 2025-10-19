@@ -55,16 +55,22 @@ export class Logger {
   error(message: string, error?: unknown, data?: LogContext): void {
     const errorData: LogContext = {
       ...data,
-      error:
-        error instanceof Error
-          ? {
-              name: error.name,
-              message: error.message,
-              stack: error.stack,
-            }
-          : error,
+      ...(error !== undefined && {
+        error:
+          error instanceof Error
+            ? {
+                name: error.name,
+                message: error.message,
+                stack: error.stack,
+              }
+            : error,
+      }),
     }
-    this.log('error', message, errorData)
+    this.log(
+      'error',
+      message,
+      Object.keys(errorData).length > 0 ? errorData : undefined
+    )
   }
 
   /**
