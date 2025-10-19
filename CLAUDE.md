@@ -126,9 +126,30 @@ mcp__memory__recall_memory({ tags: ['current-state'], limit: 3 })
 ### What Goes in Markdown Files ✅
 
 - Detailed implementation notes → `.taskmaster/docs/task-X-implementation.md`
-- Architecture decisions and rationale
+- **Architecture decisions with rationale** → Document WHY and WHY NOT for every choice
 - Code examples and migration patterns
 - Troubleshooting notes and lessons learned
+
+**CRITICAL: Architecture Decisions**
+
+Every significant technical decision must include:
+
+- ✅ **What** was chosen (library, pattern, approach)
+- ✅ **Why** it was chosen (benefits, requirements it meets)
+- ✅ **Why NOT** alternatives (what was considered and rejected)
+- ✅ **Trade-offs** (what we gain vs what we lose)
+
+Example:
+
+```markdown
+## Key Decisions
+
+1. **Zod for runtime validation**
+   - Why: Type-safe schemas, excellent TypeScript integration, small bundle size
+   - Why NOT Yup: Less TypeScript support, larger bundle
+   - Why NOT io-ts: Steeper learning curve, more verbose
+   - Trade-offs: Runtime overhead acceptable for data integrity guarantee
+```
 
 ### Essential Commands
 
