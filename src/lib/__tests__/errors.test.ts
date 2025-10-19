@@ -10,6 +10,10 @@ import {
   CVStorageError,
   CVRetryExhaustedError,
   CVNetworkError,
+  isCVValidationError,
+  isCVStorageError,
+  isCVRetryExhaustedError,
+  isCVNetworkError,
 } from '../errors'
 
 describe('CVError', () => {
@@ -134,5 +138,100 @@ describe('CVNetworkError', () => {
     const error = new CVNetworkError('Test')
     expect(error).toBeInstanceOf(CVError)
     expect(error).toBeInstanceOf(CVNetworkError)
+  })
+})
+
+describe('Type Guards', () => {
+  describe('isCVValidationError', () => {
+    it('should return true for CVValidationError', () => {
+      const error = new CVValidationError('Validation failed')
+      expect(isCVValidationError(error)).toBe(true)
+    })
+
+    it('should return false for other error types', () => {
+      const regularError = new Error('Regular error')
+      const cvError = new CVError('CV error', 'TEST')
+      const storageError = new CVStorageError('Storage error', 'read')
+
+      expect(isCVValidationError(regularError)).toBe(false)
+      expect(isCVValidationError(cvError)).toBe(false)
+      expect(isCVValidationError(storageError)).toBe(false)
+    })
+
+    it('should return false for non-error values', () => {
+      expect(isCVValidationError(null)).toBe(false)
+      expect(isCVValidationError(undefined)).toBe(false)
+      expect(isCVValidationError('string')).toBe(false)
+      expect(isCVValidationError(123)).toBe(false)
+    })
+  })
+
+  describe('isCVStorageError', () => {
+    it('should return true for CVStorageError', () => {
+      const error = new CVStorageError('Storage failed', 'write')
+      expect(isCVStorageError(error)).toBe(true)
+    })
+
+    it('should return false for other error types', () => {
+      const regularError = new Error('Regular error')
+      const cvError = new CVError('CV error', 'TEST')
+      const validationError = new CVValidationError('Validation error')
+
+      expect(isCVStorageError(regularError)).toBe(false)
+      expect(isCVStorageError(cvError)).toBe(false)
+      expect(isCVStorageError(validationError)).toBe(false)
+    })
+
+    it('should return false for non-error values', () => {
+      expect(isCVStorageError(null)).toBe(false)
+      expect(isCVStorageError(undefined)).toBe(false)
+      expect(isCVStorageError('string')).toBe(false)
+    })
+  })
+
+  describe('isCVRetryExhaustedError', () => {
+    it('should return true for CVRetryExhaustedError', () => {
+      const error = new CVRetryExhaustedError('Retries exhausted', 3)
+      expect(isCVRetryExhaustedError(error)).toBe(true)
+    })
+
+    it('should return false for other error types', () => {
+      const regularError = new Error('Regular error')
+      const cvError = new CVError('CV error', 'TEST')
+      const storageError = new CVStorageError('Storage error', 'read')
+
+      expect(isCVRetryExhaustedError(regularError)).toBe(false)
+      expect(isCVRetryExhaustedError(cvError)).toBe(false)
+      expect(isCVRetryExhaustedError(storageError)).toBe(false)
+    })
+
+    it('should return false for non-error values', () => {
+      expect(isCVRetryExhaustedError(null)).toBe(false)
+      expect(isCVRetryExhaustedError(undefined)).toBe(false)
+      expect(isCVRetryExhaustedError({})).toBe(false)
+    })
+  })
+
+  describe('isCVNetworkError', () => {
+    it('should return true for CVNetworkError', () => {
+      const error = new CVNetworkError('Network failed')
+      expect(isCVNetworkError(error)).toBe(true)
+    })
+
+    it('should return false for other error types', () => {
+      const regularError = new Error('Regular error')
+      const cvError = new CVError('CV error', 'TEST')
+      const retryError = new CVRetryExhaustedError('Retry exhausted', 3)
+
+      expect(isCVNetworkError(regularError)).toBe(false)
+      expect(isCVNetworkError(cvError)).toBe(false)
+      expect(isCVNetworkError(retryError)).toBe(false)
+    })
+
+    it('should return false for non-error values', () => {
+      expect(isCVNetworkError(null)).toBe(false)
+      expect(isCVNetworkError(undefined)).toBe(false)
+      expect(isCVNetworkError('string')).toBe(false)
+    })
   })
 })

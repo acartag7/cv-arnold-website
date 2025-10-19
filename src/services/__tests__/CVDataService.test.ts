@@ -181,6 +181,60 @@ describe('CVDataService', () => {
     })
   })
 
+  describe('getSection', () => {
+    it('should return specific CV section', async () => {
+      vi.mocked(mockRepository.getSection).mockResolvedValue(
+        mockCVData.personalInfo
+      )
+
+      const result = await service.getSection('personalInfo')
+
+      expect(result).toEqual(mockCVData.personalInfo)
+      expect(mockRepository.getSection).toHaveBeenCalledWith('personalInfo')
+    })
+
+    it('should throw CVDataNotFoundError when section is null', async () => {
+      vi.mocked(mockRepository.getSection).mockResolvedValue(null)
+
+      await expect(service.getSection('personalInfo')).rejects.toThrow(
+        CVDataNotFoundError
+      )
+    })
+
+    it('should wrap repository errors in CVStorageError', async () => {
+      vi.mocked(mockRepository.getSection).mockRejectedValue(
+        new Error('Read error')
+      )
+
+      await expect(service.getSection('personalInfo')).rejects.toThrow(
+        CVStorageError
+      )
+    })
+  })
+
+  describe('updateSection', () => {
+    it('should validate and update CV section', async () => {
+      vi.mocked(mockRepository.updateSection).mockResolvedValue(undefined)
+
+      await service.updateSection('personalInfo', mockCVData.personalInfo)
+
+      expect(mockRepository.updateSection).toHaveBeenCalledWith(
+        'personalInfo',
+        mockCVData.personalInfo
+      )
+    })
+
+    it('should wrap repository errors in CVStorageError', async () => {
+      vi.mocked(mockRepository.updateSection).mockRejectedValue(
+        new Error('Write error')
+      )
+
+      await expect(
+        service.updateSection('personalInfo', mockCVData.personalInfo)
+      ).rejects.toThrow(CVStorageError)
+    })
+  })
+
   describe('error handling', () => {
     it('should preserve CVValidationError', async () => {
       const invalidData = { version: 'x' }
