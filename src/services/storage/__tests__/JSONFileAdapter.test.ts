@@ -12,7 +12,7 @@ vi.mock('fs/promises')
 
 // Mock retry module to avoid actual delays in tests
 vi.mock('@/lib/retry', () => ({
-  withRetry: vi.fn(async (fn) => fn()),
+  withRetry: vi.fn(async fn => fn()),
   isNetworkError: vi.fn(() => false),
 }))
 

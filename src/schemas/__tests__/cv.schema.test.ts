@@ -41,9 +41,7 @@ describe('ISO 8601 Date Validation', () => {
   })
 
   it('should accept valid datetime format with milliseconds', () => {
-    expect(
-      ExampleSchema.parse({ date: '2024-01-15T10:30:00.000Z' })
-    ).toEqual({
+    expect(ExampleSchema.parse({ date: '2024-01-15T10:30:00.000Z' })).toEqual({
       date: '2024-01-15T10:30:00.000Z',
     })
   })
@@ -80,15 +78,15 @@ describe('URL Validation', () => {
   const ExampleSchema = z.object({ url: PersonalInfoSchema.shape.website })
 
   it('should accept valid https URL', () => {
-    expect(
-      ExampleSchema.parse({ url: 'https://example.com' })
-    ).toEqual({ url: 'https://example.com' })
+    expect(ExampleSchema.parse({ url: 'https://example.com' })).toEqual({
+      url: 'https://example.com',
+    })
   })
 
   it('should accept valid http URL', () => {
-    expect(
-      ExampleSchema.parse({ url: 'http://example.com' })
-    ).toEqual({ url: 'http://example.com' })
+    expect(ExampleSchema.parse({ url: 'http://example.com' })).toEqual({
+      url: 'http://example.com',
+    })
   })
 
   it('should accept URL with path and query params', () => {
@@ -98,9 +96,9 @@ describe('URL Validation', () => {
   })
 
   it('should reject ftp:// protocol', () => {
-    expect(() =>
-      ExampleSchema.parse({ url: 'ftp://example.com' })
-    ).toThrow(/protocol/)
+    expect(() => ExampleSchema.parse({ url: 'ftp://example.com' })).toThrow(
+      /protocol/
+    )
   })
 
   it('should reject URL without protocol', () => {

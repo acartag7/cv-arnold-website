@@ -34,12 +34,14 @@ src/
 ### Testing Patterns
 
 **1. Schema Tests (Zod)**
+
 - Test valid data acceptance
 - Test invalid data rejection with specific error messages
 - Test edge cases (boundary values, date ranges, transformations)
 - Test custom validators (URL protocols, email format, codes)
 
 **2. Service Tests**
+
 - Mock dependencies (repositories, file system)
 - Test success paths
 - Test error handling and error wrapping
@@ -47,12 +49,14 @@ src/
 - Use `vi.mock()` for external dependencies
 
 **3. Utility Tests**
+
 - Test core functionality
 - Test edge cases and boundary conditions
 - Test error scenarios
 - For retry: use `vi.useFakeTimers()` to control time
 
 **4. Test Structure**
+
 ```typescript
 describe('ComponentName', () => {
   beforeEach(() => {
