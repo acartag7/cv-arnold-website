@@ -93,6 +93,25 @@ describe('Logger', () => {
 
       vi.unstubAllEnvs()
     })
+
+    it('should cache environment detection at construction time', () => {
+      // Start in development
+      vi.stubEnv('NODE_ENV', 'development')
+      const logger = new Logger('TestLogger')
+
+      // Log in development (should log)
+      logger.info('Info in dev')
+      expect(consoleSpy.log).toHaveBeenCalledTimes(1)
+
+      // Change to production AFTER construction
+      vi.stubEnv('NODE_ENV', 'production')
+
+      // Logger should still behave as development (environment cached)
+      logger.info('Info after env change')
+      expect(consoleSpy.log).toHaveBeenCalledTimes(2)
+
+      vi.unstubAllEnvs()
+    })
   })
 
   describe('warn', () => {

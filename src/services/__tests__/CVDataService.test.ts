@@ -4,53 +4,25 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { CVDataService } from '../CVDataService'
-import type { ICVRepository } from '../storage/ICVRepository'
 import type { CVData } from '@/types/cv'
 import {
   CVDataNotFoundError,
   CVValidationError,
   CVStorageError,
 } from '@/lib/errors'
+import {
+  createMockCVData,
+  createMockRepository,
+} from '@/__tests__/helpers/testData'
 
 describe('CVDataService', () => {
-  let mockRepository: ICVRepository
+  let mockRepository: ReturnType<typeof createMockRepository>
   let service: CVDataService
-
-  const mockCVData: CVData = {
-    version: '1.0.0',
-    lastUpdated: '2024-01-15',
-    personalInfo: {
-      fullName: 'Test User',
-      title: 'Test Engineer',
-      email: 'test@example.com',
-      location: {
-        city: 'Test City',
-        country: 'Test Country',
-        countryCode: 'TC',
-      },
-      social: {},
-      summary: 'A test user summary for testing purposes.',
-      availability: {
-        status: 'available',
-      },
-    },
-    experience: [],
-    skills: [],
-    education: [],
-    certifications: [],
-    achievements: [],
-    languages: [],
-  }
+  let mockCVData: CVData
 
   beforeEach(() => {
-    mockRepository = {
-      getData: vi.fn(),
-      updateData: vi.fn(),
-      getSection: vi.fn(),
-      updateSection: vi.fn(),
-      exists: vi.fn(),
-      delete: vi.fn(),
-    }
+    mockRepository = createMockRepository()
+    mockCVData = createMockCVData()
     service = new CVDataService(mockRepository)
   })
 

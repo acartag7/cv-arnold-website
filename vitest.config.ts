@@ -24,6 +24,9 @@ export default defineConfig({
         '**/*.spec.ts',
         '**/types.ts',
         '**/index.ts',
+        'node_modules/**',
+        'dist/**',
+        '.next/**',
       ],
       // Enforce minimum coverage thresholds
       thresholds: {
@@ -37,6 +40,18 @@ export default defineConfig({
           functions: 80,
           branches: 90,
           statements: 90,
+        },
+        'src/services/**': {
+          lines: 85,
+          functions: 85,
+          branches: 85,
+          statements: 85,
+        },
+        'src/lib/**': {
+          lines: 85,
+          functions: 85,
+          branches: 85,
+          statements: 85,
         },
       },
     },
