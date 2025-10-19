@@ -64,21 +64,21 @@ describe('CVDataService', () => {
       expect(mockRepository.getData).toHaveBeenCalled()
     })
 
-    it('should throw CVDataNotFoundError when data is null', async () => {
+    it('should throw CVDataNotFoundError when repository returns null', async () => {
       vi.mocked(mockRepository.getData).mockResolvedValue(null)
 
       await expect(service.getData()).rejects.toThrow(CVDataNotFoundError)
       await expect(service.getData()).rejects.toThrow('CV data not found')
     })
 
-    it('should throw CVValidationError for invalid data', async () => {
+    it('should throw CVValidationError when data has invalid version format', async () => {
       const invalidData = { version: 'invalid' }
       vi.mocked(mockRepository.getData).mockResolvedValue(invalidData as CVData)
 
       await expect(service.getData()).rejects.toThrow(CVValidationError)
     })
 
-    it('should wrap repository errors in CVStorageError', async () => {
+    it('should wrap repository read errors in CVStorageError', async () => {
       vi.mocked(mockRepository.getData).mockRejectedValue(
         new Error('Read error')
       )
@@ -96,7 +96,7 @@ describe('CVDataService', () => {
       expect(mockRepository.updateData).toHaveBeenCalledWith(mockCVData)
     })
 
-    it('should throw CVValidationError for invalid data', async () => {
+    it('should throw CVValidationError when version is not valid semver', async () => {
       const invalidData = { version: 'not-semver' }
 
       await expect(service.updateData(invalidData as CVData)).rejects.toThrow(
@@ -105,7 +105,7 @@ describe('CVDataService', () => {
       expect(mockRepository.updateData).not.toHaveBeenCalled()
     })
 
-    it('should wrap repository errors in CVStorageError', async () => {
+    it('should wrap repository write errors in CVStorageError', async () => {
       vi.mocked(mockRepository.updateData).mockRejectedValue(
         new Error('Write error')
       )
@@ -224,6 +224,19 @@ describe('CVDataService', () => {
       )
     })
 
+    it('should throw CVValidationError for invalid section data', async () => {
+      const invalidPersonalInfo = { title: 'Senior Engineer' } // Missing required fields
+
+      await expect(
+        service.updateSection(
+          'personalInfo',
+          invalidPersonalInfo as typeof mockCVData.personalInfo
+        )
+      ).rejects.toThrow(CVValidationError)
+
+      expect(mockRepository.updateSection).not.toHaveBeenCalled()
+    })
+
     it('should wrap repository errors in CVStorageError', async () => {
       vi.mocked(mockRepository.updateSection).mockRejectedValue(
         new Error('Write error')
@@ -235,15 +248,46 @@ describe('CVDataService', () => {
     })
   })
 
+  describe('concurrent operations', () => {
+    it('should handle concurrent getData calls safely', async () => {
+      vi.mocked(mockRepository.getData).mockResolvedValue(mockCVData)
+
+      const [result1, result2, result3] = await Promise.all([
+        service.getData(),
+        service.getData(),
+        service.getData(),
+      ])
+
+      expect(result1).toEqual(mockCVData)
+      expect(result2).toEqual(mockCVData)
+      expect(result3).toEqual(mockCVData)
+      expect(mockRepository.getData).toHaveBeenCalledTimes(3)
+    })
+
+    it('should handle concurrent updateData calls', async () => {
+      vi.mocked(mockRepository.updateData).mockResolvedValue(undefined)
+
+      const updates = [
+        { ...mockCVData, version: '1.0.1' },
+        { ...mockCVData, version: '1.0.2' },
+        { ...mockCVData, version: '1.0.3' },
+      ]
+
+      await Promise.all(updates.map(data => service.updateData(data)))
+
+      expect(mockRepository.updateData).toHaveBeenCalledTimes(3)
+    })
+  })
+
   describe('error handling', () => {
-    it('should preserve CVValidationError', async () => {
+    it('should preserve CVValidationError when validation fails', async () => {
       const invalidData = { version: 'x' }
       vi.mocked(mockRepository.getData).mockResolvedValue(invalidData as CVData)
 
       await expect(service.getData()).rejects.toThrow(CVValidationError)
     })
 
-    it('should convert unknown errors to CVStorageError', async () => {
+    it('should convert non-Error exceptions to CVStorageError', async () => {
       vi.mocked(mockRepository.getData).mockRejectedValue('string error')
 
       await expect(service.getData()).rejects.toThrow(CVStorageError)

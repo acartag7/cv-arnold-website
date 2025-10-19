@@ -50,13 +50,9 @@ describe('withRetry', () => {
       initialDelay: 100,
     })
 
-    // Set up error handler before running timers
-    const errorPromise = expect(resultPromise).rejects.toThrow(
-      CVRetryExhaustedError
-    )
     await vi.runAllTimersAsync()
-    await errorPromise
 
+    await expect(resultPromise).rejects.toThrow(CVRetryExhaustedError)
     await expect(resultPromise).rejects.toThrow(/failed after 3 attempts/)
     expect(mockFn).toHaveBeenCalledTimes(3)
   })
@@ -101,12 +97,8 @@ describe('withRetry', () => {
       onRetry,
     })
 
-    // Set up error handler before running timers
-    const errorPromise = resultPromise.catch(() => {
-      // Expected to fail
-    })
     await vi.runAllTimersAsync()
-    await errorPromise
+    await expect(resultPromise).rejects.toThrow()
 
     expect(mockFn).toHaveBeenCalledTimes(5)
     expect(onRetry).toHaveBeenCalledTimes(4) // Retries after attempts 1-4
@@ -145,11 +137,9 @@ describe('withRetry', () => {
       },
     })
 
-    // Set up error handler before running timers
-    const errorPromise = expect(resultPromise).rejects.toThrow('Non-retryable')
     await vi.runAllTimersAsync()
-    await errorPromise
 
+    await expect(resultPromise).rejects.toThrow('Non-retryable')
     expect(mockFn).toHaveBeenCalledTimes(1)
   })
 
