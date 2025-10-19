@@ -17,13 +17,9 @@ import {
   PersonalInfoSchema,
   ExperienceSchema,
   SkillSchema,
-  SkillCategorySchema,
-  EducationSchema,
   CertificationSchema,
-  AchievementSchema,
   LanguageSchema,
   CVDataSchema,
-  CVDataPartialSchema,
   DateRangeSchema,
   // Helper functions
   validateCVData,
@@ -387,7 +383,7 @@ describe('LanguageSchema', () => {
 
   it('should reject invalid proficiency level', () => {
     expect(() =>
-      LanguageSchema.parse({ ...validLanguage, proficiency: 'fluent' as any })
+      LanguageSchema.parse({ ...validLanguage, proficiency: 'fluent' })
     ).toThrow()
   })
 })

@@ -70,8 +70,10 @@ describe('CVDataService', () => {
     })
 
     it('should throw CVValidationError for invalid data', async () => {
-      const invalidData = { version: 'invalid' } as any
-      vi.mocked(mockRepository.getData).mockResolvedValue(invalidData)
+      const invalidData = { version: 'invalid' }
+      vi.mocked(mockRepository.getData).mockResolvedValue(
+        invalidData as CVData
+      )
 
       await expect(service.getData()).rejects.toThrow(CVValidationError)
     })
@@ -95,11 +97,11 @@ describe('CVDataService', () => {
     })
 
     it('should throw CVValidationError for invalid data', async () => {
-      const invalidData = { version: 'not-semver' } as any
+      const invalidData = { version: 'not-semver' }
 
-      await expect(service.updateData(invalidData)).rejects.toThrow(
-        CVValidationError
-      )
+      await expect(
+        service.updateData(invalidData as CVData)
+      ).rejects.toThrow(CVValidationError)
       expect(mockRepository.updateData).not.toHaveBeenCalled()
     })
 
@@ -181,8 +183,10 @@ describe('CVDataService', () => {
 
   describe('error handling', () => {
     it('should preserve CVValidationError', async () => {
-      const invalidData = { version: 'x' } as any
-      vi.mocked(mockRepository.getData).mockResolvedValue(invalidData)
+      const invalidData = { version: 'x' }
+      vi.mocked(mockRepository.getData).mockResolvedValue(
+        invalidData as CVData
+      )
 
       await expect(service.getData()).rejects.toThrow(CVValidationError)
     })

@@ -4,7 +4,6 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { JSONFileAdapter } from '../JSONFileAdapter'
-import { CVStorageError } from '@/lib/errors'
 import type { CVData } from '@/types/cv'
 import fs from 'fs/promises'
 

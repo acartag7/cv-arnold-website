@@ -4,7 +4,7 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { withRetry, isNetworkError } from '../retry'
-import { CVRetryExhaustedError, CVNetworkError } from '../errors'
+import { CVRetryExhaustedError } from '../errors'
 
 describe('withRetry', () => {
   beforeEach(() => {

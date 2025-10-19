@@ -13,6 +13,7 @@ Establishing comprehensive testing infrastructure for Tasks 3.1, 3.2, and 3.3 wi
 #### Implementation
 
 1. **Installed Dependencies**
+
    ```bash
    pnpm add -D vitest @vitest/ui @vitest/coverage-v8
    ```
@@ -38,6 +39,7 @@ Establishing comprehensive testing infrastructure for Tasks 3.1, 3.2, and 3.3 wi
 3. **Updated package.json Scripts**
 
    Added test scripts:
+
    ```json
    {
      "test": "vitest run",
@@ -71,31 +73,37 @@ Establishing comprehensive testing infrastructure for Tasks 3.1, 3.2, and 3.3 wi
 #### Files Created/Modified
 
 **Created:**
+
 - `vitest.config.ts` - Test configuration with coverage thresholds
 - `src/schemas/__tests__/setup.test.ts` - Verification test (temporary)
 
 **Modified:**
+
 - `package.json` - Added 4 test scripts
 - `.github/workflows/ci.yml` - Added test step to CI pipeline
 
 #### Key Decisions
 
 **1. Vitest over Jest**
+
 - **Why:** Modern, fast, native ESM support, better TypeScript integration
 - **Why NOT Jest:** Older, slower, requires more configuration for ESM
 - **Trade-offs:** Less ecosystem, but superior DX and performance
 
 **2. V8 Coverage Provider**
+
 - **Why:** Native to V8 engine, accurate, fast, no instrumentation overhead
 - **Why NOT c8 or istanbul:** V8 is built-in, more accurate for Node.js code
 - **Trade-offs:** V8-specific, but we're Node.js only
 
 **3. 80% Coverage Threshold**
+
 - **Why:** Enterprise-grade standard, enforces quality, prevents untested code
 - **Why NOT higher:** 80% is industry standard, 100% can be counterproductive
 - **Trade-offs:** May require more test time, but ensures code reliability
 
 **4. CI Enforcement**
+
 - **Why:** Automated quality gate, prevents merging untested code
 - **Why NOT optional:** Establishes "tests required on every PR" from the start
 - **Trade-offs:** Blocks PRs until tests written, but improves long-term quality
@@ -160,6 +168,7 @@ Created `src/schemas/__tests__/cv.schema.test.ts` with 59 comprehensive tests co
    - validateCVDataPartial (partial data validation)
 
 **Results:**
+
 - 59 tests passing
 - 96.24% coverage for cv.schema.ts
 - All edge cases covered
@@ -212,6 +221,7 @@ Created comprehensive tests for service layer components:
    - delete (file deletion, idempotent)
 
 **Results:**
+
 - 70+ tests for service layer
 - Good coverage for core service methods
 - Comprehensive error handling tests
@@ -221,6 +231,7 @@ Created comprehensive tests for service layer components:
 **Decision:** 2025-10-19
 
 Skipped TypeScript interface validation tests as:
+
 - TypeScript compile-time checking already validates interfaces
 - Runtime validation is handled by Zod schemas (tested in 15.2)
 - Not critical for PR acceptance
