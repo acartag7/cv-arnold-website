@@ -16,6 +16,7 @@ import { z } from 'zod'
 
 /**
  * ISO 8601 date string validator
+ * Validates both format AND semantic correctness (e.g., rejects 2025-13-40)
  */
 const iso8601DateSchema = z
   .string()
@@ -23,24 +24,33 @@ const iso8601DateSchema = z
     /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?Z)?$/,
     'Must be a valid ISO 8601 date (YYYY-MM-DD or YYYY-MM-DDTHH:mm:ss.sssZ)'
   )
+  .refine(
+    date => {
+      const parsed = new Date(date)
+      // Check if date is valid and matches input (prevents auto-correction)
+      const datePrefix = date.split('T')[0] || date
+      return (
+        !isNaN(parsed.getTime()) && parsed.toISOString().startsWith(datePrefix)
+      )
+    },
+    { message: 'Must be a valid date (e.g., 2025-13-40 is invalid)' }
+  )
 
 /**
- * URL validator with common protocols
+ * URL validator with protocol restriction (http/https only)
+ * Optimized to parse URL only once
  */
-const urlSchema = z
-  .string()
-  .url('Must be a valid URL')
-  .refine(
-    url => {
-      try {
-        const parsed = new URL(url)
-        return ['http:', 'https:'].includes(parsed.protocol)
-      } catch {
-        return false
-      }
-    },
-    { message: 'URL must use http:// or https:// protocol' }
-  )
+const urlSchema = z.string().refine(
+  url => {
+    try {
+      const parsed = new URL(url)
+      return ['http:', 'https:'].includes(parsed.protocol)
+    } catch {
+      return false
+    }
+  },
+  { message: 'Must be a valid URL with http:// or https:// protocol' }
+)
 
 /**
  * Email validator
