@@ -1,3 +1,7 @@
-// Service exports
-// Add service classes and utilities here as they are created
-// Example: export { ApiService } from './api'
+/**
+ * Services barrel export
+ */
+
+export { CVDataService } from './CVDataService'
+export type { ICVRepository } from './storage/ICVRepository'
+export { JSONFileAdapter } from './storage/JSONFileAdapter'
