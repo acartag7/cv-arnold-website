@@ -50,10 +50,15 @@ describe('withRetry', () => {
       initialDelay: 100,
     })
 
-    await vi.runAllTimersAsync()
+    // Set up error expectations before running timers to catch errors cleanly
+    const errorAssertions = Promise.all([
+      expect(resultPromise).rejects.toThrow(CVRetryExhaustedError),
+      expect(resultPromise).rejects.toThrow(/failed after 3 attempts/),
+    ])
 
-    await expect(resultPromise).rejects.toThrow(CVRetryExhaustedError)
-    await expect(resultPromise).rejects.toThrow(/failed after 3 attempts/)
+    await vi.runAllTimersAsync()
+    await errorAssertions
+
     expect(mockFn).toHaveBeenCalledTimes(3)
   })
 
@@ -97,8 +102,13 @@ describe('withRetry', () => {
       onRetry,
     })
 
+    // Catch error to prevent unhandled rejection warnings
+    const errorCatch = resultPromise.catch(() => {
+      // Expected to fail
+    })
+
     await vi.runAllTimersAsync()
-    await expect(resultPromise).rejects.toThrow()
+    await errorCatch
 
     expect(mockFn).toHaveBeenCalledTimes(5)
     expect(onRetry).toHaveBeenCalledTimes(4) // Retries after attempts 1-4
@@ -137,9 +147,13 @@ describe('withRetry', () => {
       },
     })
 
-    await vi.runAllTimersAsync()
+    // Set up error expectation before running timers
+    const errorAssertion =
+      expect(resultPromise).rejects.toThrow('Non-retryable')
 
-    await expect(resultPromise).rejects.toThrow('Non-retryable')
+    await vi.runAllTimersAsync()
+    await errorAssertion
+
     expect(mockFn).toHaveBeenCalledTimes(1)
   })
 
