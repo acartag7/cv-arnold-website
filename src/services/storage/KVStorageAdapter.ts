@@ -19,6 +19,7 @@ import type { KVStorageConfig } from './KVConfig'
 import { KV_KEYS } from './KVConfig'
 import { CVStorageError } from '@/lib/errors'
 import { createLogger } from '@/lib/logger'
+import { withRetry, isNetworkError } from '@/lib/retry'
 
 const logger = createLogger('KVStorageAdapter')
 
@@ -149,7 +150,14 @@ export class KVStorageAdapter implements ICVRepository {
         // Compress and store as ArrayBuffer
         const compressed = await this.compressData(serialized)
         wrapped.compressed = true
-        await this.namespace.put(key, compressed, options)
+
+        // Retry KV put operation for transient network errors
+        await withRetry(() => this.namespace.put(key, compressed, options), {
+          maxAttempts: 3,
+          initialDelay: 500,
+          isRetryable: isNetworkError,
+        })
+
         logger.info('CV data compressed and updated in KV', {
           key,
           originalSize: serialized.length,
@@ -159,8 +167,12 @@ export class KVStorageAdapter implements ICVRepository {
             '%',
         })
       } else {
-        // Store as JSON
-        await this.namespace.put(key, serialized, options)
+        // Store as JSON with retry logic
+        await withRetry(() => this.namespace.put(key, serialized, options), {
+          maxAttempts: 3,
+          initialDelay: 500,
+          isRetryable: isNetworkError,
+        })
         logger.info('CV data updated in KV', { key, size: serialized.length })
       }
 
@@ -282,7 +294,14 @@ export class KVStorageAdapter implements ICVRepository {
         // Compress and store as ArrayBuffer
         const compressed = await this.compressData(serialized)
         wrapped.compressed = true
-        await this.namespace.put(key, compressed, options)
+
+        // Retry KV put operation for transient network errors
+        await withRetry(() => this.namespace.put(key, compressed, options), {
+          maxAttempts: 3,
+          initialDelay: 500,
+          isRetryable: isNetworkError,
+        })
+
         logger.info('Section compressed and updated in KV', {
           key,
           section,
@@ -290,8 +309,12 @@ export class KVStorageAdapter implements ICVRepository {
           compressedSize: compressed.byteLength,
         })
       } else {
-        // Store as JSON
-        await this.namespace.put(key, serialized, options)
+        // Store as JSON with retry logic
+        await withRetry(() => this.namespace.put(key, serialized, options), {
+          maxAttempts: 3,
+          initialDelay: 500,
+          isRetryable: isNetworkError,
+        })
         logger.info('Section updated in KV', { key, section })
       }
 
@@ -387,7 +410,12 @@ export class KVStorageAdapter implements ICVRepository {
       version: this.version,
     }
 
-    await this.namespace.put(key, JSON.stringify(metadata))
+    // Retry metadata update for transient errors
+    await withRetry(() => this.namespace.put(key, JSON.stringify(metadata)), {
+      maxAttempts: 3,
+      initialDelay: 500,
+      isRetryable: isNetworkError,
+    })
     logger.debug('Metadata updated', { key, metadata })
   }
 
@@ -411,23 +439,28 @@ export class KVStorageAdapter implements ICVRepository {
     const chunks: Uint8Array[] = []
     const reader = stream.getReader()
 
-    while (true) {
-      const { done, value } = await reader.read()
-      if (done) break
-      chunks.push(value)
+    try {
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        chunks.push(value)
+      }
+
+      // Combine chunks into single ArrayBuffer
+      const totalLength = chunks.reduce((sum, chunk) => sum + chunk.length, 0)
+      const result = new Uint8Array(totalLength)
+      let offset = 0
+
+      for (const chunk of chunks) {
+        result.set(chunk, offset)
+        offset += chunk.length
+      }
+
+      return result.buffer
+    } finally {
+      // Always release the reader to prevent memory leaks
+      reader.releaseLock()
     }
-
-    // Combine chunks into single ArrayBuffer
-    const totalLength = chunks.reduce((sum, chunk) => sum + chunk.length, 0)
-    const result = new Uint8Array(totalLength)
-    let offset = 0
-
-    for (const chunk of chunks) {
-      result.set(chunk, offset)
-      offset += chunk.length
-    }
-
-    return result.buffer
   }
 
   /**
@@ -441,23 +474,28 @@ export class KVStorageAdapter implements ICVRepository {
     const chunks: Uint8Array[] = []
     const reader = stream.getReader()
 
-    while (true) {
-      const { done, value } = await reader.read()
-      if (done) break
-      chunks.push(value)
+    try {
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        chunks.push(value)
+      }
+
+      // Combine chunks and decode to string
+      const totalLength = chunks.reduce((sum, chunk) => sum + chunk.length, 0)
+      const result = new Uint8Array(totalLength)
+      let offset = 0
+
+      for (const chunk of chunks) {
+        result.set(chunk, offset)
+        offset += chunk.length
+      }
+
+      return new TextDecoder().decode(result)
+    } finally {
+      // Always release the reader to prevent memory leaks
+      reader.releaseLock()
     }
-
-    // Combine chunks and decode to string
-    const totalLength = chunks.reduce((sum, chunk) => sum + chunk.length, 0)
-    const result = new Uint8Array(totalLength)
-    let offset = 0
-
-    for (const chunk of chunks) {
-      result.set(chunk, offset)
-      offset += chunk.length
-    }
-
-    return new TextDecoder().decode(result)
   }
 
   /**
