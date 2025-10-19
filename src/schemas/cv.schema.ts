@@ -53,6 +53,8 @@ const emailSchema = z
 
 /**
  * ISO 3166-1 alpha-2 country code validator
+ * NOTE: Automatically transforms input to uppercase (e.g., 'us' → 'US')
+ * This normalization ensures consistent data formatting.
  */
 const countryCodeSchema = z
   .string()
@@ -61,6 +63,8 @@ const countryCodeSchema = z
 
 /**
  * ISO 639-1 language code validator
+ * NOTE: Automatically transforms input to lowercase (e.g., 'EN' → 'en')
+ * This normalization ensures consistent data formatting.
  */
 const languageCodeSchema = z
   .string()
