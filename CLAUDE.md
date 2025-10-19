@@ -294,15 +294,29 @@ gh pr view <number> --comments
 
 - 🚨 **CRITICAL/MUST FIX** - Address immediately before merging
 - ⚠️ **SHOULD FIX** - Strong recommendations (document if skipping)
-- 💡 **SUGGESTIONS** - Consider for improvement
-- 📝 **FUTURE** - Note in task docs or create follow-up tasks
+- 💡 **SUGGESTIONS** - **Actively consider for THIS PR** (don't auto-defer!)
+- 📝 **FUTURE** - Only after careful evaluation
+
+**CRITICAL: For every suggestion, ask yourself:**
+
+1. **Can I implement this now?** (effort vs value)
+2. **Will it be harder to add later?** (architectural dependencies)
+3. **Does it improve code quality significantly?** (maintainability, security, performance)
+4. **Is "future" just procrastination?** (be honest!)
+
+**Decision framework:**
+
+- ✅ **Implement now** if: Low effort, high value, or foundational
+- 📝 **Defer to future** if: Needs research, unclear requirements, or genuinely separate concern
+- ❌ **Skip with rationale** if: Not applicable or actively harmful
 
 **Do NOT merge until:**
 
 - ✅ All CI checks GREEN
 - ✅ Claude review feedback READ and understood
 - ✅ Critical items ADDRESSED
-- ✅ Decision documented if skipping recommendations
+- ✅ **Every suggestion actively considered** (not auto-deferred!)
+- ✅ Decision documented with WHY/WHY NOT for skipped items
 
 ### 5. Task Completion
 
