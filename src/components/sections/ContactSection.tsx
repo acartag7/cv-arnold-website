@@ -31,41 +31,50 @@ export default function ContactSection({ data }: ContactSectionProps) {
       href: `mailto:${personalInfo.email}`,
       description: 'Send me an email',
     },
-    {
-      icon: Phone,
-      label: 'Phone',
-      value: personalInfo.phone,
-      href: `tel:${personalInfo.phone}`,
-      description: 'Give me a call',
-    },
+    ...(personalInfo.phone
+      ? [
+          {
+            icon: Phone,
+            label: 'Phone',
+            value: personalInfo.phone,
+            href: `tel:${personalInfo.phone}`,
+            description: 'Give me a call',
+          },
+        ]
+      : []),
     {
       icon: MapPin,
       label: 'Location',
-      value: personalInfo.location,
+      value: `${personalInfo.location.city}, ${personalInfo.location.country}`,
       href: null,
       description: 'Based in Switzerland',
     },
   ]
 
   const socialLinks = [
-    {
-      icon: Linkedin,
-      label: 'LinkedIn',
-      value: personalInfo.linkedin,
-      href: `https://${personalInfo.linkedin}`,
-      description: 'Connect professionally',
-    },
+    ...(personalInfo.social.linkedin
+      ? [
+          {
+            icon: Linkedin,
+            label: 'LinkedIn',
+            value: 'LinkedIn Profile',
+            href: personalInfo.social.linkedin,
+            description: 'Connect professionally',
+          },
+        ]
+      : []),
+    ...(personalInfo.social.github
+      ? [
+          {
+            icon: Github,
+            label: 'GitHub',
+            value: 'GitHub Profile',
+            href: personalInfo.social.github,
+            description: 'View my code',
+          },
+        ]
+      : []),
   ]
-
-  if (personalInfo.github) {
-    socialLinks.push({
-      icon: Github,
-      label: 'GitHub',
-      value: personalInfo.github,
-      href: `https://github.com/${personalInfo.github}`,
-      description: 'View my code',
-    })
-  }
 
   return (
     <section id="contact" className="py-16 px-4 bg-[var(--surface)]">

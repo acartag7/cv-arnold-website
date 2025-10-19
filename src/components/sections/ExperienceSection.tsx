@@ -67,12 +67,31 @@ export default function ExperienceSection({ data }: ExperienceSectionProps) {
                       <div className="flex items-center space-x-2">
                         <Calendar size={16} />
                         <span>
-                          {exp.startDate} – {exp.endDate}
+                          {new Date(exp.startDate).toLocaleDateString('en-US', {
+                            month: 'short',
+                            year: 'numeric',
+                          })}{' '}
+                          –{' '}
+                          {exp.endDate
+                            ? new Date(exp.endDate).toLocaleDateString(
+                                'en-US',
+                                {
+                                  month: 'short',
+                                  year: 'numeric',
+                                }
+                              )
+                            : 'Present'}
                         </span>
                       </div>
                       <div className="flex items-center space-x-2">
                         <MapPin size={16} />
-                        <span>{exp.location}</span>
+                        <span>
+                          {exp.location.city && exp.location.country
+                            ? `${exp.location.city}, ${exp.location.country}`
+                            : exp.location.remote
+                              ? 'Remote'
+                              : exp.location.country || 'Remote'}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -125,26 +144,14 @@ export default function ExperienceSection({ data }: ExperienceSectionProps) {
                   className="overflow-hidden"
                 >
                   <div className="space-y-6 pt-6 border-t border-[var(--surface)]">
-                    {/* Responsibilities */}
+                    {/* Description */}
                     <div>
                       <h5 className="font-semibold text-[var(--text)] mb-3">
-                        Core Responsibilities
+                        Role Overview
                       </h5>
-                      <div className="grid gap-3">
-                        {exp.responsibilities.map(
-                          (responsibility, respIndex) => (
-                            <div
-                              key={respIndex}
-                              className="flex items-start space-x-3"
-                            >
-                              <div className="w-2 h-2 bg-[var(--accent)] rounded-full mt-2 flex-shrink-0"></div>
-                              <p className="text-[var(--text-muted)] leading-relaxed">
-                                {responsibility}
-                              </p>
-                            </div>
-                          )
-                        )}
-                      </div>
+                      <p className="text-[var(--text-muted)] leading-relaxed">
+                        {exp.description}
+                      </p>
                     </div>
 
                     {/* Technologies */}

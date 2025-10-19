@@ -63,7 +63,10 @@ export default function AdminPage() {
   const updateSummary = (value: string) => {
     setData(prev => ({
       ...prev,
-      summary: value,
+      personalInfo: {
+        ...prev.personalInfo,
+        summary: value,
+      },
     }))
   }
 
@@ -147,13 +150,13 @@ export default function AdminPage() {
                   <div className="grid grid-cols-2 gap-6">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Name
+                        Full Name
                       </label>
                       <input
                         type="text"
-                        value={data.personalInfo.name}
+                        value={data.personalInfo.fullName}
                         onChange={e =>
-                          updatePersonalInfo('name', e.target.value)
+                          updatePersonalInfo('fullName', e.target.value)
                         }
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       />
@@ -190,7 +193,7 @@ export default function AdminPage() {
                       </label>
                       <input
                         type="tel"
-                        value={data.personalInfo.phone}
+                        value={data.personalInfo.phone || ''}
                         onChange={e =>
                           updatePersonalInfo('phone', e.target.value)
                         }
@@ -201,37 +204,103 @@ export default function AdminPage() {
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Location
                       </label>
+                      <div className="grid grid-cols-3 gap-2">
+                        <input
+                          type="text"
+                          placeholder="City"
+                          value={data.personalInfo.location.city}
+                          onChange={e =>
+                            setData(prev => ({
+                              ...prev,
+                              personalInfo: {
+                                ...prev.personalInfo,
+                                location: {
+                                  ...prev.personalInfo.location,
+                                  city: e.target.value,
+                                },
+                              },
+                            }))
+                          }
+                          className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Country"
+                          value={data.personalInfo.location.country}
+                          onChange={e =>
+                            setData(prev => ({
+                              ...prev,
+                              personalInfo: {
+                                ...prev.personalInfo,
+                                location: {
+                                  ...prev.personalInfo.location,
+                                  country: e.target.value,
+                                },
+                              },
+                            }))
+                          }
+                          className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Code"
+                          value={data.personalInfo.location.countryCode}
+                          onChange={e =>
+                            setData(prev => ({
+                              ...prev,
+                              personalInfo: {
+                                ...prev.personalInfo,
+                                location: {
+                                  ...prev.personalInfo.location,
+                                  countryCode: e.target.value,
+                                },
+                              },
+                            }))
+                          }
+                          className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        LinkedIn URL
+                      </label>
                       <input
-                        type="text"
-                        value={data.personalInfo.location}
+                        type="url"
+                        value={data.personalInfo.social.linkedin || ''}
                         onChange={e =>
-                          updatePersonalInfo('location', e.target.value)
+                          setData(prev => ({
+                            ...prev,
+                            personalInfo: {
+                              ...prev.personalInfo,
+                              social: {
+                                ...prev.personalInfo.social,
+                                linkedin: e.target.value,
+                              },
+                            },
+                          }))
                         }
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        LinkedIn
+                        GitHub URL
                       </label>
                       <input
-                        type="text"
-                        value={data.personalInfo.linkedin}
+                        type="url"
+                        value={data.personalInfo.social.github || ''}
                         onChange={e =>
-                          updatePersonalInfo('linkedin', e.target.value)
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        GitHub
-                      </label>
-                      <input
-                        type="text"
-                        value={data.personalInfo.github || ''}
-                        onChange={e =>
-                          updatePersonalInfo('github', e.target.value)
+                          setData(prev => ({
+                            ...prev,
+                            personalInfo: {
+                              ...prev.personalInfo,
+                              social: {
+                                ...prev.personalInfo.social,
+                                github: e.target.value,
+                              },
+                            },
+                          }))
                         }
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       />
@@ -250,7 +319,7 @@ export default function AdminPage() {
                       Summary
                     </label>
                     <textarea
-                      value={data.summary}
+                      value={data.personalInfo.summary}
                       onChange={e => updateSummary(e.target.value)}
                       rows={6}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"

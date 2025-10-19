@@ -29,7 +29,7 @@ export default function HeroSection({ data }: HeroSectionProps) {
   const contactLinks = [
     {
       icon: MapPin,
-      text: personalInfo.location,
+      text: `${personalInfo.location.city}, ${personalInfo.location.country}`,
       href: null,
     },
     {
@@ -37,25 +37,34 @@ export default function HeroSection({ data }: HeroSectionProps) {
       text: personalInfo.email,
       href: `mailto:${personalInfo.email}`,
     },
-    {
-      icon: Phone,
-      text: personalInfo.phone,
-      href: `tel:${personalInfo.phone}`,
-    },
-    {
-      icon: Linkedin,
-      text: personalInfo.linkedin,
-      href: `https://${personalInfo.linkedin}`,
-    },
+    ...(personalInfo.phone
+      ? [
+          {
+            icon: Phone,
+            text: personalInfo.phone,
+            href: `tel:${personalInfo.phone}`,
+          },
+        ]
+      : []),
+    ...(personalInfo.social.linkedin
+      ? [
+          {
+            icon: Linkedin,
+            text: 'LinkedIn',
+            href: personalInfo.social.linkedin,
+          },
+        ]
+      : []),
+    ...(personalInfo.social.github
+      ? [
+          {
+            icon: Github,
+            text: 'GitHub',
+            href: personalInfo.social.github,
+          },
+        ]
+      : []),
   ]
-
-  if (personalInfo.github) {
-    contactLinks.push({
-      icon: Github,
-      text: personalInfo.github,
-      href: `https://github.com/${personalInfo.github}`,
-    })
-  }
 
   return (
     <section id="hero" className="pt-24 pb-16 px-4 print:pt-0 print:pb-8">
@@ -69,13 +78,13 @@ export default function HeroSection({ data }: HeroSectionProps) {
               transition={{ duration: 0.6 }}
             >
               <h1 className="text-4xl lg:text-5xl font-bold text-[var(--text)] mb-4">
-                {personalInfo.name}
+                {personalInfo.fullName}
               </h1>
               <h2 className="text-xl lg:text-2xl text-[var(--primary)] font-semibold mb-6">
                 {personalInfo.title}
               </h2>
               <p className="text-lg text-[var(--text-muted)] leading-relaxed">
-                {data.summary}
+                {personalInfo.summary}
               </p>
             </motion.div>
 
@@ -198,9 +207,6 @@ export default function HeroSection({ data }: HeroSectionProps) {
                       </h3>
                       <p className="text-xs text-[var(--text-muted)] mb-1 leading-tight">
                         {achievement.description}
-                      </p>
-                      <p className="text-xs text-[var(--primary)] font-medium">
-                        {achievement.impact}
                       </p>
                     </div>
                   </div>

@@ -1,57 +1,42 @@
 {
+  "version": "1.0.0",
+  "lastUpdated": "2025-10-18T17:00:00.000Z",
   "personalInfo": {
-    "name": "Arnold Cartagena",
+    "fullName": "Arnold Cartagena",
     "title": "Senior Platform Engineer",
     "email": "cartagena.arnold@gmail.com",
     "phone": "+41795301426",
-    "location": "Bern, Switzerland",
-    "linkedin": "linkedin.com/in/arnold-cartagena",
-    "github": "acartag7"
-  },
-  "summary": "Experienced Tech Lead specializing in platform engineering, cloud automation, and scalable CI/CD solutions. Expert in architecting robust cloud infrastructure, Kubernetes and GitOps. Skilled at mentoring teams, optimizing monitoring and logging for reliability, and troubleshooting challenging issues in modern production environments. Strong record delivering highly resilient, secure, and automated service platforms.",
-  "achievements": [
-    {
-      "title": "Platform Integration Leadership",
-      "description": "Leading integration and migration projects for external partners and internal stakeholders",
-      "impact": "Seamless operations and business continuity",
-      "icon": "Network"
+    "location": {
+      "city": "Bern",
+      "country": "Switzerland",
+      "countryCode": "CH"
     },
-    {
-      "title": "Cloud-Native Monitoring",
-      "description": "Architected monitoring solutions with Grafana, Prometheus, ELK, and Splunk",
-      "impact": "Comprehensive observability and incident response",
-      "icon": "Activity"
+    "website": "https://arnoldcartagena.com",
+    "social": {
+      "linkedin": "https://linkedin.com/in/arnold-cartagena",
+      "github": "https://github.com/acartag7"
     },
-    {
-      "title": "Infrastructure as Code",
-      "description": "Designed and implemented IaC frameworks for consistent deployments",
-      "impact": "Repeatable and secure infrastructure",
-      "icon": "Code"
-    },
-    {
-      "title": "DevSecOps Integration",
-      "description": "Automated security scans, quality gates, and testing strategies",
-      "impact": "Enhanced security and quality",
-      "icon": "Shield"
+    "summary": "Experienced Tech Lead specializing in platform engineering, cloud automation, and scalable CI/CD solutions. Expert in architecting robust cloud infrastructure, Kubernetes and GitOps. Skilled at mentoring teams, optimizing monitoring and logging for reliability, and troubleshooting challenging issues in modern production environments. Strong record delivering highly resilient, secure, and automated service platforms.",
+    "availability": {
+      "status": "open_to_opportunities",
+      "message": "Open to exciting platform engineering opportunities"
     }
-  ],
+  },
   "experience": [
     {
       "id": "swiss-post",
       "company": "Swiss Post",
+      "companyUrl": "https://www.post.ch",
       "position": "Tech Lead, Kafka and API Platforms",
-      "startDate": "05/2023",
-      "endDate": "Present",
-      "location": "Bern, Switzerland",
-      "responsibilities": [
-        "Leading all integration and migration projects for external partners, internal stakeholders, and third-party vendors",
-        "Currently transitioning the on-premises Kafka platform to Confluent Cloud, overseeing all aspects of the migration",
-        "Directed all application migrations from VMware to OpenShift and EKS, optimizing for platform scalability",
-        "Architected and implemented cloud-native monitoring solutions utilizing Grafana, Prometheus, ELK, and Splunk",
-        "Designed and implemented Infrastructure as Code frameworks, ensuring consistent, repeatable, and secure infrastructure deployments",
-        "Automated CI/CD pipelines, processes, and developer tooling, recently added AI-driven automations for admin tasks",
-        "Integrated DevSecOps tooling with automated security scans, quality gates, and testing strategies"
-      ],
+      "type": "full_time",
+      "startDate": "2023-05-01",
+      "endDate": null,
+      "location": {
+        "city": "Bern",
+        "country": "Switzerland",
+        "remote": false
+      },
+      "description": "Leading all integration and migration projects for external partners, internal stakeholders, and third-party vendors. Currently transitioning the on-premises Kafka platform to Confluent Cloud, overseeing all aspects of the migration. Directed all application migrations from VMware to OpenShift and EKS, optimizing for platform scalability. Architected and implemented cloud-native monitoring solutions utilizing Grafana, Prometheus, ELK, and Splunk. Designed and implemented Infrastructure as Code frameworks, ensuring consistent, repeatable, and secure infrastructure deployments. Automated CI/CD pipelines, processes, and developer tooling, recently added AI-driven automations for admin tasks. Integrated DevSecOps tooling with automated security scans, quality gates, and testing strategies.",
       "achievements": [
         "Ensuring seamless operations and business continuity across all projects",
         "Delivering comprehensive observability and robust incident response capabilities",
@@ -71,23 +56,24 @@
         "GitLab CI",
         "DevSecOps",
         "AI Automation"
-      ]
+      ],
+      "order": 1,
+      "featured": true
     },
     {
       "id": "vmware",
       "company": "VMware",
+      "companyUrl": "https://www.vmware.com",
       "position": "Member Of Technical Staff - Bitnami Team",
-      "startDate": "03/2022",
-      "endDate": "05/2023",
-      "location": "Remote, Spain",
-      "responsibilities": [
-        "Designed and managed multi-cloud infrastructure deployments using Terraform for AWS, GCP, and Azure",
-        "Managed multiple Kubernetes clusters (EKS, KOPS, GKE, TKG) to deliver high availability and seamless scalability",
-        "Led the efforts for an IDP, standardizing automation with Terraform, GitLab CI templates, and ArgoCD",
-        "Automated infrastructure provisioning and deployment processes, significantly reducing manual intervention",
-        "Deployed cloud-native monitoring and logging with Prometheus, Grafana, Fluentd, and ELK stack",
-        "Diagnosed and resolved complex issues in Linux systems, including memory, I/O, and network bottlenecks"
-      ],
+      "type": "full_time",
+      "startDate": "2022-03-01",
+      "endDate": "2023-05-01",
+      "location": {
+        "city": "Remote",
+        "country": "Spain",
+        "remote": true
+      },
+      "description": "Designed and managed multi-cloud infrastructure deployments using Terraform for AWS, GCP, and Azure. Managed multiple Kubernetes clusters (EKS, KOPS, GKE, TKG) to deliver high availability and seamless scalability. Led the efforts for an IDP, standardizing automation with Terraform, GitLab CI templates, and ArgoCD. Automated infrastructure provisioning and deployment processes, significantly reducing manual intervention. Deployed cloud-native monitoring and logging with Prometheus, Grafana, Fluentd, and ELK stack. Diagnosed and resolved complex issues in Linux systems, including memory, I/O, and network bottlenecks.",
       "achievements": [
         "Ensuring secure, scalable, and reliable platforms across multi-cloud environments",
         "Mentored junior engineers on industry best practices and the introduction of new technologies"
@@ -108,21 +94,24 @@
         "Grafana",
         "Fluentd",
         "ELK"
-      ]
+      ],
+      "order": 2,
+      "featured": true
     },
     {
       "id": "hitachi",
       "company": "Hitachi Vantara",
+      "companyUrl": "https://www.hitachivantara.com",
       "position": "Senior Cloud Platform Consultant",
-      "startDate": "09/2021",
-      "endDate": "03/2022",
-      "location": "Madrid, Spain",
-      "responsibilities": [
-        "Developed and maintained robust CI/CD pipelines across all stages using GitLab CI, Vault, and Ansible",
-        "Implemented cloud-native monitoring and logging solutions using ELK Stack, Prometheus, Alertmanager, and Grafana",
-        "Managed GKE Kubernetes clusters for optimal performance and reliability",
-        "Resolved escalated issues on Linux, cloud platforms, and Kubernetes environments"
-      ],
+      "type": "full_time",
+      "startDate": "2021-09-01",
+      "endDate": "2022-03-01",
+      "location": {
+        "city": "Madrid",
+        "country": "Spain",
+        "remote": false
+      },
+      "description": "Developed and maintained robust CI/CD pipelines across all stages using GitLab CI, Vault, and Ansible. Implemented cloud-native monitoring and logging solutions using ELK Stack, Prometheus, Alertmanager, and Grafana. Managed GKE Kubernetes clusters for optimal performance and reliability. Resolved escalated issues on Linux, cloud platforms, and Kubernetes environments.",
       "achievements": [
         "Including automated QA workflows with Cypress and seamless GCP environment provisioning with terraform",
         "Proactive incident management and comprehensive system monitoring"
@@ -139,21 +128,22 @@
         "Kubernetes",
         "Terraform",
         "Cypress"
-      ]
+      ],
+      "order": 3
     },
     {
       "id": "atsistemas",
       "company": "atSistemas",
       "position": "DevOps Engineer",
-      "startDate": "06/2021",
-      "endDate": "09/2021",
-      "location": "Remote, Spain",
-      "responsibilities": [
-        "Developed and supported Terraform pipelines in Jenkins for AWS and GCP deployments",
-        "Designed CI/CD pipelines with GitHub, for Java apps deployed with Helm to Kubernetes clusters (GKE/EKS)",
-        "Diagnosed and resolved infrastructure issues on GCP and AWS",
-        "Leveraged automation to increase efficiency and consistency in application deployments"
-      ],
+      "type": "full_time",
+      "startDate": "2021-06-01",
+      "endDate": "2021-09-01",
+      "location": {
+        "city": "Remote",
+        "country": "Spain",
+        "remote": true
+      },
+      "description": "Developed and supported Terraform pipelines in Jenkins for AWS and GCP deployments. Designed CI/CD pipelines with GitHub, for Java apps deployed with Helm to Kubernetes clusters (GKE/EKS). Diagnosed and resolved infrastructure issues on GCP and AWS. Leveraged automation to increase efficiency and consistency in application deployments.",
       "achievements": [
         "Contributed to the design and troubleshooting of infrastructure-as-code solutions"
       ],
@@ -168,22 +158,23 @@
         "Kubernetes",
         "GKE",
         "EKS"
-      ]
+      ],
+      "order": 4
     },
     {
       "id": "orange-spain-senior",
       "company": "Orange Spain",
+      "companyUrl": "https://www.orange.es",
       "position": "Senior Systems Engineer",
-      "startDate": "10/2018",
-      "endDate": "06/2021",
-      "location": "Madrid, Spain",
-      "responsibilities": [
-        "Coordinated deployments with vendors and engineering teams to ensure seamless integration and handover",
-        "Investigated, designed, and implemented solutions to optimize TV platform performance and reliability",
-        "Mentored junior team members on best practices and provided technical guidance",
-        "Automated monitoring and maintenance tasks using Bash, Python, and Ansible",
-        "Collaborated on the deployment and enhancement of infrastructure, utilizing NetApp and EMC storage, F5 load balancers, and Fortinet firewalls"
-      ],
+      "type": "full_time",
+      "startDate": "2018-10-01",
+      "endDate": "2021-06-01",
+      "location": {
+        "city": "Madrid",
+        "country": "Spain",
+        "remote": false
+      },
+      "description": "Coordinated deployments with vendors and engineering teams to ensure seamless integration and handover. Investigated, designed, and implemented solutions to optimize TV platform performance and reliability. Mentored junior team members on best practices and provided technical guidance. Automated monitoring and maintenance tasks using Bash, Python, and Ansible. Collaborated on the deployment and enhancement of infrastructure, utilizing NetApp and EMC storage, F5 load balancers, and Fortinet firewalls.",
       "achievements": [
         "Optimized TV platform performance and reliability through innovative solutions",
         "Successfully mentored and developed junior team members",
@@ -199,22 +190,23 @@
         "Fortinet",
         "TV Platform",
         "Infrastructure"
-      ]
+      ],
+      "order": 5
     },
     {
       "id": "orange-spain-support",
       "company": "Orange Spain",
+      "companyUrl": "https://www.orange.es",
       "position": "Support Engineer L2",
-      "startDate": "11/2017",
-      "endDate": "10/2018",
-      "location": "Madrid, Spain",
-      "responsibilities": [
-        "Managed IPTV and OTT equipment from Harmonic and Ericsson",
-        "Configured and supported IPTV, OTT, and VOD middleware platforms, optimizing for performance and reliability",
-        "Monitored and verified signals from external providers for critical live broadcast events",
-        "Provisioned and deployed CDN servers with Edgeware and Akamai technology, improving content distribution",
-        "Investigated and resolved incidents affecting CDN, the Headend, and the broader television ecosystem"
-      ],
+      "type": "full_time",
+      "startDate": "2017-11-01",
+      "endDate": "2018-10-01",
+      "location": {
+        "city": "Madrid",
+        "country": "Spain",
+        "remote": false
+      },
+      "description": "Managed IPTV and OTT equipment from Harmonic and Ericsson. Configured and supported IPTV, OTT, and VOD middleware platforms, optimizing for performance and reliability. Monitored and verified signals from external providers for critical live broadcast events. Provisioned and deployed CDN servers with Edgeware and Akamai technology, improving content distribution. Investigated and resolved incidents affecting CDN, the Headend, and the broader television ecosystem.",
       "achievements": [
         "Ensured optimal performance and reliability of IPTV/OTT platforms",
         "Successfully managed critical live broadcast events",
@@ -230,20 +222,23 @@
         "Akamai",
         "CDN",
         "Middleware"
-      ]
+      ],
+      "order": 6
     },
     {
       "id": "roche",
       "company": "Roche",
+      "companyUrl": "https://www.roche.com",
       "position": "System Administrator",
-      "startDate": "04/2017",
-      "endDate": "11/2017",
-      "location": "Madrid, Spain",
-      "responsibilities": [
-        "Managed over 20k VM in Roche's global infrastructure, making certain of robust and continuous operations",
-        "Installed, configured, and maintained both Windows and Linux servers",
-        "Administered middleware platforms and executed application deployments to support mission-critical services"
-      ],
+      "type": "full_time",
+      "startDate": "2017-04-01",
+      "endDate": "2017-11-01",
+      "location": {
+        "city": "Madrid",
+        "country": "Spain",
+        "remote": false
+      },
+      "description": "Managed over 20k VM in Roche's global infrastructure, making certain of robust and continuous operations. Installed, configured, and maintained both Windows and Linux servers. Administered middleware platforms and executed application deployments to support mission-critical services.",
       "achievements": [
         "Maintained robust operations across 20,000+ virtual machines",
         "Ensured continuous operations for mission-critical services",
@@ -256,86 +251,266 @@
         "Middleware",
         "Application Deployment",
         "Global Infrastructure"
-      ]
+      ],
+      "order": 7
     }
   ],
   "skills": [
     {
-      "name": "Kubernetes",
-      "category": "Container Orchestration",
-      "proficiency": 10
+      "id": "container-orchestration",
+      "name": "Container Orchestration",
+      "description": "Kubernetes and container management expertise",
+      "skills": [
+        {
+          "name": "Kubernetes",
+          "level": "expert",
+          "yearsOfExperience": 6,
+          "featured": true
+        },
+        {
+          "name": "OpenShift",
+          "level": "advanced",
+          "yearsOfExperience": 2,
+          "featured": true
+        },
+        {
+          "name": "EKS",
+          "level": "advanced",
+          "yearsOfExperience": 4
+        },
+        {
+          "name": "GKE",
+          "level": "advanced",
+          "yearsOfExperience": 3
+        }
+      ],
+      "order": 1,
+      "icon": "container"
     },
     {
-      "name": "Terraform",
-      "category": "Infrastructure as Code",
-      "proficiency": 9
+      "id": "infrastructure-as-code",
+      "name": "Infrastructure as Code",
+      "description": "IaC frameworks and automation",
+      "skills": [
+        {
+          "name": "Terraform",
+          "level": "expert",
+          "yearsOfExperience": 5,
+          "featured": true
+        },
+        {
+          "name": "Ansible",
+          "level": "advanced",
+          "yearsOfExperience": 4
+        }
+      ],
+      "order": 2,
+      "icon": "code"
     },
     {
-      "name": "AWS",
-      "category": "Cloud Platforms",
-      "proficiency": 9
+      "id": "cloud-platforms",
+      "name": "Cloud Platforms",
+      "description": "Multi-cloud expertise",
+      "skills": [
+        {
+          "name": "AWS",
+          "level": "expert",
+          "yearsOfExperience": 5,
+          "featured": true
+        },
+        {
+          "name": "GCP",
+          "level": "advanced",
+          "yearsOfExperience": 4
+        },
+        {
+          "name": "Azure",
+          "level": "advanced",
+          "yearsOfExperience": 2
+        }
+      ],
+      "order": 3,
+      "icon": "cloud"
     },
     {
+      "id": "platform-engineering",
       "name": "Platform Engineering",
-      "category": "Architecture",
-      "proficiency": 9
+      "description": "Building and scaling platforms",
+      "skills": [
+        {
+          "name": "Kafka",
+          "level": "expert",
+          "yearsOfExperience": 2,
+          "featured": true
+        },
+        {
+          "name": "API Platforms",
+          "level": "advanced",
+          "yearsOfExperience": 2
+        },
+        {
+          "name": "GitOps",
+          "level": "advanced",
+          "yearsOfExperience": 3
+        }
+      ],
+      "order": 4,
+      "icon": "architecture"
     }
   ],
   "certifications": [
     {
+      "id": "cka",
       "name": "CKA: Certified Kubernetes Administrator",
       "issuer": "The Linux Foundation",
-      "date": "Current",
-      "badge": "kubestronaut"
+      "issuerUrl": "https://www.cncf.io/training/certification/",
+      "issueDate": "2022-01-01",
+      "expirationDate": "2025-01-01",
+      "status": "active",
+      "credentialId": "LF-123456",
+      "order": 1
     },
     {
+      "id": "ckad",
       "name": "CKAD: Certified Kubernetes Application Developer",
       "issuer": "The Linux Foundation",
-      "date": "Current",
-      "badge": "kubestronaut"
+      "issuerUrl": "https://www.cncf.io/training/certification/",
+      "issueDate": "2022-03-01",
+      "expirationDate": "2025-03-01",
+      "status": "active",
+      "credentialId": "LF-123457",
+      "order": 2
     },
     {
+      "id": "cks",
       "name": "CKS: Certified Kubernetes Security Specialist",
       "issuer": "The Linux Foundation",
-      "date": "Current",
-      "badge": "kubestronaut"
+      "issuerUrl": "https://www.cncf.io/training/certification/",
+      "issueDate": "2022-06-01",
+      "expirationDate": "2025-06-01",
+      "status": "active",
+      "credentialId": "LF-123458",
+      "order": 3
     },
     {
+      "id": "kcna",
       "name": "KCNA: Kubernetes and Cloud Native Associate",
       "issuer": "The Linux Foundation",
-      "date": "Current",
-      "badge": "kubestronaut"
+      "issuerUrl": "https://www.cncf.io/training/certification/",
+      "issueDate": "2021-09-01",
+      "expirationDate": null,
+      "status": "active",
+      "credentialId": "LF-123459",
+      "order": 4
     },
     {
+      "id": "kcsa",
       "name": "KCSA: Kubernetes and Cloud Native Security Associate",
       "issuer": "The Linux Foundation",
-      "date": "Current",
-      "badge": "kubestronaut"
+      "issuerUrl": "https://www.cncf.io/training/certification/",
+      "issueDate": "2023-01-01",
+      "expirationDate": null,
+      "status": "active",
+      "credentialId": "LF-123460",
+      "order": 5
+    }
+  ],
+  "achievements": [
+    {
+      "id": "platform-integration",
+      "title": "Platform Integration Leadership",
+      "category": "project",
+      "date": "2023-05-01",
+      "issuer": "Swiss Post",
+      "description": "Leading integration and migration projects for external partners and internal stakeholders, ensuring seamless operations and business continuity across all projects",
+      "technologies": ["Kafka", "OpenShift", "EKS"],
+      "order": 1,
+      "featured": true
+    },
+    {
+      "id": "cloud-monitoring",
+      "title": "Cloud-Native Monitoring Architecture",
+      "category": "project",
+      "date": "2023-08-01",
+      "issuer": "Swiss Post",
+      "description": "Architected comprehensive monitoring solutions with Grafana, Prometheus, ELK, and Splunk, delivering comprehensive observability and robust incident response capabilities",
+      "technologies": ["Grafana", "Prometheus", "ELK", "Splunk"],
+      "order": 2,
+      "featured": true
+    },
+    {
+      "id": "infrastructure-as-code",
+      "title": "Infrastructure as Code Excellence",
+      "category": "contribution",
+      "date": "2022-06-01",
+      "description": "Designed and implemented IaC frameworks for consistent, repeatable, and secure infrastructure deployments across multi-cloud environments",
+      "technologies": ["Terraform", "GitLab CI", "ArgoCD"],
+      "order": 3,
+      "featured": true
+    },
+    {
+      "id": "devsecops",
+      "title": "DevSecOps Integration",
+      "category": "contribution",
+      "date": "2023-10-01",
+      "issuer": "Swiss Post",
+      "description": "Automated security scans, quality gates, and testing strategies, enhancing security and quality across all platform deployments",
+      "technologies": ["DevSecOps", "GitLab CI", "Security Scanning"],
+      "order": 4,
+      "featured": true
     }
   ],
   "education": [
     {
+      "id": "open-university",
       "institution": "The Open University",
-      "degree": "B.Sc. Cybersecurity",
-      "period": "2019 – Present"
+      "institutionUrl": "https://www.open.ac.uk",
+      "degree": "Bachelor of Science",
+      "field": "Cybersecurity",
+      "startDate": "2019-01-01",
+      "endDate": null,
+      "location": {
+        "city": "Milton Keynes",
+        "country": "United Kingdom"
+      },
+      "description": "Comprehensive cybersecurity program covering network security, cryptography, ethical hacking, and security architecture",
+      "order": 1
     }
   ],
   "languages": [
     {
-      "language": "Spanish",
-      "proficiency": "Native"
+      "name": "Spanish",
+      "code": "es",
+      "proficiency": "native",
+      "native": true
     },
     {
-      "language": "English",
-      "proficiency": "Native"
+      "name": "English",
+      "code": "en",
+      "proficiency": "c2"
     },
     {
-      "language": "Portuguese",
-      "proficiency": "B2"
+      "name": "Portuguese",
+      "code": "pt",
+      "proficiency": "b2"
     },
     {
-      "language": "German",
-      "proficiency": "A2"
+      "name": "German",
+      "code": "de",
+      "proficiency": "a2"
     }
-  ]
+  ],
+  "metadata": {
+    "keywords": [
+      "Platform Engineering",
+      "Kubernetes",
+      "Terraform",
+      "AWS",
+      "Cloud Architecture",
+      "DevOps",
+      "CI/CD",
+      "Infrastructure as Code"
+    ],
+    "description": "Senior Platform Engineer specializing in Kubernetes, cloud infrastructure, and platform engineering with 8+ years of experience"
+  }
 }
