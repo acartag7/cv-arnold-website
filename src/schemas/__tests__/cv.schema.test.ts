@@ -202,36 +202,107 @@ describe('Phone Number Validation', () => {
 // ============================================================================
 
 describe('Enum Schemas', () => {
-  it('should validate SkillLevelSchema', () => {
-    expect(SkillLevelSchema.parse('beginner')).toBe('beginner')
-    expect(SkillLevelSchema.parse('expert')).toBe('expert')
-    expect(() => SkillLevelSchema.parse('master')).toThrow()
+  describe('SkillLevelSchema', () => {
+    it.each([
+      ['beginner', true],
+      ['intermediate', true],
+      ['advanced', true],
+      ['expert', true],
+      ['master', false],
+      ['novice', false],
+    ])('should validate "%s" as %s', (level, isValid) => {
+      if (isValid) {
+        expect(SkillLevelSchema.parse(level)).toBe(level)
+      } else {
+        expect(() => SkillLevelSchema.parse(level)).toThrow()
+      }
+    })
   })
 
-  it('should validate LanguageProficiencySchema', () => {
-    expect(LanguageProficiencySchema.parse('native')).toBe('native')
-    expect(LanguageProficiencySchema.parse('c2')).toBe('c2')
-    expect(() => LanguageProficiencySchema.parse('d1')).toThrow()
+  describe('LanguageProficiencySchema', () => {
+    it.each([
+      ['native', true],
+      ['c2', true],
+      ['c1', true],
+      ['b2', true],
+      ['b1', true],
+      ['a2', true],
+      ['a1', true],
+      ['d1', false],
+      ['e1', false],
+    ])('should validate "%s" as %s', (proficiency, isValid) => {
+      if (isValid) {
+        expect(LanguageProficiencySchema.parse(proficiency)).toBe(proficiency)
+      } else {
+        expect(() => LanguageProficiencySchema.parse(proficiency)).toThrow()
+      }
+    })
   })
 
-  it('should validate EmploymentTypeSchema', () => {
-    expect(EmploymentTypeSchema.parse('full_time')).toBe('full_time')
-    expect(() => EmploymentTypeSchema.parse('full-time')).toThrow()
+  describe('EmploymentTypeSchema', () => {
+    it.each([
+      ['full_time', true],
+      ['part_time', true],
+      ['contract', true],
+      ['freelance', true],
+      ['internship', true],
+      ['full-time', false],
+      ['part-time', false],
+    ])('should validate "%s" as %s', (type, isValid) => {
+      if (isValid) {
+        expect(EmploymentTypeSchema.parse(type)).toBe(type)
+      } else {
+        expect(() => EmploymentTypeSchema.parse(type)).toThrow()
+      }
+    })
   })
 
-  it('should validate CertificationStatusSchema', () => {
-    expect(CertificationStatusSchema.parse('active')).toBe('active')
-    expect(() => CertificationStatusSchema.parse('pending')).toThrow()
+  describe('CertificationStatusSchema', () => {
+    it.each([
+      ['active', true],
+      ['expired', true],
+      ['pending', false],
+      ['revoked', false],
+    ])('should validate "%s" as %s', (status, isValid) => {
+      if (isValid) {
+        expect(CertificationStatusSchema.parse(status)).toBe(status)
+      } else {
+        expect(() => CertificationStatusSchema.parse(status)).toThrow()
+      }
+    })
   })
 
-  it('should validate AchievementCategorySchema', () => {
-    expect(AchievementCategorySchema.parse('award')).toBe('award')
-    expect(() => AchievementCategorySchema.parse('bonus')).toThrow()
+  describe('AchievementCategorySchema', () => {
+    it.each([
+      ['award', true],
+      ['publication', true],
+      ['project', true],
+      ['contribution', true],
+      ['bonus', false],
+      ['prize', false],
+    ])('should validate "%s" as %s', (category, isValid) => {
+      if (isValid) {
+        expect(AchievementCategorySchema.parse(category)).toBe(category)
+      } else {
+        expect(() => AchievementCategorySchema.parse(category)).toThrow()
+      }
+    })
   })
 
-  it('should validate AvailabilityStatusSchema', () => {
-    expect(AvailabilityStatusSchema.parse('available')).toBe('available')
-    expect(() => AvailabilityStatusSchema.parse('maybe')).toThrow()
+  describe('AvailabilityStatusSchema', () => {
+    it.each([
+      ['available', true],
+      ['not_available', true],
+      ['open_to_opportunities', true],
+      ['maybe', false],
+      ['unavailable', false],
+    ])('should validate "%s" as %s', (status, isValid) => {
+      if (isValid) {
+        expect(AvailabilityStatusSchema.parse(status)).toBe(status)
+      } else {
+        expect(() => AvailabilityStatusSchema.parse(status)).toThrow()
+      }
+    })
   })
 })
 

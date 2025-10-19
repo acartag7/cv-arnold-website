@@ -31,6 +31,13 @@ export default defineConfig({
         functions: 80,
         branches: 80,
         statements: 80,
+        // Per-directory thresholds (as per CLAUDE.md standards)
+        'src/schemas/**': {
+          lines: 90,
+          functions: 80,
+          branches: 90,
+          statements: 90,
+        },
       },
     },
 
