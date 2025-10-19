@@ -4,6 +4,8 @@
 
 **⚠️ DO THIS FIRST - Before responding to ANY user request:**
 
+### For New Sessions
+
 ```javascript
 // 1. Testing procedures (REQUIRED - Contains standard verification steps)
 mcp__memory__recall_memory({
@@ -23,6 +25,29 @@ mcp__memory__recall_memory({
   limit: 3,
 })
 ```
+
+### For Continued Sessions (After Compaction)
+
+**🔍 CRITICAL: Carefully read and verify the compaction summary!**
+
+Compaction can lose context or introduce misunderstandings. Before continuing:
+
+1. **Read the entire summary carefully** - Don't skip or skim
+2. **Verify key details**:
+   - Task IDs and status (what's done vs in-progress)
+   - File paths and code changes
+   - Decisions made and their rationale
+   - Any errors encountered and how they were fixed
+3. **Check for red flags**:
+   - Missing context about WHY decisions were made
+   - Unclear state of PRs or branches
+   - Incomplete error resolution
+4. **Recall relevant memories** to fill gaps:
+   ```javascript
+   // If summary mentions Task X, recall that task's context
+   mcp__memory__recall_memory({ tags: ['task-X.Y'], limit: 3 })
+   ```
+5. **Ask user for clarification** if summary is ambiguous
 
 **✅ Checklist Complete?** Now proceed with your work.
 
