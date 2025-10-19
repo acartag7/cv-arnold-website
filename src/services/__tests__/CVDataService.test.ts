@@ -46,6 +46,8 @@ describe('CVDataService', () => {
     mockRepository = {
       getData: vi.fn(),
       updateData: vi.fn(),
+      getSection: vi.fn(),
+      updateSection: vi.fn(),
       exists: vi.fn(),
       delete: vi.fn(),
     }

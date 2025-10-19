@@ -101,9 +101,11 @@ describe('JSONFileAdapter', () => {
       await adapter.updateData(mockCVData)
 
       const writeCall = vi.mocked(fs.writeFile).mock.calls[0]
-      const jsonString = writeCall[1] as string
-      expect(jsonString).toContain('  ') // Has indentation
-      expect(JSON.parse(jsonString)).toEqual(mockCVData) // Valid JSON
+      if (writeCall) {
+        const jsonString = writeCall[1] as string
+        expect(jsonString).toContain('  ') // Has indentation
+        expect(JSON.parse(jsonString)).toEqual(mockCVData) // Valid JSON
+      }
     })
   })
 

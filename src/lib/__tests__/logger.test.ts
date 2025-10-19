@@ -26,8 +26,7 @@ describe('Logger', () => {
 
   describe('debug', () => {
     it('should log debug message in development', () => {
-      const originalEnv = process.env.NODE_ENV
-      process.env.NODE_ENV = 'development'
+      vi.stubEnv('NODE_ENV', 'development')
 
       const logger = new Logger('TestLogger')
       logger.debug('Debug message')
@@ -38,24 +37,22 @@ describe('Logger', () => {
         ''
       )
 
-      process.env.NODE_ENV = originalEnv
+      vi.unstubAllEnvs()
     })
 
     it('should not log debug in production', () => {
-      const originalEnv = process.env.NODE_ENV
-      process.env.NODE_ENV = 'production'
+      vi.stubEnv('NODE_ENV', 'production')
 
       const logger = new Logger('TestLogger')
       logger.debug('Debug message')
 
       expect(consoleSpy.log).not.toHaveBeenCalled()
 
-      process.env.NODE_ENV = originalEnv
+      vi.unstubAllEnvs()
     })
 
     it('should log debug with context data', () => {
-      const originalEnv = process.env.NODE_ENV
-      process.env.NODE_ENV = 'development'
+      vi.stubEnv('NODE_ENV', 'development')
 
       const logger = new Logger('TestLogger')
       logger.debug('Debug message', { userId: 123, action: 'test' })
@@ -66,14 +63,13 @@ describe('Logger', () => {
         expect.objectContaining({ userId: 123, action: 'test' })
       )
 
-      process.env.NODE_ENV = originalEnv
+      vi.unstubAllEnvs()
     })
   })
 
   describe('info', () => {
     it('should log info message in development', () => {
-      const originalEnv = process.env.NODE_ENV
-      process.env.NODE_ENV = 'development'
+      vi.stubEnv('NODE_ENV', 'development')
 
       const logger = new Logger('TestLogger')
       logger.info('Info message')
@@ -84,19 +80,18 @@ describe('Logger', () => {
         ''
       )
 
-      process.env.NODE_ENV = originalEnv
+      vi.unstubAllEnvs()
     })
 
     it('should not log info in production', () => {
-      const originalEnv = process.env.NODE_ENV
-      process.env.NODE_ENV = 'production'
+      vi.stubEnv('NODE_ENV', 'production')
 
       const logger = new Logger('TestLogger')
       logger.info('Info message')
 
       expect(consoleSpy.log).not.toHaveBeenCalled()
 
-      process.env.NODE_ENV = originalEnv
+      vi.unstubAllEnvs()
     })
   })
 
@@ -113,15 +108,14 @@ describe('Logger', () => {
     })
 
     it('should log warning in production', () => {
-      const originalEnv = process.env.NODE_ENV
-      process.env.NODE_ENV = 'production'
+      vi.stubEnv('NODE_ENV', 'production')
 
       const logger = new Logger('TestLogger')
       logger.warn('Warning message')
 
       expect(consoleSpy.log).toHaveBeenCalled()
 
-      process.env.NODE_ENV = originalEnv
+      vi.unstubAllEnvs()
     })
   })
 
