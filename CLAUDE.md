@@ -248,7 +248,38 @@ pnpm dev  # Note the port (3000 or 3001)
 
 Full procedure: Search MCP Memory for `testing-procedure`
 
-### 4. Task Completion
+### 4. PR Review Process
+
+**CRITICAL: Always read and act on Claude Code Review feedback**
+
+After pushing and creating a PR:
+
+```bash
+# 1. Wait for CI checks to complete
+gh pr view <number> --json statusCheckRollup
+
+# 2. Once checks complete, read ALL comments (especially from Claude review)
+gh pr view <number> --comments
+
+# 3. Look for automated review feedback
+# Claude Code Review posts detailed feedback as PR comments
+```
+
+**Review feedback categories:**
+
+- 🚨 **CRITICAL/MUST FIX** - Address immediately before merging
+- ⚠️ **SHOULD FIX** - Strong recommendations (document if skipping)
+- 💡 **SUGGESTIONS** - Consider for improvement
+- 📝 **FUTURE** - Note in task docs or create follow-up tasks
+
+**Do NOT merge until:**
+
+- ✅ All CI checks GREEN
+- ✅ Claude review feedback READ and understood
+- ✅ Critical items ADDRESSED
+- ✅ Decision documented if skipping recommendations
+
+### 5. Task Completion
 
 ```bash
 # Mark done in TaskMaster
@@ -258,7 +289,7 @@ task-master set-status --id=<id> --status=done
 # .taskmaster/docs/task-X-implementation.md
 ```
 
-### 5. Complex Workflows
+### 6. Complex Workflows
 
 For large changes:
 
