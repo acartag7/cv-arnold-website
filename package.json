@@ -13,6 +13,7 @@
     "format:check": "prettier --check '**/*.{js,jsx,ts,tsx,json,css,md,yaml,yml}'",
     "typecheck": "tsc --noEmit",
     "validate:cv": "tsx scripts/validate-cv-data.ts",
+    "test:schemas": "tsx scripts/test-date-validation.ts",
     "prepare": "husky"
   },
   "dependencies": {

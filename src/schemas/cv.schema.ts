@@ -27,11 +27,16 @@ const iso8601DateSchema = z
   .refine(
     date => {
       const parsed = new Date(date)
-      // Check if date is valid and matches input (prevents auto-correction)
-      const datePrefix = date.split('T')[0] || date
-      return (
-        !isNaN(parsed.getTime()) && parsed.toISOString().startsWith(datePrefix)
-      )
+      if (isNaN(parsed.getTime())) return false
+
+      // For date-only format (YYYY-MM-DD), verify it doesn't auto-correct
+      if (!date.includes('T')) {
+        const dateOnly = parsed.toISOString().split('T')[0]
+        return date === dateOnly
+      }
+
+      // For datetime format, just verify it's parseable (already checked above)
+      return true
     },
     { message: 'Must be a valid date (e.g., 2025-13-40 is invalid)' }
   )

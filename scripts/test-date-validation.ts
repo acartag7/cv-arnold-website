@@ -5,12 +5,24 @@
 import { ExperienceSchema } from '../src/schemas/cv.schema'
 
 const testCases = [
-  // Valid dates
+  // Valid dates (date-only format)
   { date: '2024-02-29', expected: true, description: 'Valid leap year date' },
   { date: '2025-01-15', expected: true, description: 'Valid regular date' },
   { date: '2025-12-31', expected: true, description: 'Valid end of year' },
 
-  // Invalid dates
+  // Valid datetimes (with timestamp)
+  {
+    date: '2025-10-19T12:00:00.000Z',
+    expected: true,
+    description: 'Valid datetime with timestamp',
+  },
+  {
+    date: '2024-02-29T23:59:59.999Z',
+    expected: true,
+    description: 'Valid leap year datetime',
+  },
+
+  // Invalid dates (date-only format)
   {
     date: '2025-02-29',
     expected: false,
@@ -24,6 +36,13 @@ const testCases = [
     description: 'Invalid day for April (31)',
   },
   { date: '2025-00-15', expected: false, description: 'Invalid month (0)' },
+
+  // Invalid datetimes
+  {
+    date: '2025-13-01T12:00:00.000Z',
+    expected: false,
+    description: 'Invalid datetime (month 13)',
+  },
 ]
 
 console.log('🧪 Testing date validation edge cases...\n')
