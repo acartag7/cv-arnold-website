@@ -16,6 +16,16 @@ import type { CVData } from '@/types/cv'
 import type { ICVRepository } from './storage/ICVRepository'
 import { validateCVData, parseCVData } from '@/schemas/cv.schema'
 import {
+  PersonalInfoSchema,
+  ExperienceSchema,
+  SkillCategorySchema,
+  EducationSchema,
+  CertificationSchema,
+  AchievementSchema,
+  LanguageSchema,
+} from '@/schemas/cv.schema'
+import { z } from 'zod'
+import {
   CVDataNotFoundError,
   CVValidationError,
   CVStorageError,
@@ -24,6 +34,21 @@ import { createLogger } from '@/lib/logger'
 import { withRetry, isNetworkError } from '@/lib/retry'
 
 const logger = createLogger('CVDataService')
+
+/**
+ * Schema mapping for section validation
+ */
+const sectionSchemas = {
+  version: z.string(),
+  lastUpdated: z.string(),
+  personalInfo: PersonalInfoSchema,
+  experience: z.array(ExperienceSchema),
+  skills: z.array(SkillCategorySchema),
+  education: z.array(EducationSchema),
+  certifications: z.array(CertificationSchema),
+  achievements: z.array(AchievementSchema),
+  languages: z.array(LanguageSchema),
+} as const
 
 /**
  * Service class for CV data operations
@@ -39,6 +64,31 @@ export class CVDataService {
     logger.info('CVDataService initialized', {
       repository: repository.constructor.name,
     })
+  }
+
+  /**
+   * Validate section data using appropriate schema
+   */
+  private validateSection<K extends keyof CVData>(
+    section: K,
+    data: CVData[K]
+  ): CVData[K] {
+    const schema = sectionSchemas[section as keyof typeof sectionSchemas]
+    if (!schema) {
+      throw new CVValidationError(
+        `No validation schema found for section "${String(section)}"`
+      )
+    }
+
+    const result = schema.safeParse(data)
+    if (!result.success) {
+      throw new CVValidationError(
+        `Section "${String(section)}" validation failed`,
+        result.error.format()
+      )
+    }
+
+    return result.data as CVData[K]
   }
 
   /**
@@ -188,10 +238,11 @@ export class CVDataService {
   }
 
   /**
-   * Update specific section of CV data
+   * Update specific section of CV data with validation
    *
    * @param section - Section key to update
    * @param data - Section data to store
+   * @throws CVValidationError if data fails validation
    * @throws CVStorageError if storage operation fails
    */
   async updateSection<K extends keyof CVData>(
@@ -201,21 +252,30 @@ export class CVDataService {
     logger.debug('Updating CV section', { section })
 
     try {
-      await withRetry(() => this.repository.updateSection(section, data), {
-        maxAttempts: 3,
-        initialDelay: 1000,
-        isRetryable: isNetworkError,
-        onRetry: (error, attempt) => {
-          logger.warn('Retrying updateSection operation', {
-            section,
-            attempt,
-            error,
-          })
-        },
-      })
+      // Validate section data before updating
+      const validatedData = this.validateSection(section, data)
+
+      await withRetry(
+        () => this.repository.updateSection(section, validatedData),
+        {
+          maxAttempts: 3,
+          initialDelay: 1000,
+          isRetryable: isNetworkError,
+          onRetry: (error, attempt) => {
+            logger.warn('Retrying updateSection operation', {
+              section,
+              attempt,
+              error,
+            })
+          },
+        }
+      )
 
       logger.info('CV section updated successfully', { section })
     } catch (error) {
+      if (error instanceof CVValidationError) {
+        throw error
+      }
       logger.error('Failed to update CV section', error, { section })
       throw new CVStorageError(
         `Failed to update section "${section}"`,
