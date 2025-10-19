@@ -132,7 +132,7 @@ export class KVStorageAdapter implements ICVRepository {
         timestamp,
       }
 
-      const serialized = JSON.stringify(wrapped)
+      let serialized = JSON.stringify(wrapped)
       const shouldCompress = this.shouldCompress(serialized)
 
       logger.debug('KV update data', {
@@ -147,9 +147,12 @@ export class KVStorageAdapter implements ICVRepository {
         : undefined
 
       if (shouldCompress) {
+        // Set compression flag and re-serialize with correct metadata
+        wrapped.compressed = true
+        serialized = JSON.stringify(wrapped)
+
         // Compress and store as ArrayBuffer
         const compressed = await this.compressData(serialized)
-        wrapped.compressed = true
 
         // Retry KV put operation for transient network errors
         await withRetry(() => this.namespace.put(key, compressed, options), {
@@ -176,8 +179,16 @@ export class KVStorageAdapter implements ICVRepository {
         logger.info('CV data updated in KV', { key, size: serialized.length })
       }
 
-      // Update metadata
-      await this.updateMetadata()
+      // Update metadata (non-critical, log warning if fails)
+      try {
+        await this.updateMetadata()
+      } catch (error) {
+        logger.warn('Failed to update metadata (data write succeeded)', {
+          error,
+          key,
+        })
+        // Don't throw - data is already stored successfully
+      }
     } catch (error) {
       throw new CVStorageError('Failed to update CV data in KV', 'write', error)
     }
@@ -203,9 +214,10 @@ export class KVStorageAdapter implements ICVRepository {
     section: K
   ): Promise<CVData[K] | null> {
     try {
+      const sanitizedSection = this.sanitizeKey(section as string)
       const key = KV_KEYS.SECTION(
         this.keyPrefix,
-        section as string,
+        sanitizedSection,
         this.version
       )
       logger.debug('KV get section', { key, section })
@@ -261,9 +273,10 @@ export class KVStorageAdapter implements ICVRepository {
     data: CVData[K]
   ): Promise<void> {
     try {
+      const sanitizedSection = this.sanitizeKey(section as string)
       const key = KV_KEYS.SECTION(
         this.keyPrefix,
-        section as string,
+        sanitizedSection,
         this.version
       )
       const timestamp = new Date().toISOString()
@@ -275,7 +288,7 @@ export class KVStorageAdapter implements ICVRepository {
         timestamp,
       }
 
-      const serialized = JSON.stringify(wrapped)
+      let serialized = JSON.stringify(wrapped)
       const shouldCompress = this.shouldCompress(serialized)
 
       logger.debug('KV update section', {
@@ -291,9 +304,12 @@ export class KVStorageAdapter implements ICVRepository {
         : undefined
 
       if (shouldCompress) {
+        // Set compression flag and re-serialize with correct metadata
+        wrapped.compressed = true
+        serialized = JSON.stringify(wrapped)
+
         // Compress and store as ArrayBuffer
         const compressed = await this.compressData(serialized)
-        wrapped.compressed = true
 
         // Retry KV put operation for transient network errors
         await withRetry(() => this.namespace.put(key, compressed, options), {
@@ -318,8 +334,17 @@ export class KVStorageAdapter implements ICVRepository {
         logger.info('Section updated in KV', { key, section })
       }
 
-      // Update metadata
-      await this.updateMetadata()
+      // Update metadata (non-critical, log warning if fails)
+      try {
+        await this.updateMetadata()
+      } catch (error) {
+        logger.warn('Failed to update metadata (section write succeeded)', {
+          error,
+          key,
+          section,
+        })
+        // Don't throw - section data is already stored successfully
+      }
     } catch (error) {
       throw new CVStorageError(
         `Failed to update section '${section as string}' in KV`,
@@ -426,6 +451,21 @@ export class KVStorageAdapter implements ICVRepository {
     return (
       this.enableCompression && serialized.length > this.compressionThreshold
     )
+  }
+
+  /**
+   * Sanitize section name for safe use in KV keys
+   *
+   * Prevents key injection attacks from admin CMS forms by removing
+   * special characters that could manipulate key structure.
+   *
+   * @param section - Raw section name (potentially from user input)
+   * @returns Sanitized section name safe for KV keys
+   */
+  private sanitizeKey(section: string): string {
+    // Allow only alphanumeric, underscore, hyphen
+    // Remove colons, slashes, dots that could break hierarchical structure
+    return section.replace(/[^a-zA-Z0-9_-]/g, '_')
   }
 
   /**
