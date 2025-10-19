@@ -1,30 +1,100 @@
 # CV Arnold Website - Claude Code Context
 
-## 🧠 MEMORY-FIRST WORKFLOW (NEW!)
+## 🚨 MANDATORY SESSION START CHECKLIST
 
-**CRITICAL: Always check MCP Memory before starting any task!**
+**⚠️ DO THIS FIRST - Before responding to ANY user request:**
 
 ```javascript
-// Start EVERY session by recalling relevant memories
+// 1. Testing procedures (REQUIRED - Contains standard verification steps)
 mcp__memory__recall_memory({
   tags: ['cv-arnold-website', 'testing-procedure'],
   limit: 5,
 })
 
+// 2. Workflow & TaskMaster philosophy (REQUIRED - How to document and track work)
 mcp__memory__recall_memory({
   tags: ['cv-arnold-website', 'workflow'],
   limit: 5,
 })
+
+// 3. Current project state (RECOMMENDED - Recent completions and context)
+mcp__memory__recall_memory({
+  tags: ['cv-arnold-website', 'current-state'],
+  limit: 3,
+})
 ```
 
-**Why:** MCP Memory contains:
+**✅ Checklist Complete?** Now proceed with your work.
 
-- ✅ Standard testing & verification procedures
-- ✅ TaskMaster philosophy and best practices
-- ✅ Architecture patterns and migration guides
-- ✅ Project status and recent completions
+**Why this matters:**
 
-**Search tags:** `testing-procedure`, `workflow`, `architecture`, `patterns`, `current-state`
+- 🎯 Ensures consistency across all sessions
+- 📋 Prevents skipping critical testing steps
+- 🧠 Loads lessons learned from previous tasks
+- ⚡ Faster decisions with established patterns
+
+---
+
+## 📚 MEMORY TAG REGISTRY
+
+**Quick tag reference for finding the right context:**
+
+### Core Tags (Use These Regularly)
+
+| Tag                 | Content                                            | When to Use                                       |
+| ------------------- | -------------------------------------------------- | ------------------------------------------------- |
+| `testing-procedure` | Standard testing & verification steps              | Every task completion, before PR, troubleshooting |
+| `workflow`          | TaskMaster philosophy, git workflow, PR process    | Session start, documentation decisions            |
+| `architecture`      | Design patterns, code organization, service layers | Implementing features, refactoring                |
+| `current-state`     | Recent completions, project status, blockers       | Session start, understanding context              |
+
+### Task-Specific Tags
+
+| Tag        | Content                                           | When to Use                            |
+| ---------- | ------------------------------------------------- | -------------------------------------- |
+| `task-3.1` | TypeScript data layer completion, migration notes | Reference for type system work         |
+| `task-3.2` | Zod schemas implementation, validation patterns   | Runtime validation, schema work        |
+| `meta`     | Memory-first workflow instructions                | Understanding how to use memory system |
+
+### Scenario-Based Search Guide
+
+**Starting a new session?**
+
+```javascript
+mcp__memory__recall_memory({ tags: ['testing-procedure'], limit: 5 })
+mcp__memory__recall_memory({ tags: ['workflow'], limit: 5 })
+```
+
+**Starting a new task?**
+
+```javascript
+mcp__memory__recall_memory({
+  tags: ['testing-procedure', 'workflow'],
+  limit: 5,
+})
+mcp__memory__recall_memory({ tags: ['architecture'], limit: 3 })
+```
+
+**Hit an error or need patterns?**
+
+```javascript
+mcp__memory__recall_memory({ tags: ['architecture', 'task-3.1'], limit: 3 })
+```
+
+**Creating a PR?**
+
+```javascript
+mcp__memory__recall_memory({
+  tags: ['testing-procedure', 'workflow'],
+  limit: 5,
+})
+```
+
+**Need project status?**
+
+```javascript
+mcp__memory__recall_memory({ tags: ['current-state'], limit: 3 })
+```
 
 ---
 
@@ -56,9 +126,30 @@ mcp__memory__recall_memory({
 ### What Goes in Markdown Files ✅
 
 - Detailed implementation notes → `.taskmaster/docs/task-X-implementation.md`
-- Architecture decisions and rationale
+- **Architecture decisions with rationale** → Document WHY and WHY NOT for every choice
 - Code examples and migration patterns
 - Troubleshooting notes and lessons learned
+
+**CRITICAL: Architecture Decisions**
+
+Every significant technical decision must include:
+
+- ✅ **What** was chosen (library, pattern, approach)
+- ✅ **Why** it was chosen (benefits, requirements it meets)
+- ✅ **Why NOT** alternatives (what was considered and rejected)
+- ✅ **Trade-offs** (what we gain vs what we lose)
+
+Example:
+
+```markdown
+## Key Decisions
+
+1. **Zod for runtime validation**
+   - Why: Type-safe schemas, excellent TypeScript integration, small bundle size
+   - Why NOT Yup: Less TypeScript support, larger bundle
+   - Why NOT io-ts: Steeper learning curve, more verbose
+   - Trade-offs: Runtime overhead acceptable for data integrity guarantee
+```
 
 ### Essential Commands
 
@@ -157,7 +248,38 @@ pnpm dev  # Note the port (3000 or 3001)
 
 Full procedure: Search MCP Memory for `testing-procedure`
 
-### 4. Task Completion
+### 4. PR Review Process
+
+**CRITICAL: Always read and act on Claude Code Review feedback**
+
+After pushing and creating a PR:
+
+```bash
+# 1. Wait for CI checks to complete
+gh pr view <number> --json statusCheckRollup
+
+# 2. Once checks complete, read ALL comments (especially from Claude review)
+gh pr view <number> --comments
+
+# 3. Look for automated review feedback
+# Claude Code Review posts detailed feedback as PR comments
+```
+
+**Review feedback categories:**
+
+- 🚨 **CRITICAL/MUST FIX** - Address immediately before merging
+- ⚠️ **SHOULD FIX** - Strong recommendations (document if skipping)
+- 💡 **SUGGESTIONS** - Consider for improvement
+- 📝 **FUTURE** - Note in task docs or create follow-up tasks
+
+**Do NOT merge until:**
+
+- ✅ All CI checks GREEN
+- ✅ Claude review feedback READ and understood
+- ✅ Critical items ADDRESSED
+- ✅ Decision documented if skipping recommendations
+
+### 5. Task Completion
 
 ```bash
 # Mark done in TaskMaster
@@ -167,7 +289,7 @@ task-master set-status --id=<id> --status=done
 # .taskmaster/docs/task-X-implementation.md
 ```
 
-### 5. Complex Workflows
+### 6. Complex Workflows
 
 For large changes:
 
