@@ -1,5 +1,93 @@
 # CV Arnold Website - Claude Code Context
 
+## 🎯 TESTING REQUIREMENTS
+
+**CRITICAL: All PRs must include tests with ≥80% coverage**
+
+### Testing Infrastructure
+
+- **Framework:** Vitest 3.2.4 with V8 coverage
+- **Commands:**
+  - `pnpm test` - Run all tests
+  - `pnpm test:watch` - Watch mode
+  - `pnpm test:coverage` - Run with coverage report
+  - `pnpm test:ui` - Visual test UI
+- **Coverage Thresholds:** 80% for lines, functions, branches, statements
+- **CI Enforcement:** Tests run automatically on PRs, merge blocked if failing
+
+### Test File Organization
+
+```
+src/
+├── schemas/__tests__/
+│   └── cv.schema.test.ts          # Zod schema validation tests
+├── services/__tests__/
+│   └── CVDataService.test.ts      # Service layer tests
+├── services/storage/__tests__/
+│   └── JSONFileAdapter.test.ts    # Storage adapter tests
+└── lib/__tests__/
+    ├── errors.test.ts             # Custom error classes
+    ├── logger.test.ts             # Logger utility
+    └── retry.test.ts              # Retry mechanism
+```
+
+### Testing Patterns
+
+**1. Schema Tests (Zod)**
+
+- Test valid data acceptance
+- Test invalid data rejection with specific error messages
+- Test edge cases (boundary values, date ranges, transformations)
+- Test custom validators (URL protocols, email format, codes)
+
+**2. Service Tests**
+
+- Mock dependencies (repositories, file system)
+- Test success paths
+- Test error handling and error wrapping
+- Test validation before operations
+- Use `vi.mock()` for external dependencies
+
+**3. Utility Tests**
+
+- Test core functionality
+- Test edge cases and boundary conditions
+- Test error scenarios
+- For retry: use `vi.useFakeTimers()` to control time
+
+**4. Test Structure**
+
+```typescript
+describe('ComponentName', () => {
+  beforeEach(() => {
+    // Setup mocks and test data
+  })
+
+  describe('methodName', () => {
+    it('should handle success case', () => {
+      // Arrange, Act, Assert
+    })
+
+    it('should handle error case', () => {
+      // Test error paths
+    })
+  })
+})
+```
+
+### Coverage Targets
+
+- `src/schemas/`: >90% (comprehensive validation tests)
+- `src/services/`: >80% (core business logic)
+- `src/lib/`: >80% (utility functions)
+
+### Before Merging Checklist
+
+- ✅ All tests passing (`pnpm test`)
+- ✅ Coverage meets 80% threshold (`pnpm test:coverage`)
+- ✅ No skipped/commented tests without justification
+- ✅ CI pipeline green (tests + build)
+
 ## 🚨 MANDATORY SESSION START CHECKLIST
 
 **⚠️ DO THIS FIRST - Before responding to ANY user request:**

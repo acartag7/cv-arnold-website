@@ -54,6 +54,9 @@ jobs:
       - name: Run markdown lint
         run: pnpm run lint:md
 
+      - name: Run tests with coverage
+        run: pnpm run test:coverage
+
       - name: Build application
         run: pnpm run build
 
