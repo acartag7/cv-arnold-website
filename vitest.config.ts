@@ -3,11 +3,19 @@ import path from 'path'
 
 export default defineConfig({
   test: {
-    // Test environment
-    environment: 'node',
+    // Test environment (happy-dom for React component testing)
+    environment: 'happy-dom',
+
+    // Setup files
+    setupFiles: ['./src/test/setup.ts'],
 
     // Test file patterns
-    include: ['**/__tests__/**/*.test.ts', '**/__tests__/**/*.spec.ts'],
+    include: [
+      '**/__tests__/**/*.test.ts',
+      '**/__tests__/**/*.test.tsx',
+      '**/__tests__/**/*.spec.ts',
+      '**/__tests__/**/*.spec.tsx',
+    ],
 
     // Coverage configuration
     coverage: {
@@ -17,6 +25,7 @@ export default defineConfig({
         'src/schemas/**/*.ts',
         'src/services/**/*.ts',
         'src/lib/**/*.ts',
+        'src/contexts/**/*.tsx',
       ],
       exclude: [
         '**/__tests__/**',
