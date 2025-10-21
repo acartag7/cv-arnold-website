@@ -176,7 +176,8 @@ function DefaultErrorFallback({
   errorInfo,
   resetError,
 }: DefaultErrorFallbackProps): ReactNode {
-  const isDevelopment = process.env.NODE_ENV === 'development'
+  const isDevelopment =
+    process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test'
 
   return (
     <div

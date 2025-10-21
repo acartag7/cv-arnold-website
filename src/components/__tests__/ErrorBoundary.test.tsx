@@ -32,13 +32,6 @@ function ThrowError({
   return <div>No error</div>
 }
 
-/**
- * Component that throws on render
- */
-function AlwaysThrows(): React.ReactElement {
-  throw new Error('Always throws')
-}
-
 // ============================================================================
 // Tests
 // ============================================================================
