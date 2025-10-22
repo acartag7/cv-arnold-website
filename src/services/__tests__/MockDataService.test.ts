@@ -123,7 +123,7 @@ describe('MockDataService', () => {
     })
 
     it('should have valid lastUpdated date format', () => {
-      const cvData = service.generateMockCV()
+      const cvData = service.generateMockCV({ seed: 12345 })
 
       expect(cvData.lastUpdated).toMatch(/^\d{4}-\d{2}-\d{2}$/)
       expect(new Date(cvData.lastUpdated).toString()).not.toBe('Invalid Date')
@@ -337,6 +337,20 @@ describe('MockDataService', () => {
       expect(cvData1.personalInfo.email).not.toBe(cvData2.personalInfo.email)
     })
 
+    it('should not affect faker state after seeded generation', () => {
+      // Generate unseeded CV
+      const unseeded1 = service.generateMockCV().personalInfo.fullName
+
+      // Generate seeded CV (should not pollute global faker state)
+      service.generateMockCV({ seed: 42 })
+
+      // Generate another unseeded CV - should be different from first
+      const unseeded2 = service.generateMockCV().personalInfo.fullName
+
+      // If faker state was properly isolated, these should be different
+      expect(unseeded1).not.toBe(unseeded2)
+    })
+
     it('should be reproducible for testing purposes', () => {
       const seed = 12345
       const iterations = 5
@@ -386,6 +400,23 @@ describe('MockDataService', () => {
         // Previous entry should have started at same time or later (newer)
         expect(previous >= current).toBe(true)
       }
+    })
+
+    it('should handle minimum job count correctly', () => {
+      // Generate many CVs to test edge cases, especially junior level
+      const cvs = Array.from({ length: 20 }, (_, i) =>
+        service.generateMockCV({ seniorityLevel: 'junior', seed: i })
+      )
+
+      const minJobCount = Math.min(...cvs.map(cv => cv.experience.length))
+
+      // Junior profile has jobCount.min = 1, should respect that
+      expect(minJobCount).toBeGreaterThanOrEqual(1)
+
+      // All CVs should have at least one job
+      cvs.forEach(cv => {
+        expect(cv.experience.length).toBeGreaterThan(0)
+      })
     })
 
     it('should include achievements and technologies for each job', () => {

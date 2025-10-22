@@ -62,6 +62,16 @@ interface SeniorityProfile {
 }
 
 /**
+ * Constants for data generation
+ */
+const PHONE_FIRST_DIGIT_MIN = 1
+const PHONE_FIRST_DIGIT_MAX = 9
+const PHONE_REMAINING_DIGITS = 11
+const CERTIFICATION_EXPIRY_YEARS = 3
+const MS_PER_DAY = 24 * 60 * 60 * 1000
+const MS_PER_YEAR = 365 * MS_PER_DAY
+
+/**
  * Mock Data Service
  *
  * Singleton service for generating realistic CV data
@@ -209,13 +219,13 @@ export class MockDataService {
       phone:
         faker.helpers.maybe(
           () =>
-            `+${faker.number.int({ min: 1, max: 9 })}${faker.string.numeric(11)}`,
+            `+${faker.number.int({ min: PHONE_FIRST_DIGIT_MIN, max: PHONE_FIRST_DIGIT_MAX })}${faker.string.numeric(PHONE_REMAINING_DIGITS)}`,
           { probability: 0.9 }
         ) || undefined,
       location: {
         city,
         country,
-        countryCode: faker.location.countryCode('alpha-2') as string,
+        countryCode: faker.location.countryCode('alpha-2'),
       },
       website:
         faker.helpers.maybe(() => faker.internet.url(), { probability: 0.7 }) ||
@@ -277,8 +287,7 @@ export class MockDataService {
         i === 0 && faker.helpers.maybe(() => true, { probability: 0.7 })
       const yearsInRole = faker.number.int({ min: 1, max: 4 })
 
-      const startDate = new Date(endDate)
-      startDate.setFullYear(startDate.getFullYear() - yearsInRole)
+      const startDate = this.subtractYears(endDate, yearsInRole)
 
       const company =
         includeEdgeCases && i === 0
@@ -426,13 +435,11 @@ export class MockDataService {
     const count = faker.number.int(profile.educationCount)
     const educations: Education[] = []
 
-    let endDate = new Date(currentDate)
-    endDate.setFullYear(endDate.getFullYear() - profile.yearsOfExperience.min)
+    let endDate = this.subtractYears(currentDate, profile.yearsOfExperience.min)
 
     for (let i = 0; i < count; i++) {
       const yearsDuration = i === 0 ? 4 : faker.number.int({ min: 2, max: 4 })
-      const startDate = new Date(endDate)
-      startDate.setFullYear(startDate.getFullYear() - yearsDuration)
+      const startDate = this.subtractYears(endDate, yearsDuration)
 
       const degrees =
         i === 0
@@ -488,8 +495,7 @@ export class MockDataService {
         order: i,
       })
 
-      endDate = new Date(startDate)
-      endDate.setFullYear(endDate.getFullYear() - 1)
+      endDate = this.subtractYears(startDate, 1)
     }
 
     return educations
@@ -518,7 +524,9 @@ export class MockDataService {
       const issueDate = faker.date.past({ years: 3 })
       const hasExpiration = faker.datatype.boolean()
       const expirationDate = hasExpiration
-        ? new Date(issueDate.getTime() + 365 * 3 * 24 * 60 * 60 * 1000) // 3 years
+        ? new Date(
+            issueDate.getTime() + CERTIFICATION_EXPIRY_YEARS * MS_PER_YEAR
+          )
         : null
 
       const status: CertificationStatus = !hasExpiration
@@ -658,6 +666,20 @@ export class MockDataService {
       'Cloud Architecture',
       'DevOps',
     ]
+  }
+
+  /**
+   * Subtract years from a date immutably
+   * Prevents date mutation bugs by creating a new Date instance
+   *
+   * @param date - The date to subtract from
+   * @param years - Number of years to subtract
+   * @returns New Date instance with years subtracted
+   */
+  private subtractYears(date: Date, years: number): Date {
+    const result = new Date(date.getTime())
+    result.setFullYear(result.getFullYear() - years)
+    return result
   }
 
   /**
