@@ -181,21 +181,31 @@ describe('MockDataService', () => {
     })
 
     it('should have more certifications for senior levels', () => {
-      const juniorCV = service.generateMockCV({
-        seniorityLevel: 'junior',
-        seed: 100,
-      })
-      const principalCV = service.generateMockCV({
-        seniorityLevel: 'principal',
-        seed: 200,
-      })
+      // Use multiple samples to account for randomness
+      const juniorSamples = Array.from({ length: 10 }, (_, i) =>
+        service.generateMockCV({ seniorityLevel: 'junior', seed: 100 + i })
+      )
+      const principalSamples = Array.from({ length: 10 }, (_, i) =>
+        service.generateMockCV({ seniorityLevel: 'principal', seed: 200 + i })
+      )
 
-      // Principal should generally have more certifications than junior
-      const juniorCertCount = juniorCV.certifications.length
-      const principalCertCount = principalCV.certifications.length
+      const avgJuniorCerts =
+        juniorSamples.reduce((sum, cv) => sum + cv.certifications.length, 0) /
+        juniorSamples.length
+      const avgPrincipalCerts =
+        principalSamples.reduce(
+          (sum, cv) => sum + cv.certifications.length,
+          0
+        ) / principalSamples.length
 
-      // With different seeds, principal should have more or equal
-      expect(principalCertCount).toBeGreaterThanOrEqual(juniorCertCount - 1)
+      // Principal average should be significantly higher than junior average
+      expect(avgPrincipalCerts).toBeGreaterThan(avgJuniorCerts)
+      // Also verify principal minimum is higher than junior maximum (based on profiles)
+      expect(
+        Math.min(...principalSamples.map(cv => cv.certifications.length))
+      ).toBeGreaterThan(
+        Math.max(...juniorSamples.map(cv => cv.certifications.length))
+      )
     })
 
     it('should have more achievements for senior levels', () => {
@@ -365,6 +375,17 @@ describe('MockDataService', () => {
           expect(start <= end).toBe(true)
         }
       })
+    })
+
+    it('should have chronologically ordered experience (newest first)', () => {
+      const cvData = service.generateMockCV({ seniorityLevel: 'senior' })
+
+      for (let i = 1; i < cvData.experience.length; i++) {
+        const current = new Date(cvData.experience[i]!.startDate)
+        const previous = new Date(cvData.experience[i - 1]!.startDate)
+        // Previous entry should have started at same time or later (newer)
+        expect(previous >= current).toBe(true)
+      }
     })
 
     it('should include achievements and technologies for each job', () => {

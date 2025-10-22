@@ -135,8 +135,12 @@ export class MockDataService {
     const { seniorityLevel = 'mid', seed, includeEdgeCases = false } = options
 
     // Set seed for reproducible generation
+    // Always seed to prevent pollution from previous calls
     if (seed !== undefined) {
       faker.seed(seed)
+    } else {
+      // Reset to random seed for non-seeded calls
+      faker.seed(Date.now() + Math.random() * 1000000)
     }
 
     const profile = this.seniorityProfiles[seniorityLevel]
@@ -144,12 +148,13 @@ export class MockDataService {
 
     const cvData: CVData = {
       version: '1.0.0',
-      lastUpdated: currentDate.toISOString().split('T')[0] as string,
+      lastUpdated: this.formatISODate(currentDate),
       personalInfo: this.generatePersonalInfo(includeEdgeCases),
       experience: this.generateExperience(
         profile,
         currentDate,
-        includeEdgeCases
+        includeEdgeCases,
+        seniorityLevel
       ),
       skills: this.generateSkills(profile),
       education: this.generateEducation(profile, currentDate),
@@ -201,7 +206,12 @@ export class MockDataService {
       fullName: `${firstName} ${lastName}`,
       title: faker.person.jobTitle(),
       email: faker.internet.email({ firstName, lastName }).toLowerCase(),
-      phone: `+${faker.number.int({ min: 1, max: 9 })}${faker.string.numeric(11)}`,
+      phone:
+        faker.helpers.maybe(
+          () =>
+            `+${faker.number.int({ min: 1, max: 9 })}${faker.string.numeric(11)}`,
+          { probability: 0.9 }
+        ) || undefined,
       location: {
         city,
         country,
@@ -254,7 +264,8 @@ export class MockDataService {
   private generateExperience(
     profile: SeniorityProfile,
     currentDate: Date,
-    includeEdgeCases: boolean
+    includeEdgeCases: boolean,
+    seniorityLevel: 'junior' | 'mid' | 'senior' | 'principal'
   ): Experience[] {
     const count = faker.number.int(profile.jobCount)
     const experiences: Experience[] = []
@@ -292,16 +303,18 @@ export class MockDataService {
             probability: 0.7,
           }) || undefined,
         position,
-        type: faker.helpers.arrayElement([
-          'full_time',
-          'part_time',
-          'contract',
-          'freelance',
-        ] as EmploymentType[]),
-        startDate: startDate.toISOString().split('T')[0] as string,
-        endDate: isCurrent
-          ? null
-          : (endDate.toISOString().split('T')[0] as string),
+        type: faker.helpers.arrayElement(
+          seniorityLevel === 'junior'
+            ? (['full_time', 'part_time', 'internship'] as EmploymentType[])
+            : ([
+                'full_time',
+                'part_time',
+                'contract',
+                'freelance',
+              ] as EmploymentType[])
+        ),
+        startDate: this.formatISODate(startDate),
+        endDate: isCurrent ? null : this.formatISODate(endDate),
         location: {
           city:
             faker.helpers.maybe(() => faker.location.city(), {
@@ -444,8 +457,8 @@ export class MockDataService {
           'Information Technology',
           'Data Science',
         ]),
-        startDate: startDate.toISOString().split('T')[0] as string,
-        endDate: endDate.toISOString().split('T')[0] as string,
+        startDate: this.formatISODate(startDate),
+        endDate: this.formatISODate(endDate),
         grade:
           faker.helpers.maybe(
             () =>
@@ -519,8 +532,10 @@ export class MockDataService {
         name: faker.helpers.arrayElement(certNames),
         issuer: faker.company.name(),
         issuerUrl: faker.internet.url(),
-        issueDate: issueDate.toISOString().split('T')[0] as string,
-        expirationDate: expirationDate?.toISOString().split('T')[0] || null,
+        issueDate: this.formatISODate(issueDate),
+        expirationDate: expirationDate
+          ? this.formatISODate(expirationDate)
+          : null,
         status,
         credentialId:
           faker.helpers.maybe(
@@ -569,7 +584,7 @@ export class MockDataService {
         id: faker.string.uuid(),
         title: faker.lorem.sentence({ min: 3, max: 8 }),
         category: faker.helpers.arrayElement(categories),
-        date: date.toISOString().split('T')[0] as string,
+        date: this.formatISODate(date),
         issuer:
           faker.helpers.maybe(() => faker.company.name(), {
             probability: 0.6,
@@ -644,9 +659,18 @@ export class MockDataService {
       'DevOps',
     ]
   }
+
+  /**
+   * Format date to ISO date string (YYYY-MM-DD)
+   * Type-safe alternative to manual string casting
+   */
+  private formatISODate(date: Date): string {
+    return date.toISOString().split('T')[0]!
+  }
 }
 
 /**
  * Export singleton instance for convenience
+ * Note: Class is already exported above (line 69) for testing flexibility
  */
 export const mockDataService = MockDataService.getInstance()
