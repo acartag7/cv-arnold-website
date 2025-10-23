@@ -114,6 +114,7 @@ export class CacheService {
   private db: IDBDatabase | null = null
   private stats: CacheStats
   private cleanupTimer: ReturnType<typeof setInterval> | null = null
+  private revalidationPromises: Map<string, Promise<unknown>> = new Map()
 
   private constructor() {
     this.cache = new Map()
@@ -167,6 +168,7 @@ export class CacheService {
     fetcher: () => Promise<T>,
     options: CacheOptions = {}
   ): Promise<T> {
+    this.validateKey(key)
     const { forceRefresh = false, version } = options
 
     // Force refresh bypasses cache
@@ -216,10 +218,18 @@ export class CacheService {
       this.stats.staleHits++
       this.updateHitRate()
 
-      // Revalidate in background (fire and forget)
-      this.fetchAndCache(key, fetcher, options).catch(error => {
-        logger.error('Background revalidation failed', { key, error })
-      })
+      // Only revalidate if not already in progress (prevents race conditions)
+      if (!this.revalidationPromises.has(key)) {
+        const promise = this.fetchAndCache(key, fetcher, options)
+          .catch(error => {
+            logger.error('Background revalidation failed', { key, error })
+          })
+          .finally(() => {
+            this.revalidationPromises.delete(key)
+          })
+
+        this.revalidationPromises.set(key, promise)
+      }
 
       return entry.value as T
     }
@@ -243,6 +253,7 @@ export class CacheService {
     value: T,
     options: CacheOptions = {}
   ): Promise<void> {
+    this.validateKey(key)
     const {
       ttl = DEFAULT_TTL,
       staleTtl = DEFAULT_STALE_TTL,
@@ -436,6 +447,22 @@ export class CacheService {
   // ==========================================================================
 
   /**
+   * Validate cache key to prevent IndexedDB errors
+   */
+  private validateKey(key: string): void {
+    if (!key || typeof key !== 'string') {
+      throw new Error('Cache key must be a non-empty string')
+    }
+    if (key.length > 255) {
+      throw new Error('Cache key exceeds maximum length (255 characters)')
+    }
+    // IndexedDB has restrictions on control characters
+    if (/[\x00-\x1F]/.test(key)) {
+      throw new Error('Cache key contains invalid control characters')
+    }
+  }
+
+  /**
    * Fetch data and cache it
    */
   private async fetchAndCache<T>(
@@ -604,8 +631,12 @@ export class CacheService {
   private estimateSize(value: unknown): number {
     try {
       return JSON.stringify(value).length * 2 // UTF-16 encoding
-    } catch {
-      return 0
+    } catch (error) {
+      // Fallback for circular references or non-serializable values
+      logger.warn('Failed to estimate cache value size, using fallback', {
+        error,
+      })
+      return 1024 // 1KB fallback estimate
     }
   }
 
