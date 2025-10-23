@@ -196,6 +196,73 @@ describe('ErrorBoundary', () => {
 
       expect(screen.getByText('No error')).toBeInTheDocument()
     })
+
+    it('should fully reset component lifecycle after error', async () => {
+      const lifecycleEvents: string[] = []
+
+      const LifecycleComponent = ({
+        shouldThrow,
+      }: {
+        shouldThrow: boolean
+      }) => {
+        lifecycleEvents.push('render')
+
+        React.useEffect(() => {
+          lifecycleEvents.push('mount')
+          return () => {
+            lifecycleEvents.push('unmount')
+          }
+        }, [])
+
+        if (shouldThrow) {
+          throw new Error('Test error')
+        }
+        return <div>Component rendered successfully</div>
+      }
+
+      // First render successfully so component mounts
+      const { rerender } = render(
+        <ErrorBoundary>
+          <LifecycleComponent shouldThrow={false} />
+        </ErrorBoundary>
+      )
+
+      expect(
+        screen.getByText('Component rendered successfully')
+      ).toBeInTheDocument()
+      expect(lifecycleEvents).toContain('mount')
+
+      // Clear events and rerender with error
+      lifecycleEvents.length = 0
+      rerender(
+        <ErrorBoundary>
+          <LifecycleComponent shouldThrow={true} />
+        </ErrorBoundary>
+      )
+
+      // Error state - component threw and unmounted
+      expect(screen.getByText('Something went wrong')).toBeInTheDocument()
+      expect(lifecycleEvents).toContain('unmount')
+
+      // Reset error state
+      const tryAgainButton = screen.getByText('Try Again')
+      tryAgainButton.click()
+
+      // Rerender with working component
+      lifecycleEvents.length = 0 // Clear events
+      rerender(
+        <ErrorBoundary>
+          <LifecycleComponent shouldThrow={false} />
+        </ErrorBoundary>
+      )
+
+      // Verify full component lifecycle after reset
+      expect(
+        screen.getByText('Component rendered successfully')
+      ).toBeInTheDocument()
+      expect(lifecycleEvents).toContain('render')
+      expect(lifecycleEvents).toContain('mount')
+    })
   })
 
   // ==========================================================================

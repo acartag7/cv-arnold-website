@@ -284,20 +284,44 @@ export class CacheService {
   }
 
   /**
-   * Clear all cache
+   * Check if a key exists in the cache (regardless of freshness)
+   * Does not trigger fetchers or update statistics
+   *
+   * @param key - Cache key to check
+   * @returns True if key exists in cache
+   */
+  public has(key: string): boolean {
+    return this.cache.has(key)
+  }
+
+  /**
+   * Check if a key exists in cache and is still fresh (not stale or expired)
+   * Does not trigger fetchers or update statistics
+   *
+   * @param key - Cache key to check
+   * @returns True if key exists and is fresh
+   */
+  public hasFresh(key: string): boolean {
+    const entry = this.cache.get(key)
+    if (!entry) {
+      return false
+    }
+
+    const now = Date.now()
+    return now - entry.cachedAt < entry.ttl
+  }
+
+  /**
+   * Clear all cache entries
+   * Preserves historical metrics (hits, misses, staleHits) for monitoring
+   * Only resets entry count and size
    */
   public async clear(): Promise<void> {
     this.cache.clear()
 
-    // Reset stats
-    this.stats = {
-      hits: 0,
-      misses: 0,
-      staleHits: 0,
-      entries: 0,
-      sizeBytes: 0,
-      hitRate: 0,
-    }
+    // Only reset entry-specific stats, preserve historical hit/miss metrics
+    this.stats.entries = 0
+    this.stats.sizeBytes = 0
 
     this.updateStats()
 
@@ -371,6 +395,22 @@ export class CacheService {
 
     this.cache.clear()
     logger.info('Cache service destroyed')
+  }
+
+  /**
+   * Reset all cache statistics (for testing purposes)
+   * Unlike clear(), this resets historical metrics (hits, misses, staleHits)
+   * @internal
+   */
+  public resetStats(): void {
+    this.stats = {
+      hits: 0,
+      misses: 0,
+      staleHits: 0,
+      entries: 0,
+      sizeBytes: 0,
+      hitRate: 0,
+    }
   }
 
   // ==========================================================================

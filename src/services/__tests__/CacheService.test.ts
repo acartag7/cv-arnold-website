@@ -31,8 +31,9 @@ describe('CacheService', () => {
   beforeEach(async () => {
     // Create fresh instance for each test
     cache = CacheService.getInstance()
-    // Clear cache to reset stats
+    // Clear cache entries and reset stats for clean test environment
     await cache.clear()
+    cache.resetStats() // Reset historical metrics for isolated test runs
     vi.clearAllMocks()
     vi.useFakeTimers()
   })
@@ -402,6 +403,41 @@ describe('CacheService', () => {
 
       const stats = cache.getStats()
       expect(stats.sizeBytes).toBeGreaterThan(0)
+    })
+
+    it('should evict oldest entries when exceeding 10MB limit', async () => {
+      // Create entries that will exceed the 10MB limit
+      // Each entry will be ~2MB of data
+      const largeString = 'x'.repeat(2 * 1024 * 1024) // 2MB string
+
+      // Add 6 entries of 2MB each (12MB total, exceeding 10MB limit)
+      for (let i = 0; i < 6; i++) {
+        await cache.set(
+          `large-${i}`,
+          { data: largeString },
+          {
+            ttl: 60000,
+          }
+        )
+      }
+
+      const stats = cache.getStats()
+
+      // Cache size should be under or around 10MB due to eviction
+      const tenMB = 10 * 1024 * 1024
+      expect(stats.sizeBytes).toBeLessThanOrEqual(tenMB * 1.1) // Allow 10% tolerance for entry overhead
+
+      // First entries should have been evicted (oldest first)
+      const firstEntry = await cache.get('large-0', async () => ({
+        data: 'refetched',
+      }))
+      expect(firstEntry.data).toBe('refetched') // Had to refetch, was evicted
+
+      // Latest entries should still be in cache
+      const lastEntry = await cache.get('large-5', async () => ({
+        data: 'should-not-call',
+      }))
+      expect(lastEntry.data).toBe(largeString) // Still in cache
     })
   })
 })
