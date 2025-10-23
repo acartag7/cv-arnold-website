@@ -163,11 +163,15 @@ Compaction can lose context or introduce misunderstandings. Before continuing:
 
 ### Task-Specific Tags
 
-| Tag        | Content                                           | When to Use                            |
-| ---------- | ------------------------------------------------- | -------------------------------------- |
-| `task-3.1` | TypeScript data layer completion, migration notes | Reference for type system work         |
-| `task-3.2` | Zod schemas implementation, validation patterns   | Runtime validation, schema work        |
-| `meta`     | Memory-first workflow instructions                | Understanding how to use memory system |
+| Tag            | Content                                             | When to Use                              |
+| -------------- | --------------------------------------------------- | ---------------------------------------- |
+| `task-3.1`     | TypeScript data layer completion, migration notes   | Reference for type system work           |
+| `task-3.2`     | Zod schemas implementation, validation patterns     | Runtime validation, schema work          |
+| `task-3.5`     | KV storage adapter, compression, security decisions | KV implementation, Cloudflare deployment |
+| `oss-platform` | Open source vision, admin portal, setup wizard      | Understanding project scope              |
+| `admin-portal` | Tasks 16-24 (CMS, wizard, docs, themes, AI)         | Admin features, OSS capabilities         |
+| `vision`       | Project goals, stakeholder communication            | Strategic decisions, pitch deck          |
+| `meta`         | Memory-first workflow instructions                  | Understanding how to use memory system   |
 
 ### Scenario-Based Search Guide
 
@@ -211,12 +215,36 @@ mcp__memory__recall_memory({ tags: ['current-state'], limit: 3 })
 
 ---
 
-## PROJECT PHILOSOPHY: Technical Excellence Showcase
+## PROJECT PHILOSOPHY: Open Source CV Platform
 
-**IMPORTANT: This CV website serves dual purposes:**
+**CRITICAL: This is NOT just a personal CV - it's an open-source platform!**
+
+This project serves **three interconnected purposes:**
 
 1. **Personal Brand Platform** - Showcase Arnold's experience and skills
 2. **Technical Expertise Demonstration** - Exemplify enterprise-grade development practices
+3. **🌍 Open Source Platform** - **Enable ANYONE to deploy their own CV for free**
+
+### The Open Source Vision
+
+**Goal:** Anyone can fork, configure, and deploy their professional CV in 5 minutes.
+
+**Key Features for OSS:**
+
+- **Admin CMS Portal** (Task 16) - No coding required to manage content
+- **Setup Wizard** (Task 17) - First-run configuration with example data
+- **Triple Authentication** - Magic link (easiest), Google OAuth, admin password
+- **Theme Framework** (Task 20) - Easy customization without design skills
+- **AI Enhancement** (Task 23) - OpenRouter free models for content improvement
+- **Image Management** (Task 22) - Cloudflare R2 for photos/logos
+- **Free Forever** - Cloudflare free tier ($0/month)
+
+**Two-Repository Strategy:**
+
+- `cv-arnold-website` (private) - Arnold's personal CV with real data
+- `cv-platform-template` (public) - Clean OSS template with example data (Task 24)
+
+**This context affects ALL architectural decisions** - we're building a reusable platform, not a one-off website.
 
 ### Technical Excellence Standards
 

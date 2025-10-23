@@ -6,8 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "lint:fix": "next lint --fix",
+    "lint": "next lint --max-warnings 0",
+    "lint:fix": "next lint --fix --max-warnings 0",
     "lint:md": "markdownlint '**/*.md' --fix",
     "format": "prettier --write '**/*.{js,jsx,ts,tsx,json,css,md,yaml,yml}'",
     "format:check": "prettier --check '**/*.{js,jsx,ts,tsx,json,css,md,yaml,yml}'",
@@ -35,6 +35,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@faker-js/faker": "^10.1.0",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
@@ -59,7 +60,7 @@
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
-      "next lint --fix --file",
+      "next lint --fix --file --max-warnings 0",
       "prettier --write"
     ],
     "*.md": [
