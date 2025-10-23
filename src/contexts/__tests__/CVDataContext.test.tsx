@@ -397,6 +397,44 @@ describe('CVDataContext', () => {
       expect(mockService.updateData).toHaveBeenCalledTimes(3)
     })
 
+    it('should apply optimistic update synchronously', async () => {
+      // Use a delayed mock to verify update happens before service call completes
+      const delayedService = createMockService()
+      ;(delayedService.updateData as Mock).mockImplementation(
+        () =>
+          new Promise(resolve => {
+            setTimeout(() => resolve(undefined), 50)
+          })
+      )
+
+      const { result } = renderHook(() => useCVData(), {
+        wrapper: ({ children }) => (
+          <Wrapper service={delayedService} autoFetch={true}>
+            {children}
+          </Wrapper>
+        ),
+      })
+
+      await waitFor(() => {
+        expect(result.current.state.data).toEqual(mockCVData)
+      })
+
+      const updatedData = { ...mockCVData, version: '2.0.0' }
+
+      act(() => {
+        result.current.actions.updateData(updatedData)
+      })
+
+      // Should update IMMEDIATELY before service call completes
+      expect(result.current.state.data).toEqual(updatedData)
+      expect(delayedService.updateData).toHaveBeenCalledWith(updatedData)
+
+      // Wait for service call to complete
+      await waitFor(() => {
+        expect(result.current.state.loading).toBe('idle')
+      })
+    })
+
     it('should clear error', async () => {
       const service = createMockService()
       ;(service.getData as Mock).mockRejectedValue(new Error('Fetch failed'))
