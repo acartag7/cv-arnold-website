@@ -224,6 +224,66 @@ describe('CacheService', () => {
   })
 
   // ==========================================================================
+  // Cache Versioning
+  // ==========================================================================
+
+  describe('Cache Versioning', () => {
+    it('should treat version mismatch as cache miss', async () => {
+      const v1Data = { data: 'version 1' }
+      const v2Data = { data: 'version 2' }
+      const fetcher = vi.fn().mockResolvedValue(v2Data)
+
+      // Cache with version 1
+      await cache.set('test-key', v1Data, { version: '1.0.0' })
+
+      // Request with version 2 - should fetch fresh
+      const result = await cache.get('test-key', fetcher, { version: '2.0.0' })
+
+      expect(result).toEqual(v2Data)
+      expect(fetcher).toHaveBeenCalledTimes(1)
+    })
+
+    it('should use cached value when versions match', async () => {
+      const testData = { data: 'test' }
+      const fetcher = vi.fn().mockResolvedValue({ data: 'new' })
+
+      await cache.set('test-key', testData, { version: '1.0.0' })
+
+      const result = await cache.get('test-key', fetcher, { version: '1.0.0' })
+
+      expect(result).toEqual(testData)
+      expect(fetcher).not.toHaveBeenCalled()
+    })
+
+    it('should work without version (backward compatible)', async () => {
+      const testData = { data: 'test' }
+      const fetcher = vi.fn().mockResolvedValue(testData)
+
+      await cache.set('test-key', testData)
+
+      const result = await cache.get('test-key', fetcher)
+
+      expect(result).toEqual(testData)
+      expect(fetcher).not.toHaveBeenCalled()
+    })
+
+    it('should invalidate cache when requesting version for unversioned entry', async () => {
+      const oldData = { data: 'old' }
+      const newData = { data: 'new' }
+      const fetcher = vi.fn().mockResolvedValue(newData)
+
+      // Cache without version
+      await cache.set('test-key', oldData)
+
+      // Request with version - should fetch fresh
+      const result = await cache.get('test-key', fetcher, { version: '1.0.0' })
+
+      expect(result).toEqual(newData)
+      expect(fetcher).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  // ==========================================================================
   // Cache Statistics
   // ==========================================================================
 

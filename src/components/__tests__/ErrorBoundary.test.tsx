@@ -151,7 +151,8 @@ describe('ErrorBoundary', () => {
         expect.any(Error),
         expect.objectContaining({
           componentStack: expect.any(String),
-        })
+        }),
+        expect.any(String) // fingerprint
       )
     })
 
@@ -165,6 +166,80 @@ describe('ErrorBoundary', () => {
       )
 
       expect(onError).toHaveBeenCalled()
+    })
+
+    it('should generate fingerprint for error grouping', () => {
+      const onError = vi.fn()
+
+      render(
+        <ErrorBoundary onError={onError}>
+          <ThrowError />
+        </ErrorBoundary>
+      )
+
+      expect(onError).toHaveBeenCalledTimes(1)
+      const fingerprint = onError.mock.calls[0]?.[2]
+      expect(fingerprint).toMatch(/^[0-9a-f]{8}$/) // 8-character hex hash
+    })
+
+    it('should generate consistent fingerprints for same error', () => {
+      const onError1 = vi.fn()
+      const onError2 = vi.fn()
+
+      // Render same error twice
+      const { unmount: unmount1 } = render(
+        <ErrorBoundary onError={onError1}>
+          <ThrowError />
+        </ErrorBoundary>
+      )
+
+      const fingerprint1 = onError1.mock.calls[0]?.[2]
+
+      unmount1()
+
+      render(
+        <ErrorBoundary onError={onError2}>
+          <ThrowError />
+        </ErrorBoundary>
+      )
+
+      const fingerprint2 = onError2.mock.calls[0]?.[2]
+
+      // Same error should produce same fingerprint
+      expect(fingerprint1).toBe(fingerprint2)
+    })
+
+    it('should generate different fingerprints for different errors', () => {
+      const onError1 = vi.fn()
+      const onError2 = vi.fn()
+
+      const ThrowError1 = () => {
+        throw new Error('Error 1')
+      }
+      const ThrowError2 = () => {
+        throw new Error('Error 2')
+      }
+
+      const { unmount: unmount1 } = render(
+        <ErrorBoundary onError={onError1}>
+          <ThrowError1 />
+        </ErrorBoundary>
+      )
+
+      const fingerprint1 = onError1.mock.calls[0]?.[2]
+
+      unmount1()
+
+      render(
+        <ErrorBoundary onError={onError2}>
+          <ThrowError2 />
+        </ErrorBoundary>
+      )
+
+      const fingerprint2 = onError2.mock.calls[0]?.[2]
+
+      // Different errors should produce different fingerprints
+      expect(fingerprint1).not.toBe(fingerprint2)
     })
   })
 

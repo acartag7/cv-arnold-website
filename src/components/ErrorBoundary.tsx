@@ -15,6 +15,51 @@ import { createLogger } from '@/lib/logger'
 const logger = createLogger('ErrorBoundary')
 
 // ============================================================================
+// Utility Functions
+// ============================================================================
+
+/**
+ * Generate a fingerprint hash from error details for grouping similar errors
+ * Uses a simple hash algorithm to create consistent identifiers
+ *
+ * @param error - The error object
+ * @param componentStack - React component stack trace
+ * @returns 8-character hex hash
+ */
+function generateErrorFingerprint(
+  error: Error,
+  componentStack?: string
+): string {
+  // Combine error message, name, and stack for fingerprinting
+  const fingerprintData = [
+    error.name,
+    error.message,
+    // Normalize stack trace by removing dynamic parts (line numbers, timestamps)
+    error.stack
+      ?.split('\n')
+      .slice(0, 5) // Use first 5 stack frames for consistency
+      .map(line => line.trim().replace(/:\d+:\d+/g, '')) // Remove line:col numbers
+      .join('|'),
+    componentStack
+      ?.split('\n')
+      .slice(0, 3) // Use first 3 component stack frames
+      .map(line => line.trim())
+      .join('|'),
+  ]
+    .filter(Boolean)
+    .join('::')
+
+  // Simple hash function (djb2 algorithm)
+  let hash = 5381
+  for (let i = 0; i < fingerprintData.length; i++) {
+    hash = (hash * 33) ^ fingerprintData.charCodeAt(i)
+  }
+
+  // Convert to hex and take first 8 characters
+  return Math.abs(hash).toString(16).padStart(8, '0').slice(0, 8)
+}
+
+// ============================================================================
 // Types
 // ============================================================================
 
@@ -23,8 +68,8 @@ export interface ErrorBoundaryProps {
   children: ReactNode
   /** Custom fallback UI (receives error and reset function) */
   fallback?: (error: Error, resetError: () => void) => ReactNode
-  /** Callback when error is caught */
-  onError?: (error: Error, errorInfo: ErrorInfo) => void
+  /** Callback when error is caught (includes fingerprint for error grouping) */
+  onError?: (error: Error, errorInfo: ErrorInfo, fingerprint: string) => void
   /** Error boundary identifier for logging */
   boundaryId?: string
 }
@@ -102,9 +147,16 @@ export class ErrorBoundary extends Component<
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     const { onError, boundaryId } = this.props
 
-    // Log error
+    // Generate fingerprint for error grouping
+    const fingerprint = generateErrorFingerprint(
+      error,
+      errorInfo.componentStack ?? undefined
+    )
+
+    // Log error with fingerprint
     logger.error('Error caught by boundary', {
       boundaryId: boundaryId || 'unknown',
+      fingerprint,
       error: error.message,
       stack: error.stack,
       componentStack: errorInfo.componentStack,
@@ -113,9 +165,9 @@ export class ErrorBoundary extends Component<
     // Update state with error info
     this.setState({ errorInfo })
 
-    // Call custom error handler
+    // Call custom error handler with fingerprint
     if (onError) {
-      onError(error, errorInfo)
+      onError(error, errorInfo, fingerprint)
     }
   }
 

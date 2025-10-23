@@ -38,6 +38,8 @@ export interface CacheEntry<T = unknown> {
   staleTtl: number
   /** Size estimate in bytes */
   size: number
+  /** Optional version for cache invalidation */
+  version?: string
 }
 
 /**
@@ -52,6 +54,8 @@ export interface CacheOptions {
   persist?: boolean
   /** Force cache refresh (default: false) */
   forceRefresh?: boolean
+  /** Optional version for automatic invalidation on version mismatch */
+  version?: string
 }
 
 /**
@@ -163,7 +167,7 @@ export class CacheService {
     fetcher: () => Promise<T>,
     options: CacheOptions = {}
   ): Promise<T> {
-    const { forceRefresh = false } = options
+    const { forceRefresh = false, version } = options
 
     // Force refresh bypasses cache
     if (forceRefresh) {
@@ -176,6 +180,18 @@ export class CacheService {
     // Cache miss
     if (!entry) {
       logger.debug('Cache miss', { key })
+      this.stats.misses++
+      this.updateHitRate()
+      return await this.fetchAndCache(key, fetcher, options)
+    }
+
+    // Version mismatch - treat as cache miss
+    if (version && entry.version !== version) {
+      logger.debug('Cache version mismatch', {
+        key,
+        cached: entry.version,
+        requested: version,
+      })
       this.stats.misses++
       this.updateHitRate()
       return await this.fetchAndCache(key, fetcher, options)
@@ -231,6 +247,7 @@ export class CacheService {
       ttl = DEFAULT_TTL,
       staleTtl = DEFAULT_STALE_TTL,
       persist = true,
+      version,
     } = options
 
     const size = this.estimateSize(value)
@@ -241,6 +258,7 @@ export class CacheService {
       ttl,
       staleTtl,
       size,
+      ...(version && { version }),
     }
 
     // Check cache size limit
