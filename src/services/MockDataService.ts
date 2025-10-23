@@ -169,7 +169,7 @@ export class MockDataService {
       skills: this.generateSkills(profile),
       education: this.generateEducation(profile, currentDate),
       certifications: this.generateCertifications(profile, currentDate),
-      achievements: this.generateAchievements(profile, currentDate),
+      achievements: this.generateAchievements(profile),
       languages: this.generateLanguages(),
       metadata: {
         keywords: this.generateKeywords(),
@@ -570,10 +570,7 @@ export class MockDataService {
   /**
    * Generate achievements
    */
-  private generateAchievements(
-    profile: SeniorityProfile,
-    currentDate: Date
-  ): Achievement[] {
+  private generateAchievements(profile: SeniorityProfile): Achievement[] {
     const count = faker.number.int(profile.achievementCount)
     const achievements: Achievement[] = []
 

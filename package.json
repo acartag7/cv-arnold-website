@@ -6,8 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "lint:fix": "next lint --fix",
+    "lint": "next lint --max-warnings 0",
+    "lint:fix": "next lint --fix --max-warnings 0",
     "lint:md": "markdownlint '**/*.md' --fix",
     "format": "prettier --write '**/*.{js,jsx,ts,tsx,json,css,md,yaml,yml}'",
     "format:check": "prettier --check '**/*.{js,jsx,ts,tsx,json,css,md,yaml,yml}'",
@@ -37,6 +37,10 @@
     "@eslint/eslintrc": "^3",
     "@faker-js/faker": "^10.1.0",
     "@tailwindcss/postcss": "^4",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/react-hooks": "^8.0.1",
+    "@testing-library/user-event": "^14.6.1",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
@@ -44,6 +48,7 @@
     "@vitest/ui": "^3.2.4",
     "eslint": "^9",
     "eslint-config-next": "15.4.5",
+    "happy-dom": "^20.0.7",
     "husky": "^9.1.7",
     "lint-staged": "^16.1.4",
     "markdownlint-cli": "^0.45.0",
@@ -55,7 +60,7 @@
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
-      "next lint --fix --file",
+      "next lint --fix --file --max-warnings 0",
       "prettier --write"
     ],
     "*.md": [
