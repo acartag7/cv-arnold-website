@@ -365,6 +365,38 @@ describe('CVDataContext', () => {
       })
     })
 
+    it('should handle rapid successive updates correctly', async () => {
+      const { result } = renderHook(() => useCVData(), {
+        wrapper: ({ children }) => (
+          <Wrapper service={mockService} autoFetch={true}>
+            {children}
+          </Wrapper>
+        ),
+      })
+
+      await waitFor(() => {
+        expect(result.current.state.data).toEqual(mockCVData)
+      })
+
+      // Fire multiple updates rapidly
+      const updates = [
+        { ...mockCVData, version: '2.0.0' },
+        { ...mockCVData, version: '3.0.0' },
+        { ...mockCVData, version: '4.0.0' },
+      ]
+
+      await act(async () => {
+        await Promise.all(
+          updates.map(data => result.current.actions.updateData(data))
+        )
+      })
+
+      // Last update should win
+      expect(result.current.state.data?.version).toBe('4.0.0')
+      // Verify all updates were called
+      expect(mockService.updateData).toHaveBeenCalledTimes(3)
+    })
+
     it('should clear error', async () => {
       const service = createMockService()
       ;(service.getData as Mock).mockRejectedValue(new Error('Fetch failed'))
