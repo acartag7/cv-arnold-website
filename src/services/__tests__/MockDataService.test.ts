@@ -392,7 +392,10 @@ describe('MockDataService', () => {
     })
 
     it('should have chronologically ordered experience (newest first)', () => {
-      const cvData = service.generateMockCV({ seniorityLevel: 'senior' })
+      const cvData = service.generateMockCV({
+        seniorityLevel: 'senior',
+        seed: 42, // Use seed for deterministic test
+      })
 
       for (let i = 1; i < cvData.experience.length; i++) {
         const current = new Date(cvData.experience[i]!.startDate)
