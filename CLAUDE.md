@@ -444,6 +444,88 @@ task-master set-status --id=<id> --status=done
 # .taskmaster/docs/task-X-implementation.md
 ```
 
+**CRITICAL: Update MCP Memory after completing tasks!**
+
+After completing a task or major milestone:
+
+```javascript
+// Store a memory with lessons learned
+mcp__memory__store_memory({
+  content: `TASK X.Y COMPLETED: [Brief Summary]
+
+  ## What Was Accomplished
+  - [Key deliverables]
+  - [Files created/modified]
+  - [Tests added with coverage]
+
+  ## Key Decisions & Rationale
+  - [Technical decisions made]
+  - [Why chosen vs alternatives]
+  - [Trade-offs accepted]
+
+  ## Lessons Learned
+  - [What worked well]
+  - [What didn't work]
+  - [Patterns to follow/avoid]
+
+  ## Production Impact
+  - [Performance implications]
+  - [Breaking changes]
+  - [Migration notes]
+
+  ## Next Steps
+  - [Follow-up tasks]
+  - [Technical debt created]
+  - [Future improvements]`,
+  tags: ['cv-arnold-website', 'task-X.Y', 'completed', 'lessons-learned'],
+  importance: 0.9,
+})
+
+// Update current-state memory
+mcp__memory__store_memory({
+  content: `PROJECT STATE UPDATE: [Date]
+
+  ## Recently Completed
+  - ✅ Task X.Y: [Title] (PR #N merged)
+  - ✅ Task A.B: [Title] (PR #M merged)
+
+  ## Currently Available
+  - Task N: [Title] (dependencies met)
+  - Task M: [Title] (ready to start)
+
+  ## Recent PRs
+  - PR #N: [Description] (merged)
+  - PR #M: [Description] (pending review)
+
+  ## Key Metrics
+  - X of Y tasks completed (Z%)
+  - A of B subtasks completed (C%)
+  - Test coverage: D%
+
+  ## Blockers / Notes
+  - [Any current issues]
+  - [Important context]`,
+  tags: ['cv-arnold-website', 'current-state', 'progress'],
+  importance: 0.95,
+})
+```
+
+**Why this matters:**
+
+- 📊 Maintains accurate project state across sessions
+- 🧠 Preserves lessons learned for future tasks
+- 🔄 Prevents repetition of mistakes
+- ⚡ Faster onboarding after compaction/breaks
+- 📈 Tracks progress and decision evolution
+
+**When to update:**
+
+- ✅ After completing any task/subtask
+- ✅ After merging PRs
+- ✅ After discovering important lessons
+- ✅ When project state changes significantly
+- ✅ Before ending long sessions
+
 ### 6. Complex Workflows
 
 For large changes:
