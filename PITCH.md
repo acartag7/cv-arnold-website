@@ -42,10 +42,36 @@
 **How They Use It:**
 
 1. **Fork** the template repository
-2. **Configure** using the setup wizard
+2. **Configure** using the setup wizard (30-60 minutes)
 3. **Customize** content via admin portal
 4. **Deploy** to Cloudflare (free)
 5. **Share** their personal domain
+
+## 📋 Technical Prerequisites
+
+**This platform is designed for developers comfortable with:**
+
+- Git and GitHub workflows (forking, cloning, env variables)
+- Basic command-line operations (npm/pnpm, wrangler CLI)
+- Cloudflare account setup and configuration
+- DNS and domain management
+
+**Time Investment:**
+
+- Initial setup: 30-60 minutes (with documentation)
+- Ongoing maintenance: 1-2 hours/month (dependency updates, monitoring)
+
+**Best For:**
+
+- Developers who want full control over their infrastructure
+- Those interested in learning Cloudflare Workers ecosystem
+- People who value customization over convenience
+
+**Not Best For:**
+
+- Quick setup without technical knowledge → Use Carrd or Notion
+- Massive recruiter network → Use LinkedIn
+- Zero maintenance → Use SaaS CV builders
 
 ---
 
@@ -298,19 +324,20 @@ graph TB
 
 ## 🎯 Success Metrics
 
-**For You:**
+**Primary Goals (Personal):**
 
-- ✅ Professional online presence
-- ✅ Easy content updates (no code)
-- ✅ Modern, fast, accessible CV
-- ✅ Full control and ownership
+- ✅ Professional online presence with custom domain
+- ✅ Portfolio piece demonstrating modern architecture
+- ✅ Deep understanding of Cloudflare ecosystem
+- ✅ Production experience with Next.js 15 + Workers
+- ✅ Full control and ownership of personal brand
 
-**For the Community:**
+**Secondary Goals (Community):**
 
-- 🎯 100+ GitHub stars in first month
-- 🎯 50+ forks (others using it)
-- 🎯 Active community contributions
-- 🎯 Featured on "Show HN" / Product Hunt
+- 🎯 10+ developers find it useful and fork it
+- 🎯 Reference implementation for Cloudflare + Next.js patterns
+- 🎯 Learning resource via blog posts and documentation
+- 🎯 Positive feedback from family/friends who use it
 
 **Technical Excellence:**
 
@@ -318,6 +345,13 @@ graph TB
 - 🎯 Test coverage >80%
 - 🎯 Load time <2 seconds
 - 🎯 Zero runtime errors
+
+**NOT Goals:**
+
+- ❌ Competing with LinkedIn or SaaS CV builders
+- ❌ Building a funded startup or commercial product
+- ❌ Creating a community-driven project requiring full-time maintenance
+- ❌ Massive GitHub stars (nice-to-have, not the measure of success)
 
 ---
 
@@ -337,28 +371,58 @@ graph TB
 
 ---
 
-## 💪 Competitive Advantage
+## 💪 Competitive Landscape (Honest Comparison)
 
-| Feature           | This Platform | LinkedIn       | Resume Builders | Custom Site |
-| ----------------- | ------------- | -------------- | --------------- | ----------- |
-| **Cost**          | Free ✅       | Free (limited) | $10-30/mo ❌    | $5-50/mo ❌ |
-| **Customization** | Full ✅       | None ❌        | Limited ⚠️      | Full ✅     |
-| **AI Features**   | Yes ✅        | Basic ⚠️       | Some ⚠️         | No ❌       |
-| **Own Domain**    | Yes ✅        | No ❌          | Sometimes ⚠️    | Yes ✅      |
-| **Easy Setup**    | 5 min ✅      | N/A            | 10 min ✅       | Hours ❌    |
-| **No Coding**     | Yes ✅        | Yes ✅         | Yes ✅          | No ❌       |
-| **Open Source**   | Yes ✅        | No ❌          | No ❌           | N/A         |
+| Feature               | This Platform | LinkedIn | No-Code (Carrd) | Custom Site |
+| --------------------- | ------------- | -------- | --------------- | ----------- |
+| **Cost**              | Free ✅       | Free ✅  | Free-$19/yr ✅  | $5-50/mo ❌ |
+| **Setup Time**        | 30-60 min ⚠️  | 5 min ✅ | 5 min ✅        | Hours ❌    |
+| **Customization**     | Full ✅       | None ❌  | Limited ⚠️      | Full ✅     |
+| **Recruiter Traffic** | None ❌       | High ✅  | None ❌         | Low ⚠️      |
+| **Coding Required**   | Yes ❌        | No ✅    | No ✅           | Yes ❌      |
+| **Own Domain**        | Yes ✅        | No ❌    | Yes ✅          | Yes ✅      |
+| **Learning Value**    | High ✅       | None ❌  | None ❌         | Medium ⚠️   |
+| **Open Source**       | Yes ✅        | No ❌    | No ❌           | Varies ⚠️   |
+
+### When to Choose What?
+
+**Choose LinkedIn if:**
+
+- ✅ You want recruiter traffic and network effects
+- ✅ You need it done in 5 minutes
+- ❌ You don't care about customization
+
+**Choose No-Code (Carrd, Notion) if:**
+
+- ✅ You want a simple online presence quickly
+- ✅ You don't have technical skills
+- ❌ You don't need advanced features
+
+**Choose This Platform if:**
+
+- ✅ You're a developer who wants to learn Cloudflare
+- ✅ You value full control and customization
+- ✅ You want a portfolio piece demonstrating modern architecture
+- ❌ You need it done in 5 minutes
+
+**The Honest Truth:**
+
+Most people should use LinkedIn + (Carrd or Notion). This platform is for developers
+who see value in owning their infrastructure and want to learn by building. It's
+not competing with LinkedIn—use both.
 
 ---
 
 ## 🎬 Demo Flow
 
-**Setup (5 minutes):**
+**Setup (30-60 minutes with guide):**
 
 1. Fork template → Click "Use this template"
-2. Run setup wizard → Configure auth, choose theme
-3. Start with example data → Pre-populated CV
-4. Deploy to Cloudflare → One-click deployment
+2. Create Cloudflare account → Set up Workers, KV, R2
+3. Run setup wizard → Configure auth, choose theme
+4. Start with example data → Pre-populated CV
+5. Deploy to Cloudflare → Follow deployment guide
+6. Configure custom domain → DNS setup
 
 **Daily Use:**
 
@@ -450,6 +514,36 @@ graph TB
 - 🎯 Add draft/publish workflow
 
 **Timeline:** 12-13 weeks to public launch
+
+---
+
+## 🔄 Project Sustainability
+
+**Maintenance Model:**
+
+- **Primary:** Personal project maintained as needed for Arnold's CV
+- **Public:** Open source for transparency and community benefit
+- **Community:** Fork-friendly, but not community-driven development
+
+**Long-Term Support:**
+
+- ✅ Security updates: Yes (affects personal use)
+- 🤔 Feature requests: Maybe (if aligned with personal needs)
+- 🔄 Major version updates: When needed for personal site
+- 📝 Breaking changes: Documented in migration guides
+
+**If You Fork This:**
+
+- Expect to maintain your own fork independently
+- Core template updated based on personal needs (not feature requests)
+- Use at your own risk (MIT license)
+- Contributions welcome but not guaranteed to be merged
+
+**Why This Approach:**
+
+This is a learning project and portfolio piece, not a commercial product. Honest
+expectations prevent disappointment and allow sustainable development without
+burnout.
 
 ---
 
