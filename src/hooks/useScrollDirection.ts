@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 
 interface UseScrollDirectionOptions {
   /** Threshold in pixels before detecting scroll direction */
@@ -13,6 +13,9 @@ export type ScrollDirection = 'up' | 'down' | null
 
 /**
  * Hook to detect scroll direction for header hide/show behavior
+ *
+ * Uses refs to prevent effect re-runs and unnecessary event listener re-registration.
+ * This prevents memory leaks and improves performance.
  *
  * @param options - Configuration options
  * @returns Current scroll direction and position
@@ -29,27 +32,26 @@ export function useScrollDirection({
 }: UseScrollDirectionOptions = {}) {
   const [scrollDirection, setScrollDirection] = useState<ScrollDirection>(null)
   const [scrollY, setScrollY] = useState(0)
-  const [lastScrollY, setLastScrollY] = useState(0)
+
+  // Use ref to track last scroll position to avoid effect re-runs
+  const lastScrollYRef = useRef(0)
 
   const updateScrollDirection = useCallback(() => {
     const currentScrollY = window.scrollY
 
     // Don't update if below threshold
-    if (Math.abs(currentScrollY - lastScrollY) < threshold) {
+    if (Math.abs(currentScrollY - lastScrollYRef.current) < threshold) {
       return
     }
 
     const newDirection: ScrollDirection =
-      currentScrollY > lastScrollY ? 'down' : 'up'
+      currentScrollY > lastScrollYRef.current ? 'down' : 'up'
 
-    // Only update if direction changed
-    if (newDirection !== scrollDirection) {
-      setScrollDirection(newDirection)
-    }
-
+    // Only update state if direction actually changed (prevents unnecessary re-renders)
+    setScrollDirection(prev => (prev === newDirection ? prev : newDirection))
     setScrollY(currentScrollY)
-    setLastScrollY(currentScrollY)
-  }, [lastScrollY, scrollDirection, threshold])
+    lastScrollYRef.current = currentScrollY
+  }, [threshold])
 
   useEffect(() => {
     let timeoutId: NodeJS.Timeout | null = null
@@ -67,8 +69,9 @@ export function useScrollDirection({
     window.addEventListener('scroll', handleScroll, { passive: true })
 
     // Initialize scroll position
-    setScrollY(window.scrollY)
-    setLastScrollY(window.scrollY)
+    const initialY = window.scrollY
+    setScrollY(initialY)
+    lastScrollYRef.current = initialY
 
     return () => {
       window.removeEventListener('scroll', handleScroll)
