@@ -8,12 +8,17 @@
  * @param startDate - ISO 8601 start date
  * @param endDate - ISO 8601 end date (null for current)
  * @returns Formatted date range (e.g., "Jan 2020 - Present", "Mar 2018 - Dec 2019")
+ * @throws {Error} If startDate or endDate are invalid
  */
 export function formatDateRange(
   startDate: string,
   endDate: string | null
 ): string {
   const start = new Date(startDate)
+  if (isNaN(start.getTime())) {
+    throw new Error(`Invalid start date: ${startDate}`)
+  }
+
   const startFormatted = formatMonthYear(start)
 
   if (!endDate) {
@@ -21,6 +26,10 @@ export function formatDateRange(
   }
 
   const end = new Date(endDate)
+  if (isNaN(end.getTime())) {
+    throw new Error(`Invalid end date: ${endDate}`)
+  }
+
   const endFormatted = formatMonthYear(end)
 
   return `${startFormatted} - ${endFormatted}`
@@ -43,13 +52,21 @@ export function formatMonthYear(date: Date): string {
  * @param startDate - ISO 8601 start date
  * @param endDate - ISO 8601 end date (null for current)
  * @returns Duration string (e.g., "2 years 3 months", "6 months")
+ * @throws {Error} If startDate or endDate are invalid
  */
 export function calculateDuration(
   startDate: string,
   endDate: string | null
 ): string {
   const start = new Date(startDate)
+  if (isNaN(start.getTime())) {
+    throw new Error(`Invalid start date: ${startDate}`)
+  }
+
   const end = endDate ? new Date(endDate) : new Date()
+  if (endDate && isNaN(end.getTime())) {
+    throw new Error(`Invalid end date: ${endDate}`)
+  }
 
   const totalMonths =
     (end.getFullYear() - start.getFullYear()) * 12 +

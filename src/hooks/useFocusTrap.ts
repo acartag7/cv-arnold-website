@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, RefObject } from 'react'
+import { useEffect, useRef, RefObject } from 'react'
 
 /**
  * Hook to trap focus within a container element
@@ -19,8 +19,19 @@ export function useFocusTrap(
   containerRef: RefObject<HTMLElement | null>,
   isActive: boolean
 ) {
+  const previouslyFocusedElementRef = useRef<HTMLElement | null>(null)
+
   useEffect(() => {
-    if (!isActive || !containerRef.current) {
+    // If deactivating, restore focus to previously focused element
+    if (!isActive) {
+      if (previouslyFocusedElementRef.current) {
+        previouslyFocusedElementRef.current.focus()
+        previouslyFocusedElementRef.current = null
+      }
+      return
+    }
+
+    if (!containerRef.current) {
       return
     }
 
@@ -35,8 +46,11 @@ export function useFocusTrap(
       )
     }
 
-    // Store element that had focus before trap
-    const previouslyFocusedElement = document.activeElement as HTMLElement
+    // Store element that had focus before trap (only if not already stored)
+    if (!previouslyFocusedElementRef.current) {
+      previouslyFocusedElementRef.current =
+        document.activeElement as HTMLElement
+    }
 
     // Focus first element
     const focusableElements = getFocusableElements()
@@ -85,9 +99,10 @@ export function useFocusTrap(
     return () => {
       container.removeEventListener('keydown', handleTabKey)
 
-      // Restore focus to previously focused element
-      if (previouslyFocusedElement) {
-        previouslyFocusedElement.focus()
+      // Restore focus to previously focused element on cleanup
+      if (previouslyFocusedElementRef.current) {
+        previouslyFocusedElementRef.current.focus()
+        previouslyFocusedElementRef.current = null
       }
     }
   }, [containerRef, isActive])
