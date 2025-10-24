@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 interface UseActiveSectionOptions {
   /** Section IDs to observe */
@@ -35,6 +35,8 @@ export function useActiveSection({
   threshold = 0,
 }: UseActiveSectionOptions) {
   const [activeSection, setActiveSection] = useState<string | null>(null)
+  // Use ref to track current active section without triggering effect re-runs
+  const activeSectionRef = useRef<string | null>(null)
 
   useEffect(() => {
     // Get all section elements
@@ -100,7 +102,9 @@ export function useActiveSection({
           }
         }
 
-        if (topSection !== activeSection) {
+        // Only update if section actually changed
+        if (topSection !== activeSectionRef.current) {
+          activeSectionRef.current = topSection
           setActiveSection(topSection ?? null)
         }
       },
@@ -118,7 +122,7 @@ export function useActiveSection({
     return () => {
       observer.disconnect()
     }
-  }, [sectionIds, rootMargin, threshold, activeSection])
+  }, [sectionIds, rootMargin, threshold])
 
   return activeSection
 }
