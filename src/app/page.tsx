@@ -25,7 +25,7 @@ export default function HomePage() {
         </div>
       </Show>
 
-      <main>
+      <main id="main-content">
         <HeroSection data={data} />
         <ExperienceSection data={data} />
         <SkillsSection data={data} />
