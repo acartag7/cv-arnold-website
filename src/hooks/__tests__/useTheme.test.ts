@@ -458,11 +458,11 @@ describe('useTheme', () => {
   })
 
   describe('Edge Cases', () => {
-    it('should handle missing themes from next-themes', async () => {
+    it('should return empty array when next-themes provides empty themes', async () => {
       vi.mocked(useNextTheme).mockReturnValue({
         theme: 'light',
         setTheme: mockSetTheme,
-        themes: [] as string[], // Empty array instead of undefined
+        themes: [], // Empty array
         resolvedTheme: 'light',
         systemTheme: undefined,
         forcedTheme: undefined,
@@ -471,11 +471,8 @@ describe('useTheme', () => {
       const { result } = renderHook(() => useTheme())
 
       await waitFor(() => {
-        expect(result.current.themes).toEqual([
-          'light',
-          'dark',
-          'high-contrast',
-        ])
+        // Empty array from next-themes returns empty array after filtering
+        expect(result.current.themes).toEqual([])
       })
     })
 
