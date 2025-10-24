@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 
 interface KeyboardShortcutOptions {
   /** Key to listen for (e.g., 'k', 'Escape') */
@@ -39,6 +39,14 @@ export function useKeyboardShortcut(
     enabled = true,
   }: KeyboardShortcutOptions
 ) {
+  // Use ref to store callback without triggering effect re-runs
+  const callbackRef = useRef(callback)
+
+  // Update ref on every render to always have latest callback
+  useEffect(() => {
+    callbackRef.current = callback
+  })
+
   useEffect(() => {
     if (!enabled) {
       return
@@ -70,7 +78,7 @@ export function useKeyboardShortcut(
 
       if (matches) {
         e.preventDefault()
-        callback()
+        callbackRef.current()
       }
     }
 
@@ -79,5 +87,5 @@ export function useKeyboardShortcut(
     return () => {
       window.removeEventListener('keydown', handleKeyDown)
     }
-  }, [callback, key, ctrlKey, altKey, shiftKey, enabled])
+  }, [key, ctrlKey, altKey, shiftKey, enabled])
 }
