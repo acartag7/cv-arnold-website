@@ -1,6 +1,5 @@
 import { renderHook } from '@testing-library/react'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { useRef } from 'react'
 import { useFocusTrap } from '../useFocusTrap'
 
 describe('useFocusTrap', () => {
