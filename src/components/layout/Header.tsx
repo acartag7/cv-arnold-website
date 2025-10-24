@@ -82,8 +82,8 @@ export default function Header() {
   }
 
   const handleTouchEnd = () => {
-    // Swipe right to close (threshold: 50px)
-    if (touchEnd - touchStart > 50) {
+    // Swipe left to close (threshold: 50px)
+    if (touchStart - touchEnd > 50) {
       setIsMenuOpen(false)
     }
     // Reset touch state
