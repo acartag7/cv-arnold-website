@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { SkillLevel } from '@/schemas/cv.schema'
+import { cn } from '@/utils/cn'
 
 export interface ProficiencyIndicatorProps {
   level: SkillLevel
@@ -10,6 +11,31 @@ export interface ProficiencyIndicatorProps {
   animated?: boolean
   className?: string
 }
+
+/**
+ * Proficiency level mappings
+ * Centralized configuration to ensure consistency across all variants
+ */
+const PROFICIENCY_CONFIG = {
+  percentage: {
+    beginner: 25,
+    intermediate: 50,
+    advanced: 75,
+    expert: 100,
+  } as Record<SkillLevel, number>,
+  stars: {
+    beginner: 2,
+    intermediate: 3,
+    advanced: 4,
+    expert: 5,
+  } as Record<SkillLevel, number>,
+  dots: {
+    beginner: 1,
+    intermediate: 2,
+    advanced: 3,
+    expert: 4,
+  } as Record<SkillLevel, number>,
+} as const
 
 /**
  * ProficiencyIndicator Component
@@ -31,18 +57,16 @@ export function ProficiencyIndicator({
   className = '',
 }: ProficiencyIndicatorProps) {
   // Map skill level to percentage
-  const levelPercentage: Record<SkillLevel, number> = {
-    beginner: 25,
-    intermediate: 50,
-    advanced: 75,
-    expert: 100,
-  }
-
-  const percentage = levelPercentage[level]
+  const percentage = PROFICIENCY_CONFIG.percentage[level]
 
   return (
     <div
-      className={`proficiency-indicator proficiency-${variant} ${animated ? 'animated' : ''} ${className}`}
+      className={cn(
+        'proficiency-indicator',
+        `proficiency-${variant}`,
+        animated && 'animated',
+        className
+      )}
       role="meter"
       aria-valuenow={percentage}
       aria-valuemin={0}
@@ -81,7 +105,7 @@ function BarIndicator({
   return (
     <div className="proficiency-bar-container">
       <div
-        className={`proficiency-bar-fill proficiency-${level}`}
+        className={cn('proficiency-bar-fill', `proficiency-${level}`)}
         style={{ width: `${percentage}%` }}
         role="presentation"
       />
@@ -123,7 +147,7 @@ function CircularIndicator({
       />
       {/* Progress circle */}
       <circle
-        className={`proficiency-circle-fill proficiency-${level}`}
+        className={cn('proficiency-circle-fill', `proficiency-${level}`)}
         cx="50"
         cy="50"
         r={radius}
@@ -153,14 +177,7 @@ function CircularIndicator({
  * Stars-style proficiency indicator (1-5 stars)
  */
 function StarsIndicator({ level }: { level: SkillLevel }) {
-  const stars: Record<SkillLevel, number> = {
-    beginner: 2,
-    intermediate: 3,
-    advanced: 4,
-    expert: 5,
-  }
-
-  const filledStars = stars[level]
+  const filledStars = PROFICIENCY_CONFIG.stars[level]
   const totalStars = 5
 
   return (
@@ -181,14 +198,7 @@ function StarsIndicator({ level }: { level: SkillLevel }) {
  * Dots-style proficiency indicator (1-4 dots)
  */
 function DotsIndicator({ level }: { level: SkillLevel }) {
-  const dots: Record<SkillLevel, number> = {
-    beginner: 1,
-    intermediate: 2,
-    advanced: 3,
-    expert: 4,
-  }
-
-  const filledDots = dots[level]
+  const filledDots = PROFICIENCY_CONFIG.dots[level]
   const totalDots = 4
 
   return (

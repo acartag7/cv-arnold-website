@@ -3,6 +3,7 @@
 import React, { useMemo } from 'react'
 import { Experience } from '@/schemas/cv.schema'
 import { TimelineItem } from './TimelineItem'
+import { cn } from '@/utils/cn'
 
 export interface TimelineProps {
   experiences: Experience[]
@@ -41,7 +42,7 @@ export function Timeline({
 
   return (
     <div
-      className={`timeline timeline-${variant} ${className}`}
+      className={cn('timeline', `timeline-${variant}`, className)}
       role="list"
       aria-label="Work experience timeline"
     >

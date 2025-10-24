@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { cn } from '@/utils/cn'
 
 export interface TechnologyTagProps {
   name: string
@@ -46,7 +47,12 @@ export function TechnologyTag({
 
   return (
     <span
-      className={`technology-tag ${category || ''} ${isClickable ? 'clickable' : ''} ${className}`}
+      className={cn(
+        'technology-tag',
+        category,
+        isClickable && 'clickable',
+        className
+      )}
       onClick={isClickable ? handleClick : undefined}
       onKeyDown={isClickable ? handleKeyDown : undefined}
       onMouseEnter={() => hasTooltip && setShowTooltip(true)}

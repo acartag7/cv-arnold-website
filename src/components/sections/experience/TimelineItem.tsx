@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import { Experience } from '@/schemas/cv.schema'
 import { TimelineCard } from './TimelineCard'
 import { formatDateRange } from '@/lib/date-utils'
+import { cn } from '@/utils/cn'
 
 export interface TimelineItemProps {
   experience: Experience
@@ -31,7 +32,7 @@ export function TimelineItem({
 
   return (
     <div
-      className={`timeline-item ${className}`}
+      className={cn('timeline-item', className)}
       role="listitem"
       data-index={index}
       data-current={isCurrent}
@@ -39,7 +40,7 @@ export function TimelineItem({
       {/* Timeline connector */}
       <div className="timeline-connector" aria-hidden="true">
         <div className="timeline-line" />
-        <div className={`timeline-dot ${isCurrent ? 'current' : ''}`} />
+        <div className={cn('timeline-dot', isCurrent && 'current')} />
       </div>
 
       {/* Timeline content */}

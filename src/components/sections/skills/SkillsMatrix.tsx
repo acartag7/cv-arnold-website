@@ -3,6 +3,7 @@
 import React from 'react'
 import { SkillCategory } from '@/schemas/cv.schema'
 import { SkillCategorySection } from './SkillCategorySection'
+import { cn } from '@/utils/cn'
 
 export interface SkillsMatrixProps {
   categories: SkillCategory[]
@@ -32,7 +33,7 @@ export function SkillsMatrix({
 
   return (
     <div
-      className={`skills-matrix skills-matrix-${layout} ${className}`}
+      className={cn('skills-matrix', `skills-matrix-${layout}`, className)}
       role="region"
       aria-label="Skills matrix"
     >

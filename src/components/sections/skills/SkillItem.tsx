@@ -4,6 +4,7 @@ import React from 'react'
 import { Skill } from '@/schemas/cv.schema'
 import { ProficiencyIndicator } from './ProficiencyIndicator'
 import { formatMonthYear } from '@/lib/date-utils'
+import { cn } from '@/utils/cn'
 
 export interface SkillItemProps {
   skill: Skill
@@ -21,7 +22,7 @@ export function SkillItem({ skill, className = '' }: SkillItemProps) {
 
   return (
     <div
-      className={`skill-item ${featured ? 'featured' : ''} ${className}`}
+      className={cn('skill-item', featured && 'featured', className)}
       role="listitem"
     >
       {/* Skill header */}

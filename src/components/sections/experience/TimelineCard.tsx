@@ -4,6 +4,7 @@ import React from 'react'
 import { Experience } from '@/schemas/cv.schema'
 import { TechnologyTag } from '../skills/TechnologyTag'
 import { ChevronDown, ChevronUp, MapPin, Briefcase } from 'lucide-react'
+import { cn } from '@/utils/cn'
 
 export interface TimelineCardProps {
   experience: Experience
@@ -38,7 +39,7 @@ export function TimelineCard({
 
   return (
     <article
-      className={`timeline-card ${isExpanded ? 'expanded' : ''} ${className}`}
+      className={cn('timeline-card', isExpanded && 'expanded', className)}
     >
       {/* Card header - always visible */}
       <header className="timeline-card-header">

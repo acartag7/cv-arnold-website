@@ -28,9 +28,10 @@ export function formatDateRange(
 
 /**
  * Format a date as "Mon YYYY" (e.g., "Jan 2020")
+ * Uses browser locale for internationalization
  */
 export function formatMonthYear(date: Date): string {
-  return date.toLocaleDateString('en-US', {
+  return date.toLocaleDateString(undefined, {
     month: 'short',
     year: 'numeric',
   })

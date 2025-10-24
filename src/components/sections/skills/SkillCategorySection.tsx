@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import { SkillCategory } from '@/schemas/cv.schema'
 import { SkillItem } from './SkillItem'
 import { ChevronDown, ChevronUp } from 'lucide-react'
+import { cn } from '@/utils/cn'
 
 export interface SkillCategorySectionProps {
   category: SkillCategory
@@ -26,7 +27,7 @@ export function SkillCategorySection({
 
   return (
     <section
-      className={`skill-category-section ${className}`}
+      className={cn('skill-category-section', className)}
       aria-labelledby={`category-${category.id}`}
     >
       {/* Category header */}
