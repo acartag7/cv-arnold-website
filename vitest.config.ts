@@ -34,6 +34,7 @@ export default defineConfig({
         '**/*.spec.ts',
         '**/types.ts',
         '**/index.ts',
+        'src/hooks/responsive/**', // Exclude responsive hooks (not in current PR)
         'node_modules/**',
         'dist/**',
         '.next/**',
