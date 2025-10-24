@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useMemo } from 'react'
 import { Experience } from '@/schemas/cv.schema'
 import { TimelineItem } from './TimelineItem'
 
@@ -28,11 +28,16 @@ export function Timeline({
   variant = 'vertical',
 }: TimelineProps) {
   // Sort experiences by start date (most recent first)
-  const sortedExperiences = [...experiences].sort((a, b) => {
-    const dateA = new Date(a.startDate).getTime()
-    const dateB = new Date(b.startDate).getTime()
-    return dateB - dateA // Descending order
-  })
+  // Memoized to prevent re-sorting on every render
+  const sortedExperiences = useMemo(
+    () =>
+      [...experiences].sort((a, b) => {
+        const dateA = new Date(a.startDate).getTime()
+        const dateB = new Date(b.startDate).getTime()
+        return dateB - dateA // Descending order
+      }),
+    [experiences]
+  )
 
   return (
     <div

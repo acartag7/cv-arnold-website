@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import React, { useState, useRef } from 'react'
 import { Menu, X, Download, Command } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ThemeSwitcher } from '@/components/ui'
