@@ -79,6 +79,9 @@ export default function Header() {
     if (touchStart - touchEnd > 50) {
       setIsMenuOpen(false)
     }
+    // Reset touch state
+    setTouchStart(0)
+    setTouchEnd(0)
   }
 
   const handleNavClick = (href: string) => {

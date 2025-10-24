@@ -25,6 +25,7 @@ export default defineConfig({
         'src/schemas/**/*.ts',
         'src/services/**/*.ts',
         'src/lib/**/*.ts',
+        'src/hooks/**/*.ts',
         'src/contexts/**/*.tsx',
       ],
       exclude: [
@@ -61,6 +62,12 @@ export default defineConfig({
           functions: 85,
           branches: 85,
           statements: 85,
+        },
+        'src/hooks/**': {
+          lines: 80,
+          functions: 80,
+          branches: 80,
+          statements: 80,
         },
       },
     },

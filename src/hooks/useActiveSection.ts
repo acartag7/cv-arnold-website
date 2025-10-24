@@ -121,6 +121,7 @@ export function useActiveSection({
 
     return () => {
       observer.disconnect()
+      intersectingSections.clear()
     }
   }, [sectionIds, rootMargin, threshold])
 
