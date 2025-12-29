@@ -53,6 +53,9 @@ wrangler.toml.bak
 *.tmp
 *.temp
 
+# Playwright MCP screenshots and artifacts
+.playwright-mcp/
+
 # vercel
 .vercel
 

@@ -28,6 +28,7 @@ export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false)
   const mobileMenuRef = useRef<HTMLDivElement>(null)
+  const commandPaletteTriggerRef = useRef<HTMLButtonElement>(null)
 
   // Scroll behavior
   const { scrollDirection, isScrolled } = useScrollDirection({
@@ -46,21 +47,34 @@ export default function Header() {
   // Focus trap for mobile menu
   useFocusTrap(mobileMenuRef, isMenuOpen)
 
+  // Command palette close handler (defined before keyboard shortcuts that use it)
+  const handleCommandPaletteClose = () => {
+    setIsCommandPaletteOpen(false)
+    // Return focus to trigger button after closing
+    commandPaletteTriggerRef.current?.focus()
+  }
+
   // Keyboard shortcuts
   useKeyboardShortcut(() => setIsCommandPaletteOpen(true), {
     key: 'k',
     ctrlKey: true,
   })
 
-  useKeyboardShortcut(() => setIsMenuOpen(false), {
-    key: 'Escape',
-    enabled: isMenuOpen,
-  })
-
-  useKeyboardShortcut(() => setIsCommandPaletteOpen(false), {
-    key: 'Escape',
-    enabled: isCommandPaletteOpen,
-  })
+  // Single Escape handler that respects z-index stacking order
+  useKeyboardShortcut(
+    () => {
+      // Close top-most modal first (command palette has higher z-index)
+      if (isCommandPaletteOpen) {
+        handleCommandPaletteClose()
+      } else if (isMenuOpen) {
+        setIsMenuOpen(false)
+      }
+    },
+    {
+      key: 'Escape',
+      enabled: isMenuOpen || isCommandPaletteOpen,
+    }
+  )
 
   // Touch gesture handlers for mobile menu
   const [touchStart, setTouchStart] = useState(0)
@@ -75,7 +89,7 @@ export default function Header() {
   }
 
   const handleTouchEnd = () => {
-    // Swipe right to close (threshold: 50px)
+    // Swipe left to close (threshold: 50px)
     if (touchStart - touchEnd > 50) {
       setIsMenuOpen(false)
     }
@@ -93,6 +107,11 @@ export default function Header() {
   const handleDownloadPDF = () => {
     window.print()
   }
+
+  // Platform detection for keyboard shortcuts
+  const isMac =
+    typeof window !== 'undefined' &&
+    /Mac|iPhone|iPod|iPad/.test(navigator.platform)
 
   // Determine if header should be hidden
   const shouldHideHeader =
@@ -196,12 +215,13 @@ export default function Header() {
             <div className="flex items-center space-x-2 lg:space-x-3 flex-shrink-0">
               {/* Command Palette Trigger */}
               <button
+                ref={commandPaletteTriggerRef}
                 onClick={() => setIsCommandPaletteOpen(true)}
                 className="hidden lg:flex items-center space-x-2 px-3 py-2 text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)] bg-[var(--color-surface)] hover:bg-[var(--color-surface-hover)] rounded-lg transition-all duration-200 border border-[var(--color-border)] focus:outline-none focus:ring-2 focus:ring-[var(--color-focus-ring)] focus:ring-offset-2 focus:ring-offset-[var(--color-background)]"
-                aria-label="Open command palette (Ctrl+K)"
+                aria-label={`Open command palette (${isMac ? 'Cmd' : 'Ctrl'}+K)`}
               >
                 <Command size={14} />
-                <span className="text-xs">⌘K</span>
+                <span className="text-xs">{isMac ? '⌘K' : 'Ctrl+K'}</span>
               </button>
 
               {/* Theme Switcher */}
@@ -292,15 +312,16 @@ export default function Header() {
             )}
           </AnimatePresence>
         </div>
-
-        {/* Command Palette Trigger Indicator */}
-        {isCommandPaletteOpen && (
-          <div
-            className="fixed inset-0 bg-black/50 z-[60]"
-            aria-hidden="true"
-          />
-        )}
       </motion.header>
+
+      {/* Command Palette Backdrop */}
+      {isCommandPaletteOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-[60]"
+          aria-hidden="true"
+          onClick={handleCommandPaletteClose}
+        />
+      )}
 
       {/* Command Palette (will be implemented separately) */}
       {isCommandPaletteOpen && (
@@ -318,7 +339,7 @@ export default function Header() {
               Command palette coming soon...
             </p>
             <button
-              onClick={() => setIsCommandPaletteOpen(false)}
+              onClick={handleCommandPaletteClose}
               className="mt-4 w-full px-4 py-2 bg-[var(--color-primary)] text-[var(--color-text-inverse)] rounded-lg hover:bg-[var(--color-primary-hover)] transition-all duration-200"
             >
               Close (Esc)

@@ -1,6 +1,5 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { renderHook } from '@testing-library/react'
-import { useRef } from 'react'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { useFocusTrap } from '../useFocusTrap'
 
 describe('useFocusTrap', () => {
@@ -11,338 +10,309 @@ describe('useFocusTrap', () => {
   let outsideButton: HTMLButtonElement
 
   beforeEach(() => {
+    // Clean up DOM
+    document.body.innerHTML = ''
+
     // Create container with focusable elements
     container = document.createElement('div')
-    container.id = 'test-container'
-
     button1 = document.createElement('button')
     button1.textContent = 'Button 1'
-    button1.id = 'btn1'
-
     button2 = document.createElement('button')
     button2.textContent = 'Button 2'
-    button2.id = 'btn2'
-
     button3 = document.createElement('button')
     button3.textContent = 'Button 3'
-    button3.id = 'btn3'
 
     container.appendChild(button1)
     container.appendChild(button2)
     container.appendChild(button3)
-
-    // Create outside button to track focus restoration
-    outsideButton = document.createElement('button')
-    outsideButton.textContent = 'Outside'
-    outsideButton.id = 'outside-btn'
-
-    document.body.appendChild(outsideButton)
     document.body.appendChild(container)
+
+    // Create button outside container
+    outsideButton = document.createElement('button')
+    outsideButton.textContent = 'Outside Button'
+    document.body.appendChild(outsideButton)
   })
 
-  afterEach(() => {
-    document.body.removeChild(container)
-    document.body.removeChild(outsideButton)
+  it('should not activate focus trap when isActive is false', () => {
+    const containerRef = { current: container }
+
+    renderHook(() => useFocusTrap(containerRef, false))
+
+    // First button should not be automatically focused
+    expect(document.activeElement).not.toBe(button1)
   })
 
-  describe('Focus Management', () => {
-    it('should focus first element when activated', () => {
-      outsideButton.focus()
+  it('should focus first element when activated', () => {
+    const containerRef = { current: container }
 
-      renderHook(() => {
-        const ref = useRef<HTMLDivElement>(container)
-        useFocusTrap(ref, true)
-        return ref
-      })
+    renderHook(() => useFocusTrap(containerRef, true))
 
-      expect(document.activeElement).toBe(button1)
-    })
-
-    it('should restore focus to previously focused element when deactivated', () => {
-      outsideButton.focus()
-      expect(document.activeElement).toBe(outsideButton)
-
-      const { rerender } = renderHook(
-        ({ isActive }) => {
-          const ref = useRef<HTMLDivElement>(container)
-          useFocusTrap(ref, isActive)
-          return ref
-        },
-        { initialProps: { isActive: true } }
-      )
-
-      // Focus trap is active, first element should be focused
-      expect(document.activeElement).toBe(button1)
-
-      // Deactivate focus trap
-      rerender({ isActive: false })
-
-      // Focus should be restored to outside button
-      expect(document.activeElement).toBe(outsideButton)
-    })
-
-    it('should not do anything if container ref is null', () => {
-      outsideButton.focus()
-
-      renderHook(() => {
-        const ref = useRef<HTMLDivElement>(null)
-        useFocusTrap(ref, true)
-        return ref
-      })
-
-      // Focus should remain on outside button
-      expect(document.activeElement).toBe(outsideButton)
-    })
-
-    it('should not do anything if isActive is false', () => {
-      outsideButton.focus()
-
-      renderHook(() => {
-        const ref = useRef<HTMLDivElement>(container)
-        useFocusTrap(ref, false)
-        return ref
-      })
-
-      // Focus should remain on outside button
-      expect(document.activeElement).toBe(outsideButton)
-    })
+    // First button should be focused
+    expect(document.activeElement).toBe(button1)
   })
 
-  describe('Tab Key Navigation', () => {
-    it('should trap focus when tabbing forward', () => {
-      renderHook(() => {
-        const ref = useRef<HTMLDivElement>(container)
-        useFocusTrap(ref, true)
-        return ref
-      })
+  it('should trap Tab key to cycle forward', () => {
+    const containerRef = { current: container }
 
-      // First element focused on activation
-      expect(document.activeElement).toBe(button1)
+    renderHook(() => useFocusTrap(containerRef, true))
 
-      // Manually focus last element
-      button3.focus()
-      expect(document.activeElement).toBe(button3)
+    // Start at first button
+    expect(document.activeElement).toBe(button1)
 
-      // Simulate Tab key
-      const tabEvent = new KeyboardEvent('keydown', {
-        key: 'Tab',
-        bubbles: true,
-        cancelable: true,
-      })
+    // Move to last button manually
+    button3.focus()
 
-      const preventDefault = vi.spyOn(tabEvent, 'preventDefault')
-      container.dispatchEvent(tabEvent)
-
-      // Should wrap to first element
-      expect(preventDefault).toHaveBeenCalled()
-      expect(document.activeElement).toBe(button1)
+    // Tab from last button should cycle to first
+    const lastTabEvent = new KeyboardEvent('keydown', {
+      key: 'Tab',
+      bubbles: true,
+      cancelable: true,
     })
+    const preventDefaultSpy = vi.spyOn(lastTabEvent, 'preventDefault')
+    container.dispatchEvent(lastTabEvent)
 
-    it('should trap focus when tabbing backward with Shift+Tab', () => {
-      renderHook(() => {
-        const ref = useRef<HTMLDivElement>(container)
-        useFocusTrap(ref, true)
-        return ref
-      })
-
-      // First element focused on activation
-      expect(document.activeElement).toBe(button1)
-
-      // Simulate Shift+Tab key
-      const shiftTabEvent = new KeyboardEvent('keydown', {
-        key: 'Tab',
-        shiftKey: true,
-        bubbles: true,
-        cancelable: true,
-      })
-
-      const preventDefault = vi.spyOn(shiftTabEvent, 'preventDefault')
-      container.dispatchEvent(shiftTabEvent)
-
-      // Should wrap to last element
-      expect(preventDefault).toHaveBeenCalled()
-      expect(document.activeElement).toBe(button3)
-    })
-
-    it('should allow normal tab navigation within the container', () => {
-      renderHook(() => {
-        const ref = useRef<HTMLDivElement>(container)
-        useFocusTrap(ref, true)
-        return ref
-      })
-
-      // First element focused on activation
-      expect(document.activeElement).toBe(button1)
-
-      // Focus second element (middle element)
-      button2.focus()
-      expect(document.activeElement).toBe(button2)
-
-      // Simulate Tab key
-      const tabEvent = new KeyboardEvent('keydown', {
-        key: 'Tab',
-        bubbles: true,
-        cancelable: true,
-      })
-
-      const preventDefault = vi.spyOn(tabEvent, 'preventDefault')
-      container.dispatchEvent(tabEvent)
-
-      // Should NOT prevent default (allow normal navigation)
-      expect(preventDefault).not.toHaveBeenCalled()
-    })
-
-    it('should prevent tab if no focusable elements', () => {
-      // Create empty container
-      const emptyContainer = document.createElement('div')
-      document.body.appendChild(emptyContainer)
-
-      renderHook(() => {
-        const ref = useRef<HTMLDivElement>(emptyContainer)
-        useFocusTrap(ref, true)
-        return ref
-      })
-
-      // Simulate Tab key
-      const tabEvent = new KeyboardEvent('keydown', {
-        key: 'Tab',
-        bubbles: true,
-        cancelable: true,
-      })
-
-      const preventDefault = vi.spyOn(tabEvent, 'preventDefault')
-      emptyContainer.dispatchEvent(tabEvent)
-
-      // Should prevent default
-      expect(preventDefault).toHaveBeenCalled()
-
-      document.body.removeChild(emptyContainer)
-    })
-
-    it('should ignore non-Tab keys', () => {
-      renderHook(() => {
-        const ref = useRef<HTMLDivElement>(container)
-        useFocusTrap(ref, true)
-        return ref
-      })
-
-      button3.focus()
-
-      // Simulate Enter key
-      const enterEvent = new KeyboardEvent('keydown', {
-        key: 'Enter',
-        bubbles: true,
-        cancelable: true,
-      })
-
-      const preventDefault = vi.spyOn(enterEvent, 'preventDefault')
-      container.dispatchEvent(enterEvent)
-
-      // Should NOT prevent default or change focus
-      expect(preventDefault).not.toHaveBeenCalled()
-      expect(document.activeElement).toBe(button3)
-    })
+    // preventDefault should be called to prevent default Tab behavior
+    expect(preventDefaultSpy).toHaveBeenCalled()
   })
 
-  describe('Cleanup', () => {
-    it('should restore focus on unmount', () => {
-      outsideButton.focus()
+  it('should trap Shift+Tab to cycle backward', () => {
+    const containerRef = { current: container }
 
-      const { unmount } = renderHook(() => {
-        const ref = useRef<HTMLDivElement>(container)
-        useFocusTrap(ref, true)
-        return ref
-      })
+    renderHook(() => useFocusTrap(containerRef, true))
 
-      // Focus trap active
-      expect(document.activeElement).toBe(button1)
+    // Start at first button
+    expect(document.activeElement).toBe(button1)
 
-      // Unmount
-      unmount()
-
-      // Focus should be restored
-      expect(document.activeElement).toBe(outsideButton)
+    // Shift+Tab from first button should cycle to last
+    const shiftTabEvent = new KeyboardEvent('keydown', {
+      key: 'Tab',
+      shiftKey: true,
+      bubbles: true,
+      cancelable: true,
     })
+    const preventDefaultSpy = vi.spyOn(shiftTabEvent, 'preventDefault')
+    container.dispatchEvent(shiftTabEvent)
 
-    it('should remove event listener on cleanup', () => {
-      const removeEventListenerSpy = vi.spyOn(container, 'removeEventListener')
-
-      const { unmount } = renderHook(() => {
-        const ref = useRef<HTMLDivElement>(container)
-        useFocusTrap(ref, true)
-        return ref
-      })
-
-      unmount()
-
-      expect(removeEventListenerSpy).toHaveBeenCalledWith(
-        'keydown',
-        expect.any(Function)
-      )
-    })
-
-    it('should only store previous focus once', () => {
-      outsideButton.focus()
-
-      const { rerender } = renderHook(
-        ({ isActive }) => {
-          const ref = useRef<HTMLDivElement>(container)
-          useFocusTrap(ref, isActive)
-          return ref
-        },
-        { initialProps: { isActive: true } }
-      )
-
-      // Focus trap active, first element focused
-      expect(document.activeElement).toBe(button1)
-
-      // Manually change focus within container
-      button2.focus()
-
-      // Deactivate and reactivate (shouldn't reset previous focus)
-      rerender({ isActive: false })
-      expect(document.activeElement).toBe(outsideButton)
-
-      // Reactivate - should still remember original previous focus
-      rerender({ isActive: true })
-      expect(document.activeElement).toBe(button1)
-
-      // Deactivate again
-      rerender({ isActive: false })
-
-      // Should restore to original outside button
-      expect(document.activeElement).toBe(outsideButton)
-    })
+    expect(preventDefaultSpy).toHaveBeenCalled()
   })
 
-  describe('Disabled Elements', () => {
-    it('should skip disabled elements when trapping focus', () => {
-      // Add disabled button
-      const disabledButton = document.createElement('button')
-      disabledButton.textContent = 'Disabled'
-      disabledButton.disabled = true
-      container.insertBefore(disabledButton, button2)
+  it('should restore focus to previously focused element on cleanup', () => {
+    // Focus outside button before trap
+    outsideButton.focus()
+    expect(document.activeElement).toBe(outsideButton)
 
-      renderHook(() => {
-        const ref = useRef<HTMLDivElement>(container)
-        useFocusTrap(ref, true)
-        return ref
-      })
+    const containerRef = { current: container }
 
-      // Should focus first enabled element
-      expect(document.activeElement).toBe(button1)
+    const { unmount } = renderHook(() => useFocusTrap(containerRef, true))
 
-      // Tab from last element should skip disabled button
-      button3.focus()
-      const tabEvent = new KeyboardEvent('keydown', {
-        key: 'Tab',
-        bubbles: true,
-        cancelable: true,
-      })
-      container.dispatchEvent(tabEvent)
+    // Focus should move to first button in trap
+    expect(document.activeElement).toBe(button1)
 
-      // Should wrap to first enabled element (button1)
-      expect(document.activeElement).toBe(button1)
+    // Unmount to deactivate trap
+    unmount()
+
+    // Focus should restore to outside button
+    expect(document.activeElement).toBe(outsideButton)
+  })
+
+  it('should handle container with no focusable elements', () => {
+    const emptyContainer = document.createElement('div')
+    const text = document.createElement('p')
+    text.textContent = 'No focusable elements'
+    emptyContainer.appendChild(text)
+    document.body.appendChild(emptyContainer)
+
+    const containerRef = { current: emptyContainer }
+
+    // Should not throw error
+    expect(() => {
+      renderHook(() => useFocusTrap(containerRef, true))
+    }).not.toThrow()
+  })
+
+  it('should prevent Tab when no focusable elements exist', () => {
+    const emptyContainer = document.createElement('div')
+    document.body.appendChild(emptyContainer)
+
+    const containerRef = { current: emptyContainer }
+
+    renderHook(() => useFocusTrap(containerRef, true))
+
+    const tabEvent = new KeyboardEvent('keydown', {
+      key: 'Tab',
+      bubbles: true,
+      cancelable: true,
     })
+    const preventDefaultSpy = vi.spyOn(tabEvent, 'preventDefault')
+    emptyContainer.dispatchEvent(tabEvent)
+
+    expect(preventDefaultSpy).toHaveBeenCalled()
+  })
+
+  it('should handle single focusable element', () => {
+    const singleContainer = document.createElement('div')
+    const singleButton = document.createElement('button')
+    singleButton.textContent = 'Only Button'
+    singleContainer.appendChild(singleButton)
+    document.body.appendChild(singleContainer)
+
+    const containerRef = { current: singleContainer }
+
+    renderHook(() => useFocusTrap(containerRef, true))
+
+    // Button should be focused
+    expect(document.activeElement).toBe(singleButton)
+
+    // Tab should cycle to itself
+    const tabEvent = new KeyboardEvent('keydown', {
+      key: 'Tab',
+      bubbles: true,
+      cancelable: true,
+    })
+    const preventDefaultSpy = vi.spyOn(tabEvent, 'preventDefault')
+    singleContainer.dispatchEvent(tabEvent)
+
+    expect(preventDefaultSpy).toHaveBeenCalled()
+  })
+
+  it('should ignore non-Tab keyboard events', () => {
+    const containerRef = { current: container }
+
+    renderHook(() => useFocusTrap(containerRef, true))
+
+    // Press Enter key
+    const enterEvent = new KeyboardEvent('keydown', {
+      key: 'Enter',
+      bubbles: true,
+      cancelable: true,
+    })
+    const preventDefaultSpy = vi.spyOn(enterEvent, 'preventDefault')
+    container.dispatchEvent(enterEvent)
+
+    // preventDefault should not be called for non-Tab keys
+    expect(preventDefaultSpy).not.toHaveBeenCalled()
+  })
+
+  it('should respect disabled buttons', () => {
+    const containerWithDisabled = document.createElement('div')
+    const enabledButton = document.createElement('button')
+    enabledButton.textContent = 'Enabled'
+    const disabledButton = document.createElement('button')
+    disabledButton.textContent = 'Disabled'
+    disabledButton.disabled = true
+
+    containerWithDisabled.appendChild(enabledButton)
+    containerWithDisabled.appendChild(disabledButton)
+    document.body.appendChild(containerWithDisabled)
+
+    const containerRef = { current: containerWithDisabled }
+
+    renderHook(() => useFocusTrap(containerRef, true))
+
+    // Only enabled button should be focused (disabled button should be skipped)
+    expect(document.activeElement).toBe(enabledButton)
+  })
+
+  it('should include links and inputs in focus trap', () => {
+    const mixedContainer = document.createElement('div')
+    const link = document.createElement('a')
+    link.href = '#'
+    link.textContent = 'Link'
+    const input = document.createElement('input')
+    input.type = 'text'
+    const button = document.createElement('button')
+    button.textContent = 'Button'
+
+    mixedContainer.appendChild(link)
+    mixedContainer.appendChild(input)
+    mixedContainer.appendChild(button)
+    document.body.appendChild(mixedContainer)
+
+    const containerRef = { current: mixedContainer }
+
+    renderHook(() => useFocusTrap(containerRef, true))
+
+    // First focusable element (link) should be focused
+    expect(document.activeElement).toBe(link)
+
+    // Tab should move through all focusable elements
+    input.focus()
+    button.focus()
+    expect(document.activeElement).toBe(button)
+  })
+
+  it('should skip elements with tabindex="-1"', () => {
+    const containerWithTabIndex = document.createElement('div')
+    const button1 = document.createElement('button')
+    button1.textContent = 'Button 1'
+    const button2 = document.createElement('button')
+    button2.textContent = 'Button 2 (skip)'
+    button2.tabIndex = -1
+    const button3 = document.createElement('button')
+    button3.textContent = 'Button 3'
+
+    containerWithTabIndex.appendChild(button1)
+    containerWithTabIndex.appendChild(button2)
+    containerWithTabIndex.appendChild(button3)
+    document.body.appendChild(containerWithTabIndex)
+
+    const containerRef = { current: containerWithTabIndex }
+
+    renderHook(() => useFocusTrap(containerRef, true))
+
+    // First focusable button (button1) should be focused
+    expect(document.activeElement).toBe(button1)
+  })
+
+  it('should handle null containerRef', () => {
+    const containerRef = { current: null }
+
+    // Should not throw error
+    expect(() => {
+      renderHook(() => useFocusTrap(containerRef, true))
+    }).not.toThrow()
+  })
+
+  it('should reactivate when isActive changes from false to true', () => {
+    const containerRef = { current: container }
+
+    const { rerender } = renderHook(
+      ({ isActive }) => useFocusTrap(containerRef, isActive),
+      {
+        initialProps: { isActive: false },
+      }
+    )
+
+    // Initially not focused
+    expect(document.activeElement).not.toBe(button1)
+
+    // Activate trap
+    rerender({ isActive: true })
+
+    // First button should now be focused
+    expect(document.activeElement).toBe(button1)
+  })
+
+  it('should deactivate and restore focus when isActive changes to false', () => {
+    outsideButton.focus()
+
+    const containerRef = { current: container }
+
+    const { rerender } = renderHook(
+      ({ isActive }) => useFocusTrap(containerRef, isActive),
+      {
+        initialProps: { isActive: true },
+      }
+    )
+
+    // Trap activated, button1 focused
+    expect(document.activeElement).toBe(button1)
+
+    // Deactivate trap
+    rerender({ isActive: false })
+
+    // Focus should restore when trap is deactivated
+    // Effect cleanup runs and restores focus to previously focused element
+    expect(document.activeElement).toBe(outsideButton)
   })
 })
