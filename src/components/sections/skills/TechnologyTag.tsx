@@ -1,7 +1,26 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import { cn } from '@/utils/cn'
+
+/**
+ * Sanitize text to prevent XSS attacks
+ * Allows only alphanumeric characters, spaces, and common tech name symbols
+ * Removes any HTML tags or script-like content
+ */
+function sanitizeText(text: string): string {
+  if (!text || typeof text !== 'string') return ''
+
+  // Remove HTML tags and script content
+  const stripped = text.replace(/<[^>]*>/g, '')
+
+  // Only allow safe characters for technology names
+  // Allows: letters, numbers, spaces, dots, hyphens, plus signs, hash, slashes, parentheses
+  const sanitized = stripped.replace(/[^\w\s.\-+#/()'@&]/g, '')
+
+  // Trim and limit length to prevent DoS
+  return sanitized.trim().slice(0, 100)
+}
 
 export interface TechnologyTagProps {
   name: string
@@ -18,6 +37,8 @@ export interface TechnologyTagProps {
  * Interactive tag displaying a technology name.
  * Shows tooltip with additional info on hover.
  * Can be clicked to filter timeline/skills.
+ *
+ * Security: All text props are sanitized to prevent XSS attacks
  */
 export function TechnologyTag({
   name,
@@ -29,27 +50,47 @@ export function TechnologyTag({
 }: TechnologyTagProps) {
   const [showTooltip, setShowTooltip] = useState(false)
 
+  // Sanitize all text inputs to prevent XSS
+  const safeName = useMemo(() => sanitizeText(name), [name])
+  const safeCategory = useMemo(
+    () => (category ? sanitizeText(category) : undefined),
+    [category]
+  )
+  const safeDescription = useMemo(
+    () => (description ? sanitizeText(description) : undefined),
+    [description]
+  )
+  const safeLastUsed = useMemo(
+    () => (lastUsed ? sanitizeText(lastUsed) : undefined),
+    [lastUsed]
+  )
+
   const handleClick = () => {
     if (onClick) {
-      onClick(name)
+      onClick(safeName)
     }
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if ((e.key === 'Enter' || e.key === ' ') && onClick) {
       e.preventDefault()
-      onClick(name)
+      onClick(safeName)
     }
   }
 
-  const hasTooltip = description || category || lastUsed
+  const hasTooltip = safeDescription || safeCategory || safeLastUsed
   const isClickable = !!onClick
+
+  // Don't render if name is empty after sanitization
+  if (!safeName) {
+    return null
+  }
 
   return (
     <span
       className={cn(
         'technology-tag',
-        category,
+        safeCategory,
         isClickable && 'clickable',
         className
       )}
@@ -59,19 +100,23 @@ export function TechnologyTag({
       onMouseLeave={() => setShowTooltip(false)}
       role={isClickable ? 'button' : 'note'}
       tabIndex={isClickable ? 0 : undefined}
-      aria-label={description ? `${name}: ${description}` : name}
+      aria-label={
+        safeDescription ? `${safeName}: ${safeDescription}` : safeName
+      }
     >
-      <span className="tag-name">{name}</span>
+      <span className="tag-name">{safeName}</span>
 
       {/* Tooltip */}
       {hasTooltip && showTooltip && (
         <span className="tag-tooltip" role="tooltip">
-          {category && <span className="tooltip-category">{category}</span>}
-          {description && (
-            <span className="tooltip-description">{description}</span>
+          {safeCategory && (
+            <span className="tooltip-category">{safeCategory}</span>
           )}
-          {lastUsed && (
-            <span className="tooltip-last-used">Last used: {lastUsed}</span>
+          {safeDescription && (
+            <span className="tooltip-description">{safeDescription}</span>
+          )}
+          {safeLastUsed && (
+            <span className="tooltip-last-used">Last used: {safeLastUsed}</span>
           )}
         </span>
       )}

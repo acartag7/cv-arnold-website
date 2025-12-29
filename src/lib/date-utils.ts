@@ -28,7 +28,10 @@ export function isValidISO8601(dateString: string): boolean {
  * @returns Parsed Date object
  * @throws {Error} If date format is invalid or date is invalid
  */
-function parseAndValidateDate(dateString: string, fieldName: string): Date {
+export function parseAndValidateDate(
+  dateString: string,
+  fieldName: string
+): Date {
   // First validate format to prevent injection
   if (!isValidISO8601(dateString)) {
     throw new Error(
