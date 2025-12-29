@@ -15,14 +15,30 @@ export interface TimelineProps {
 /**
  * Safely parse a date string, returning 0 for invalid dates
  * This ensures timeline sorting doesn't crash on bad data
+ *
+ * Design Decision: Silent Failure with Logging
+ * ---------------------------------------------
+ * Invalid dates fail silently (sort to end) rather than showing error UI because:
+ * 1. Data is Zod-validated at ingestion - runtime failures indicate data corruption
+ * 2. Partial rendering is better UX than blocking entire timeline
+ * 3. Development logs help debugging without disrupting production users
+ * 4. OSS users with malformed data still see their timeline (degraded, not broken)
+ *
+ * For visible error handling, integrate with a toast/notification system in Phase 2.
+ *
+ * @param dateString - ISO 8601 date string to parse
+ * @returns Timestamp in milliseconds, or 0 for invalid dates (sorts last)
  */
 function safeGetDateTimestamp(dateString: string): number {
   try {
     return parseAndValidateDate(dateString, 'date').getTime()
   } catch {
-    // Log in development, but don't crash - return 0 to sort invalid dates last
+    // Log in development for debugging, but don't disrupt UX
+    // Invalid dates sort to end of timeline (timestamp 0 = oldest)
     if (process.env.NODE_ENV === 'development') {
-      console.warn(`Timeline: Invalid date format "${dateString}"`)
+      console.warn(
+        `Timeline: Invalid date format "${dateString}" - sorting to end`
+      )
     }
     return 0
   }

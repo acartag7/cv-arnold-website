@@ -1,5 +1,19 @@
 'use client'
 
+/**
+ * @fileoverview Skeleton loading components for async content states
+ *
+ * Note: These components are intentionally included in Phase 1 (Task 6.1-6.5)
+ * for integration in Phase 2 (Task 6.9 - Data Binding Integration).
+ *
+ * Phase 2 will use these skeletons for:
+ * - Timeline loading states while fetching experience data
+ * - Skills matrix loading states
+ * - Certification cards loading
+ *
+ * Keeping in Phase 1 to avoid merge conflicts and ensure foundation is ready.
+ */
+
 import React from 'react'
 import { cn } from '@/utils/cn'
 

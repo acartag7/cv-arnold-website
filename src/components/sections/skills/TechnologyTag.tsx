@@ -7,8 +7,11 @@ import { cn } from '@/utils/cn'
  * Sanitize text to prevent XSS attacks
  * Allows only alphanumeric characters, spaces, and common tech name symbols
  * Removes any HTML tags or script-like content
+ *
+ * @param text - Input text to sanitize
+ * @returns Sanitized text safe for rendering
  */
-function sanitizeText(text: string): string {
+export function sanitizeText(text: string): string {
   if (!text || typeof text !== 'string') return ''
 
   // Remove HTML tags and script content
