@@ -26,6 +26,8 @@ export interface SkeletonProps {
   variant?: 'text' | 'circular' | 'rectangular' | 'rounded'
   /** Whether to animate the skeleton */
   animated?: boolean
+  /** Animation delay in milliseconds for stagger effect */
+  delay?: number
   /** Additional CSS classes */
   className?: string
 }
@@ -53,6 +55,7 @@ export function Skeleton({
   height,
   variant = 'text',
   animated = true,
+  delay = 0,
   className = '',
 }: SkeletonProps) {
   const variantClasses = {
@@ -83,6 +86,8 @@ export function Skeleton({
           typeof height === 'number'
             ? `${height}px`
             : height || defaultHeights[variant],
+        // Stagger animation for better perceived performance
+        animationDelay: delay > 0 ? `${delay}ms` : undefined,
       }}
       role="status"
       aria-label="Loading..."
@@ -122,11 +127,16 @@ export function SkeletonText({
  * TimelineCardSkeleton Component
  *
  * Skeleton loader matching TimelineCard structure
+ *
+ * @param delay - Animation delay in ms for stagger effect when rendering multiple cards
  */
 export function TimelineCardSkeleton({
   className = '',
+  delay = 0,
 }: {
   className?: string
+  /** Animation delay in milliseconds for stagger effect */
+  delay?: number
 }) {
   return (
     <div
@@ -134,6 +144,7 @@ export function TimelineCardSkeleton({
         'p-4 border border-semantic-border-subtle rounded-lg',
         className
       )}
+      style={delay > 0 ? { animationDelay: `${delay}ms` } : undefined}
       role="status"
       aria-label="Loading experience..."
       aria-busy="true"
@@ -142,18 +153,33 @@ export function TimelineCardSkeleton({
       <div className="flex justify-between items-start gap-4">
         <div className="flex-1 space-y-2">
           {/* Company name */}
-          <Skeleton variant="text" width="60%" height="1.5rem" />
+          <Skeleton variant="text" width="60%" height="1.5rem" delay={delay} />
           {/* Position */}
-          <Skeleton variant="text" width="40%" height="1rem" />
+          <Skeleton
+            variant="text"
+            width="40%"
+            height="1rem"
+            delay={delay + 50}
+          />
         </div>
         {/* Expand button placeholder */}
-        <Skeleton variant="circular" width={32} height={32} />
+        <Skeleton variant="circular" width={32} height={32} delay={delay} />
       </div>
 
       {/* Meta info skeleton */}
       <div className="mt-3 flex gap-4">
-        <Skeleton variant="text" width={120} height="0.875rem" />
-        <Skeleton variant="text" width={100} height="0.875rem" />
+        <Skeleton
+          variant="text"
+          width={120}
+          height="0.875rem"
+          delay={delay + 100}
+        />
+        <Skeleton
+          variant="text"
+          width={100}
+          height="0.875rem"
+          delay={delay + 150}
+        />
       </div>
 
       <span className="sr-only">Loading experience details...</span>
@@ -165,18 +191,28 @@ export function TimelineCardSkeleton({
  * SkillCardSkeleton Component
  *
  * Skeleton loader matching skill card structure
+ *
+ * @param delay - Animation delay in ms for stagger effect
  */
-export function SkillCardSkeleton({ className = '' }: { className?: string }) {
+export function SkillCardSkeleton({
+  className = '',
+  delay = 0,
+}: {
+  className?: string
+  /** Animation delay in milliseconds for stagger effect */
+  delay?: number
+}) {
   return (
     <div
       className={cn('p-3 rounded-lg bg-semantic-bg-subtle', className)}
+      style={delay > 0 ? { animationDelay: `${delay}ms` } : undefined}
       role="status"
       aria-label="Loading skill..."
       aria-busy="true"
     >
       <div className="flex items-center justify-between gap-2">
-        <Skeleton variant="text" width="70%" height="1rem" />
-        <Skeleton variant="rounded" width={60} height={8} />
+        <Skeleton variant="text" width="70%" height="1rem" delay={delay} />
+        <Skeleton variant="rounded" width={60} height={8} delay={delay + 50} />
       </div>
       <span className="sr-only">Loading skill details...</span>
     </div>
