@@ -145,6 +145,6 @@ describe('TimelineCard', () => {
       />
     )
 
-    expect(screen.getByText('full time')).toBeInTheDocument()
+    expect(screen.getByText('Full Time')).toBeInTheDocument()
   })
 })

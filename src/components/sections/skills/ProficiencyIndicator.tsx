@@ -13,6 +13,23 @@ export interface ProficiencyIndicatorProps {
 }
 
 /**
+ * SVG configuration constants for circular indicator
+ * Extracted for maintainability and clarity
+ */
+const SVG_CONFIG = {
+  /** Radius of the circular progress indicator */
+  RADIUS: 40,
+  /** Width of the progress stroke */
+  STROKE_WIDTH: 8,
+  /** Center point of the SVG viewBox (100x100) */
+  CENTER: 50,
+  /** Total size of the SVG viewBox */
+  VIEW_BOX_SIZE: 100,
+  /** Background circle opacity */
+  BG_OPACITY: 0.2,
+} as const
+
+/**
  * Proficiency level mappings
  * Centralized configuration to ensure consistency across all variants
  */
@@ -35,6 +52,11 @@ const PROFICIENCY_CONFIG = {
     advanced: 3,
     expert: 4,
   } as Record<SkillLevel, number>,
+  /** Total count constants for visual indicators */
+  totals: {
+    stars: 5,
+    dots: 4,
+  },
 } as const
 
 /**
@@ -123,46 +145,45 @@ function CircularIndicator({
   percentage: number
   level: SkillLevel
 }) {
-  // SVG circle calculation
-  const radius = 40
-  const circumference = 2 * Math.PI * radius
+  const { RADIUS, STROKE_WIDTH, CENTER, VIEW_BOX_SIZE, BG_OPACITY } = SVG_CONFIG
+  const circumference = 2 * Math.PI * RADIUS
   const offset = circumference - (percentage / 100) * circumference
 
   return (
     <svg
       className="proficiency-circular"
-      viewBox="0 0 100 100"
+      viewBox={`0 0 ${VIEW_BOX_SIZE} ${VIEW_BOX_SIZE}`}
       aria-hidden="true"
     >
       {/* Background circle */}
       <circle
         className="proficiency-circle-bg"
-        cx="50"
-        cy="50"
-        r={radius}
+        cx={CENTER}
+        cy={CENTER}
+        r={RADIUS}
         fill="none"
         stroke="currentColor"
-        strokeWidth="8"
-        opacity="0.2"
+        strokeWidth={STROKE_WIDTH}
+        opacity={BG_OPACITY}
       />
       {/* Progress circle */}
       <circle
         className={cn('proficiency-circle-fill', `proficiency-${level}`)}
-        cx="50"
-        cy="50"
-        r={radius}
+        cx={CENTER}
+        cy={CENTER}
+        r={RADIUS}
         fill="none"
         stroke="currentColor"
-        strokeWidth="8"
+        strokeWidth={STROKE_WIDTH}
         strokeDasharray={circumference}
         strokeDashoffset={offset}
         strokeLinecap="round"
-        transform="rotate(-90 50 50)"
+        transform={`rotate(-90 ${CENTER} ${CENTER})`}
       />
       {/* Percentage text */}
       <text
-        x="50"
-        y="50"
+        x={CENTER}
+        y={CENTER}
         textAnchor="middle"
         dominantBaseline="central"
         className="proficiency-percentage"
@@ -178,13 +199,13 @@ function CircularIndicator({
  */
 function StarsIndicator({ level }: { level: SkillLevel }) {
   const filledStars = PROFICIENCY_CONFIG.stars[level]
-  const totalStars = 5
+  const totalStars = PROFICIENCY_CONFIG.totals.stars
 
   return (
     <div className="proficiency-stars" aria-hidden="true">
       {Array.from({ length: totalStars }, (_, i) => (
         <span
-          key={i}
+          key={`star-${i}`}
           className={`star ${i < filledStars ? 'filled' : 'empty'}`}
         >
           ★
@@ -199,13 +220,13 @@ function StarsIndicator({ level }: { level: SkillLevel }) {
  */
 function DotsIndicator({ level }: { level: SkillLevel }) {
   const filledDots = PROFICIENCY_CONFIG.dots[level]
-  const totalDots = 4
+  const totalDots = PROFICIENCY_CONFIG.totals.dots
 
   return (
     <div className="proficiency-dots" aria-hidden="true">
       {Array.from({ length: totalDots }, (_, i) => (
         <span
-          key={i}
+          key={`dot-${i}`}
           className={`dot ${i < filledDots ? 'filled' : 'empty'}`}
         />
       ))}

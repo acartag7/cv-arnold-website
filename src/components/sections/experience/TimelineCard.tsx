@@ -1,10 +1,22 @@
 'use client'
 
 import React from 'react'
-import { Experience } from '@/schemas/cv.schema'
+import { Experience, EmploymentType } from '@/schemas/cv.schema'
 import { TechnologyTag } from '../skills/TechnologyTag'
 import { ChevronDown, ChevronUp, MapPin, Briefcase } from 'lucide-react'
 import { cn } from '@/utils/cn'
+
+/**
+ * Type-safe mapping of employment types to display labels
+ * Prevents runtime string manipulation and ensures all types are handled
+ */
+const EMPLOYMENT_TYPE_LABELS: Record<EmploymentType, string> = {
+  full_time: 'Full Time',
+  part_time: 'Part Time',
+  contract: 'Contract',
+  freelance: 'Freelance',
+  internship: 'Internship',
+} as const
 
 export interface TimelineCardProps {
   experience: Experience
@@ -81,7 +93,7 @@ export function TimelineCard({
           {/* Employment type */}
           <div className="employment-type" aria-label="Employment type">
             <Briefcase size={16} aria-hidden="true" />
-            <span>{type.replace('_', ' ')}</span>
+            <span>{EMPLOYMENT_TYPE_LABELS[type]}</span>
           </div>
         </div>
 
@@ -103,7 +115,7 @@ export function TimelineCard({
 
       {/* Card body - expandable content */}
       {isExpanded && (
-        <div className="timeline-card-body">
+        <div className="timeline-card-body" aria-live="polite">
           {/* Description */}
           <div className="description">
             <p>{description}</p>
@@ -114,8 +126,8 @@ export function TimelineCard({
             <div className="achievements">
               <h4 className="section-heading">Key Achievements</h4>
               <ul>
-                {achievements.map((achievement, index) => (
-                  <li key={index}>{achievement}</li>
+                {achievements.map(achievement => (
+                  <li key={achievement}>{achievement}</li>
                 ))}
               </ul>
             </div>
@@ -126,8 +138,8 @@ export function TimelineCard({
             <div className="technologies">
               <h4 className="section-heading">Technologies Used</h4>
               <div className="technology-tags">
-                {technologies.map((tech, index) => (
-                  <TechnologyTag key={index} name={tech} />
+                {technologies.map(tech => (
+                  <TechnologyTag key={tech} name={tech} />
                 ))}
               </div>
             </div>

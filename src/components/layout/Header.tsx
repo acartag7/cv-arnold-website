@@ -47,6 +47,13 @@ export default function Header() {
   // Focus trap for mobile menu
   useFocusTrap(mobileMenuRef, isMenuOpen)
 
+  // Command palette close handler (defined before keyboard shortcuts that use it)
+  const handleCommandPaletteClose = () => {
+    setIsCommandPaletteOpen(false)
+    // Return focus to trigger button after closing
+    commandPaletteTriggerRef.current?.focus()
+  }
+
   // Keyboard shortcuts
   useKeyboardShortcut(() => setIsCommandPaletteOpen(true), {
     key: 'k',
@@ -99,12 +106,6 @@ export default function Header() {
 
   const handleDownloadPDF = () => {
     window.print()
-  }
-
-  const handleCommandPaletteClose = () => {
-    setIsCommandPaletteOpen(false)
-    // Return focus to trigger button after closing
-    commandPaletteTriggerRef.current?.focus()
   }
 
   // Platform detection for keyboard shortcuts

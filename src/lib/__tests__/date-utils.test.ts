@@ -4,9 +4,60 @@ import {
   formatMonthYear,
   calculateDuration,
   isCurrent,
+  isValidISO8601,
 } from '../date-utils'
 
 describe('date-utils', () => {
+  describe('isValidISO8601', () => {
+    it('should accept valid YYYY-MM-DD format', () => {
+      expect(isValidISO8601('2020-01-15')).toBe(true)
+      expect(isValidISO8601('2021-12-31')).toBe(true)
+      expect(isValidISO8601('1999-06-01')).toBe(true)
+    })
+
+    it('should accept valid ISO 8601 with time', () => {
+      expect(isValidISO8601('2020-01-15T12:30:45')).toBe(true)
+      expect(isValidISO8601('2020-01-15T00:00:00')).toBe(true)
+      expect(isValidISO8601('2020-01-15T23:59:59')).toBe(true)
+    })
+
+    it('should accept valid ISO 8601 with timezone', () => {
+      expect(isValidISO8601('2020-01-15T12:30:45Z')).toBe(true)
+      expect(isValidISO8601('2020-01-15T12:30:45+05:00')).toBe(true)
+      expect(isValidISO8601('2020-01-15T12:30:45-08:00')).toBe(true)
+    })
+
+    it('should accept valid ISO 8601 with milliseconds', () => {
+      expect(isValidISO8601('2020-01-15T12:30:45.123Z')).toBe(true)
+      expect(isValidISO8601('2020-01-15T12:30:45.999+00:00')).toBe(true)
+    })
+
+    it('should reject invalid formats', () => {
+      expect(isValidISO8601('01-15-2020')).toBe(false) // US format
+      expect(isValidISO8601('15/01/2020')).toBe(false) // EU format
+      expect(isValidISO8601('2020/01/15')).toBe(false) // Wrong separator
+      expect(isValidISO8601('Jan 15, 2020')).toBe(false) // Human readable
+      expect(isValidISO8601('not-a-date')).toBe(false) // Random string
+    })
+
+    it('should reject potentially malicious inputs', () => {
+      expect(isValidISO8601('<script>alert("xss")</script>')).toBe(false)
+      expect(isValidISO8601('2020-01-15; DROP TABLE users;')).toBe(false)
+      expect(isValidISO8601('javascript:alert(1)')).toBe(false)
+      expect(isValidISO8601('')).toBe(false)
+    })
+
+    it('should reject invalid month values', () => {
+      expect(isValidISO8601('2020-00-15')).toBe(false) // Month 00
+      expect(isValidISO8601('2020-13-15')).toBe(false) // Month 13
+    })
+
+    it('should reject invalid day values', () => {
+      expect(isValidISO8601('2020-01-00')).toBe(false) // Day 00
+      expect(isValidISO8601('2020-01-32')).toBe(false) // Day 32
+    })
+  })
+
   describe('formatDateRange', () => {
     it('should format date range with end date', () => {
       const result = formatDateRange('2020-01-15', '2021-12-31')
@@ -21,6 +72,24 @@ describe('date-utils', () => {
     it('should handle same year dates', () => {
       const result = formatDateRange('2020-01-15', '2020-06-30')
       expect(result).toBe('Jan 2020 - Jun 2020')
+    })
+
+    it('should throw for invalid start date format', () => {
+      expect(() => formatDateRange('invalid', '2021-12-31')).toThrow(
+        'Invalid start date format'
+      )
+    })
+
+    it('should throw for invalid end date format', () => {
+      expect(() => formatDateRange('2020-01-15', 'invalid')).toThrow(
+        'Invalid end date format'
+      )
+    })
+
+    it('should throw for potentially malicious input', () => {
+      expect(() =>
+        formatDateRange('<script>alert(1)</script>', '2021-12-31')
+      ).toThrow('Invalid start date format')
     })
   })
 
@@ -79,6 +148,18 @@ describe('date-utils', () => {
         /^(\d+ years?)?(\s\d+ months?)?$|Less than 1 month/
       )
     })
+
+    it('should throw for invalid start date format', () => {
+      expect(() => calculateDuration('invalid', '2021-12-31')).toThrow(
+        'Invalid start date format'
+      )
+    })
+
+    it('should throw for invalid end date format', () => {
+      expect(() => calculateDuration('2020-01-01', 'invalid')).toThrow(
+        'Invalid end date format'
+      )
+    })
   })
 
   describe('isCurrent', () => {
@@ -94,6 +175,10 @@ describe('date-utils', () => {
       const futureDate = new Date()
       futureDate.setFullYear(futureDate.getFullYear() + 1)
       expect(isCurrent(futureDate.toISOString())).toBe(true)
+    })
+
+    it('should throw for invalid end date format', () => {
+      expect(() => isCurrent('invalid')).toThrow('Invalid end date format')
     })
   })
 })

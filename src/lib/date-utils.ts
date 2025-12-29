@@ -3,6 +3,48 @@
  */
 
 /**
+ * ISO 8601 date format regex for validation
+ * Matches: YYYY-MM-DD, YYYY-MM-DDTHH:mm:ss, YYYY-MM-DDTHH:mm:ssZ, etc.
+ */
+const ISO_8601_REGEX =
+  /^\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])(?:T(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|[+-](?:[01]\d|2[0-3]):[0-5]\d)?)?$/
+
+/**
+ * Validate that a string is a valid ISO 8601 date format
+ * Prevents XSS and injection attacks by ensuring strict date format
+ *
+ * @param dateString - String to validate
+ * @returns True if valid ISO 8601 format
+ */
+export function isValidISO8601(dateString: string): boolean {
+  return ISO_8601_REGEX.test(dateString)
+}
+
+/**
+ * Validate and parse a date string, throwing if invalid
+ *
+ * @param dateString - ISO 8601 date string
+ * @param fieldName - Field name for error messages
+ * @returns Parsed Date object
+ * @throws {Error} If date format is invalid or date is invalid
+ */
+function parseAndValidateDate(dateString: string, fieldName: string): Date {
+  // First validate format to prevent injection
+  if (!isValidISO8601(dateString)) {
+    throw new Error(
+      `Invalid ${fieldName} format: expected ISO 8601 (YYYY-MM-DD), got: ${dateString}`
+    )
+  }
+
+  const date = new Date(dateString)
+  if (isNaN(date.getTime())) {
+    throw new Error(`Invalid ${fieldName}: ${dateString}`)
+  }
+
+  return date
+}
+
+/**
  * Format a date range for display
  *
  * @param startDate - ISO 8601 start date
@@ -14,22 +56,14 @@ export function formatDateRange(
   startDate: string,
   endDate: string | null
 ): string {
-  const start = new Date(startDate)
-  if (isNaN(start.getTime())) {
-    throw new Error(`Invalid start date: ${startDate}`)
-  }
-
+  const start = parseAndValidateDate(startDate, 'start date')
   const startFormatted = formatMonthYear(start)
 
   if (!endDate) {
     return `${startFormatted} - Present`
   }
 
-  const end = new Date(endDate)
-  if (isNaN(end.getTime())) {
-    throw new Error(`Invalid end date: ${endDate}`)
-  }
-
+  const end = parseAndValidateDate(endDate, 'end date')
   const endFormatted = formatMonthYear(end)
 
   return `${startFormatted} - ${endFormatted}`
@@ -58,15 +92,8 @@ export function calculateDuration(
   startDate: string,
   endDate: string | null
 ): string {
-  const start = new Date(startDate)
-  if (isNaN(start.getTime())) {
-    throw new Error(`Invalid start date: ${startDate}`)
-  }
-
-  const end = endDate ? new Date(endDate) : new Date()
-  if (endDate && isNaN(end.getTime())) {
-    throw new Error(`Invalid end date: ${endDate}`)
-  }
+  const start = parseAndValidateDate(startDate, 'start date')
+  const end = endDate ? parseAndValidateDate(endDate, 'end date') : new Date()
 
   const totalMonths =
     (end.getFullYear() - start.getFullYear()) * 12 +
@@ -92,8 +119,13 @@ export function calculateDuration(
 
 /**
  * Check if a date range is current (no end date or end date is in the future)
+ *
+ * @param endDate - ISO 8601 end date (null for current)
+ * @returns True if end date is null or in the future
+ * @throws {Error} If endDate format is invalid
  */
 export function isCurrent(endDate: string | null): boolean {
   if (!endDate) return true
-  return new Date(endDate) > new Date()
+  const end = parseAndValidateDate(endDate, 'end date')
+  return end > new Date()
 }
