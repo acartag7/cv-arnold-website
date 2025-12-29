@@ -126,8 +126,10 @@ export function TimelineCard({
             <div className="achievements">
               <h4 className="section-heading">Key Achievements</h4>
               <ul>
-                {achievements.map(achievement => (
-                  <li key={achievement}>{achievement}</li>
+                {achievements.map((achievement, index) => (
+                  <li key={`${experience.id}-achievement-${index}`}>
+                    {achievement}
+                  </li>
                 ))}
               </ul>
             </div>
@@ -138,8 +140,11 @@ export function TimelineCard({
             <div className="technologies">
               <h4 className="section-heading">Technologies Used</h4>
               <div className="technology-tags">
-                {technologies.map(tech => (
-                  <TechnologyTag key={tech} name={tech} />
+                {technologies.map((tech, index) => (
+                  <TechnologyTag
+                    key={`${experience.id}-tech-${index}`}
+                    name={tech}
+                  />
                 ))}
               </div>
             </div>

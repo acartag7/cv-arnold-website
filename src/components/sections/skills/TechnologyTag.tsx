@@ -57,7 +57,7 @@ export function TechnologyTag({
       onKeyDown={isClickable ? handleKeyDown : undefined}
       onMouseEnter={() => hasTooltip && setShowTooltip(true)}
       onMouseLeave={() => setShowTooltip(false)}
-      role={isClickable ? 'button' : undefined}
+      role={isClickable ? 'button' : 'note'}
       tabIndex={isClickable ? 0 : undefined}
       aria-label={description ? `${name}: ${description}` : name}
     >
