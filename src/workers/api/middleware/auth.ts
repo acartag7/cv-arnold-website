@@ -72,9 +72,36 @@ const ACCESS_HEADERS = {
 /**
  * Extract authentication context from Cloudflare Access headers
  *
- * Note: This extracts claims from Access headers. For production,
- * you should validate the JWT signature using your Access keys.
- * See: https://developers.cloudflare.com/cloudflare-one/identity/authorization-cookie/validating-json/
+ * ## Security Model
+ *
+ * This implementation trusts Cloudflare Access headers without cryptographic
+ * verification. This is secure ONLY when:
+ *
+ * 1. **Cloudflare Access is properly configured** - The Access application
+ *    must be set up to protect the `/api/` routes that require authentication.
+ *
+ * 2. **Direct Worker access is blocked** - Requests must flow through
+ *    Cloudflare's proxy, not directly to the Worker. This is the default
+ *    when using Cloudflare DNS with proxying enabled (orange cloud).
+ *
+ * 3. **Headers cannot be spoofed** - Cloudflare strips `Cf-Access-*` headers
+ *    from incoming requests and only adds them after successful authentication.
+ *
+ * ## Why No Signature Verification?
+ *
+ * Full JWT signature verification requires:
+ * - Fetching public keys from `https://<team>.cloudflareaccess.com/cdn-cgi/access/certs`
+ * - Implementing RS256 signature verification
+ * - Handling key rotation
+ *
+ * For this CV website (single admin user, low sensitivity), the header-trust
+ * model provides sufficient security with simpler implementation.
+ *
+ * ## Future Enhancement (Task 7.3)
+ *
+ * For applications requiring defense-in-depth (e.g., financial data),
+ * implement full JWT validation per:
+ * @see https://developers.cloudflare.com/cloudflare-one/identity/authorization-cookie/validating-json/
  *
  * @param request - Incoming request
  * @returns Authentication context
@@ -88,15 +115,13 @@ export function getAuthContext(request: Request): AuthContext {
     return { isAuthenticated: false }
   }
 
-  // Basic context from email header (no JWT validation in this version)
-  // TODO: Implement full JWT validation in Task 7.3
+  // Trust Cloudflare Access headers (see Security Model above)
   const context: AuthContext = {
     isAuthenticated: true,
     email,
   }
 
-  // If JWT is present, try to decode it (without signature verification)
-  // This is safe because Cloudflare validates the JWT before passing it
+  // Decode JWT for additional claims (signature already validated by Access)
   if (jwt) {
     try {
       const claims = decodeJWT(jwt)

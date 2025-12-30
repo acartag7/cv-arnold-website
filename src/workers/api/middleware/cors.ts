@@ -27,6 +27,15 @@ export interface CORSConfig {
 
 /**
  * Default CORS configuration
+ *
+ * These defaults are optimized for a public API with caching:
+ * - `allowedOrigins: '*'` - Open by default, restrict via ALLOWED_ORIGINS env var
+ * - `maxAge: 86400` (24 hours) - Browsers cache preflight responses to reduce
+ *   OPTIONS requests. 24 hours is the maximum supported by most browsers
+ *   (Chrome caps at 2 hours, Firefox at 24 hours). This significantly
+ *   improves performance for cross-origin API calls.
+ *
+ * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Max-Age
  */
 export const DEFAULT_CORS_CONFIG: CORSConfig = {
   allowedOrigins: '*',
@@ -34,7 +43,7 @@ export const DEFAULT_CORS_CONFIG: CORSConfig = {
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-ID'],
   exposedHeaders: ['X-Request-ID', 'X-RateLimit-Remaining'],
   allowCredentials: false,
-  maxAge: 86400, // 24 hours
+  maxAge: 86400, // 24 hours - browser max for preflight caching
 }
 
 /**

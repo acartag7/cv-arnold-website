@@ -189,18 +189,30 @@ export function createRouter(config: RouterConfig = {}) {
     const pathname = url.pathname
     const method = request.method
 
+    // Generate request ID for distributed tracing and log correlation
+    // Use existing X-Request-ID header if provided, otherwise generate new UUID
+    const requestId = request.headers.get('X-Request-ID') ?? crypto.randomUUID()
+
     // Handle CORS preflight
     if (method === 'OPTIONS') {
-      return corsMiddleware.handlePreflight(request)
+      const response = corsMiddleware.handlePreflight(request)
+      const headers = new Headers(response.headers)
+      headers.set('X-Request-ID', requestId)
+      return new Response(response.body, {
+        status: response.status,
+        headers,
+      })
     }
 
-    // Add CORS headers to all responses
+    // Add CORS headers and request ID to all responses
     const addCORSHeaders = (response: Response): Response => {
       const corsHeaders = corsMiddleware.getHeaders(request)
       const newHeaders = new Headers(response.headers)
       corsHeaders.forEach((value, key) => {
         newHeaders.set(key, value)
       })
+      // Propagate request ID for tracing
+      newHeaders.set('X-Request-ID', requestId)
       return new Response(response.body, {
         status: response.status,
         statusText: response.statusText,
@@ -242,7 +254,7 @@ export function createRouter(config: RouterConfig = {}) {
       const response = await route.handler(request, env, params)
       return addCORSHeaders(response)
     } catch (error) {
-      console.error('Router error:', error)
+      console.error(`[${requestId}] Router error:`, error)
       return addCORSHeaders(internalError('An unexpected error occurred'))
     }
   }

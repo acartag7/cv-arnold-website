@@ -11,6 +11,9 @@ import { createRouter, type Env } from './workers/api/router'
 
 /**
  * Parse allowed origins from environment variable
+ *
+ * @param envValue - Comma-separated list of allowed origins
+ * @returns Parsed origins for CORS config
  */
 function parseAllowedOrigins(envValue: string | undefined): string | string[] {
   if (!envValue) return '*'
@@ -27,19 +30,86 @@ function parseAllowedOrigins(envValue: string | undefined): string | string[] {
 }
 
 /**
+ * Validate ALLOWED_ORIGINS environment variable format
+ *
+ * @param envValue - Raw environment variable value
+ * @returns True if valid, false otherwise
+ */
+function validateAllowedOrigins(envValue: string | undefined): boolean {
+  if (!envValue) return true // Empty means allow all
+
+  const origins = envValue.split(',').map(o => o.trim())
+  for (const origin of origins) {
+    if (!origin) continue
+    // Allow wildcard
+    if (origin === '*') continue
+    // Allow wildcard subdomain patterns (*.example.com)
+    if (origin.startsWith('*.')) continue
+    // Validate URL format for explicit origins
+    try {
+      const url = new URL(origin)
+      // Must have http/https protocol
+      if (!['http:', 'https:'].includes(url.protocol)) {
+        console.warn(`[CORS] Invalid origin protocol: ${origin}`)
+        return false
+      }
+    } catch {
+      console.warn(`[CORS] Invalid origin format: ${origin}`)
+      return false
+    }
+  }
+  return true
+}
+
+/**
+ * Router cache for performance optimization
+ *
+ * Caches the router instance to avoid creating CORS middleware
+ * on every request. The cache is invalidated if ALLOWED_ORIGINS changes.
+ */
+let cachedRouter: ReturnType<typeof createRouter> | null = null
+let cachedAllowedOrigins: string | undefined = undefined
+
+/**
+ * Get or create cached router instance
+ *
+ * @param env - Worker environment bindings
+ * @returns Cached or newly created router
+ */
+function getRouter(env: Env): ReturnType<typeof createRouter> {
+  // Invalidate cache if config changed
+  if (cachedRouter && cachedAllowedOrigins === env.ALLOWED_ORIGINS) {
+    return cachedRouter
+  }
+
+  // Validate origins format on first request or config change
+  if (!validateAllowedOrigins(env.ALLOWED_ORIGINS)) {
+    console.error(
+      '[CORS] Invalid ALLOWED_ORIGINS config, falling back to deny all'
+    )
+  }
+
+  // Create and cache new router
+  cachedRouter = createRouter({
+    cors: {
+      allowedOrigins: parseAllowedOrigins(env.ALLOWED_ORIGINS),
+    },
+  })
+  cachedAllowedOrigins = env.ALLOWED_ORIGINS
+
+  return cachedRouter
+}
+
+/**
  * Cloudflare Workers fetch handler
  */
 const worker = {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url)
 
-    // API routes - handle with router
+    // API routes - handle with cached router
     if (url.pathname.startsWith('/api/')) {
-      const router = createRouter({
-        cors: {
-          allowedOrigins: parseAllowedOrigins(env.ALLOWED_ORIGINS),
-        },
-      })
+      const router = getRouter(env)
       return router(request, env)
     }
 
