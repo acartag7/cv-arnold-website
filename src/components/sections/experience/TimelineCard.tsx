@@ -79,13 +79,23 @@ export function TimelineCard({
             <div className="location" aria-label="Location">
               <MapPin size={16} aria-hidden="true" />
               <span>
-                {location.remote && 'Remote'}
-                {location.remote &&
-                  (location.city || location.country) &&
-                  ' • '}
-                {location.city && location.country
-                  ? `${location.city}, ${location.country}`
-                  : location.city || location.country}
+                {(() => {
+                  // Filter out city if it's just "Remote" (avoid "Remote • Remote")
+                  const city =
+                    location.city?.toLowerCase() === 'remote'
+                      ? undefined
+                      : location.city
+
+                  const parts: string[] = []
+                  if (location.remote) parts.push('Remote')
+                  if (city && location.country) {
+                    parts.push(`${city}, ${location.country}`)
+                  } else if (city || location.country) {
+                    parts.push(city || location.country || '')
+                  }
+
+                  return parts.filter(Boolean).join(' • ')
+                })()}
               </span>
             </div>
           )}

@@ -11,6 +11,7 @@ import {
   Send,
 } from 'lucide-react'
 import { CVData } from '@/types'
+import { formatPhoneNumber } from '@/lib/format-utils'
 
 interface ContactSectionProps {
   data: CVData
@@ -36,7 +37,7 @@ export default function ContactSection({ data }: ContactSectionProps) {
           {
             icon: Phone,
             label: 'Phone',
-            value: personalInfo.phone,
+            value: formatPhoneNumber(personalInfo.phone),
             href: `tel:${personalInfo.phone}`,
             description: 'Give me a call',
           },
