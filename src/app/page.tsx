@@ -27,6 +27,8 @@ export default function HomePage() {
       </main>
 
       <Footer
+        name={data.personalInfo.fullName}
+        title={data.personalInfo.title}
         socialLinks={data.personalInfo.social}
         email={data.personalInfo.email}
       />

@@ -6,17 +6,17 @@
 
 /**
  * Format a phone number for display
- * Handles Swiss (+41), Spanish (+34), Czech (+420), and international formats
+ * Handles Swiss (+41), Spanish (+34), and Czech (+420) formats.
+ * Returns original for unsupported formats to avoid mangling.
  *
  * @example
  * formatPhoneNumber('+41795301426')  // '+41 79 530 14 26'
  * formatPhoneNumber('+34612345678')  // '+34 612 345 678'
  * formatPhoneNumber('+420123456789') // '+420 123 456 789'
- * formatPhoneNumber('+1234567890')   // '+1 234 567 890'
+ * formatPhoneNumber('+447911123456') // '+447911123456' (unsupported, returns original)
  */
 export function formatPhoneNumber(phone: string): string {
   // Remove all non-digit characters except leading +
-  const hasPlus = phone.startsWith('+')
   const digits = phone.replace(/\D/g, '')
 
   // Swiss number format: +41 XX XXX XX XX (11 digits total)
@@ -34,16 +34,8 @@ export function formatPhoneNumber(phone: string): string {
     return `+420 ${digits.slice(3, 6)} ${digits.slice(6, 9)} ${digits.slice(9)}`
   }
 
-  // Generic international format: group in 3s after country code
-  if (hasPlus && digits.length > 6) {
-    const countryCode = digits.slice(0, digits.length > 10 ? 2 : 1)
-    const rest = digits.slice(countryCode.length)
-
-    // Group remaining digits in chunks of 3
-    const groups = rest.match(/.{1,3}/g) || []
-    return `+${countryCode} ${groups.join(' ')}`
-  }
-
-  // Return original if no formatting applied
+  // For unsupported formats, return original unmodified
+  // This prevents mangling numbers from countries with different formats
+  // (e.g., UK +44, Germany +49, US +1 have varying digit counts and groupings)
   return phone
 }
