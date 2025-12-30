@@ -14,6 +14,7 @@ import {
   Cpu,
 } from 'lucide-react'
 import { CVData } from '@/types'
+import { formatPhoneNumber } from '@/lib/format-utils'
 
 interface HeroSectionProps {
   data: CVData
@@ -41,7 +42,7 @@ export default function HeroSection({ data }: HeroSectionProps) {
       ? [
           {
             icon: Phone,
-            text: personalInfo.phone,
+            text: formatPhoneNumber(personalInfo.phone),
             href: `tel:${personalInfo.phone}`,
           },
         ]
