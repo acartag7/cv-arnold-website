@@ -27,6 +27,8 @@ export default defineConfig({
         'src/lib/**/*.ts',
         'src/hooks/**/*.ts',
         'src/contexts/**/*.tsx',
+        'src/components/**/*.tsx',
+        'src/workers/**/*.ts',
       ],
       exclude: [
         '**/__tests__/**',
@@ -65,6 +67,18 @@ export default defineConfig({
           statements: 85,
         },
         'src/hooks/**': {
+          lines: 80,
+          functions: 80,
+          branches: 80,
+          statements: 80,
+        },
+        'src/components/**': {
+          lines: 80,
+          functions: 80,
+          branches: 80,
+          statements: 80,
+        },
+        'src/workers/**': {
           lines: 80,
           functions: 80,
           branches: 80,

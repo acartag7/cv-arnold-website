@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest'
-import { formatPhoneNumber } from '../format-utils'
+import {
+  formatPhoneNumber,
+  isValidUrl,
+  isValidEmail,
+  sanitizeUrl,
+  sanitizeEmail,
+} from '../format-utils'
 
 describe('format-utils', () => {
   describe('formatPhoneNumber', () => {
@@ -151,6 +157,160 @@ describe('format-utils', () => {
           expect(formatPhoneNumber(variant)).toBe(expected)
         })
       })
+    })
+  })
+
+  describe('isValidUrl', () => {
+    describe('valid URLs', () => {
+      it('should accept https URLs', () => {
+        expect(isValidUrl('https://example.com')).toBe(true)
+        expect(isValidUrl('https://linkedin.com/in/user')).toBe(true)
+        expect(isValidUrl('https://github.com/user/repo')).toBe(true)
+      })
+
+      it('should accept http URLs', () => {
+        expect(isValidUrl('http://example.com')).toBe(true)
+        expect(isValidUrl('http://localhost:3000')).toBe(true)
+      })
+
+      it('should accept URLs with query strings and fragments', () => {
+        expect(isValidUrl('https://example.com?foo=bar')).toBe(true)
+        expect(isValidUrl('https://example.com#section')).toBe(true)
+        expect(isValidUrl('https://example.com/path?foo=bar#section')).toBe(
+          true
+        )
+      })
+    })
+
+    describe('invalid URLs', () => {
+      it('should reject javascript protocol', () => {
+        expect(isValidUrl('javascript:alert("xss")')).toBe(false)
+        expect(isValidUrl('javascript:void(0)')).toBe(false)
+      })
+
+      it('should reject data protocol', () => {
+        expect(isValidUrl('data:text/html,<script>alert(1)</script>')).toBe(
+          false
+        )
+        expect(isValidUrl('data:application/json,{}')).toBe(false)
+      })
+
+      it('should reject file protocol', () => {
+        expect(isValidUrl('file:///etc/passwd')).toBe(false)
+      })
+
+      it('should reject ftp protocol', () => {
+        expect(isValidUrl('ftp://ftp.example.com')).toBe(false)
+      })
+
+      it('should reject malformed URLs', () => {
+        expect(isValidUrl('not-a-url')).toBe(false)
+        expect(isValidUrl('://missing-protocol.com')).toBe(false)
+        expect(isValidUrl('')).toBe(false)
+      })
+
+      it('should reject null and undefined', () => {
+        expect(isValidUrl(null)).toBe(false)
+        expect(isValidUrl(undefined)).toBe(false)
+      })
+    })
+  })
+
+  describe('isValidEmail', () => {
+    describe('valid emails', () => {
+      it('should accept standard email addresses', () => {
+        expect(isValidEmail('user@example.com')).toBe(true)
+        expect(isValidEmail('john.doe@company.org')).toBe(true)
+        expect(isValidEmail('test@subdomain.example.com')).toBe(true)
+      })
+
+      it('should accept emails with plus tags', () => {
+        expect(isValidEmail('user+tag@example.com')).toBe(true)
+        expect(isValidEmail('test+filter+another@domain.com')).toBe(true)
+      })
+
+      it('should accept emails with numbers and hyphens', () => {
+        expect(isValidEmail('user123@example.com')).toBe(true)
+        expect(isValidEmail('user-name@example-domain.com')).toBe(true)
+      })
+    })
+
+    describe('invalid emails', () => {
+      it('should reject emails without @', () => {
+        expect(isValidEmail('userexample.com')).toBe(false)
+        expect(isValidEmail('noatsign')).toBe(false)
+      })
+
+      it('should reject emails without domain', () => {
+        expect(isValidEmail('user@')).toBe(false)
+        expect(isValidEmail('user@domain')).toBe(false)
+      })
+
+      it('should reject emails with spaces', () => {
+        expect(isValidEmail('user @example.com')).toBe(false)
+        expect(isValidEmail('user@ example.com')).toBe(false)
+        expect(isValidEmail(' user@example.com ')).toBe(false)
+      })
+
+      it('should reject XSS attempts in emails', () => {
+        expect(isValidEmail('user@example.com?subject=<script>')).toBe(false)
+        expect(isValidEmail('<script>@example.com')).toBe(false)
+        expect(isValidEmail('user@example.com>')).toBe(false)
+      })
+
+      it('should reject emails with query parameters', () => {
+        expect(isValidEmail('user@example.com?subject=test')).toBe(false)
+        expect(isValidEmail('user@example.com?cc=other@example.com')).toBe(
+          false
+        )
+      })
+
+      it('should reject null and undefined', () => {
+        expect(isValidEmail(null)).toBe(false)
+        expect(isValidEmail(undefined)).toBe(false)
+      })
+
+      it('should reject empty string', () => {
+        expect(isValidEmail('')).toBe(false)
+      })
+    })
+  })
+
+  describe('sanitizeUrl', () => {
+    it('should return valid URLs unchanged', () => {
+      expect(sanitizeUrl('https://github.com/user')).toBe(
+        'https://github.com/user'
+      )
+      expect(sanitizeUrl('http://localhost:3000')).toBe('http://localhost:3000')
+    })
+
+    it('should return undefined for invalid URLs', () => {
+      expect(sanitizeUrl('javascript:alert(1)')).toBeUndefined()
+      expect(sanitizeUrl('data:text/html,...')).toBeUndefined()
+      expect(sanitizeUrl('not-a-url')).toBeUndefined()
+    })
+
+    it('should return undefined for null/undefined', () => {
+      expect(sanitizeUrl(null)).toBeUndefined()
+      expect(sanitizeUrl(undefined)).toBeUndefined()
+    })
+  })
+
+  describe('sanitizeEmail', () => {
+    it('should return valid emails trimmed', () => {
+      expect(sanitizeEmail('user@example.com')).toBe('user@example.com')
+      expect(sanitizeEmail('  user@example.com  ')).toBe('user@example.com')
+    })
+
+    it('should return undefined for invalid emails', () => {
+      expect(sanitizeEmail('invalid')).toBeUndefined()
+      expect(sanitizeEmail('user@example.com?subject=xss')).toBeUndefined()
+      expect(sanitizeEmail('<script>@evil.com')).toBeUndefined()
+    })
+
+    it('should return undefined for null/undefined', () => {
+      expect(sanitizeEmail(null)).toBeUndefined()
+      expect(sanitizeEmail(undefined)).toBeUndefined()
     })
   })
 })

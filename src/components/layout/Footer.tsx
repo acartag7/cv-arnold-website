@@ -2,6 +2,8 @@
 
 import { Linkedin, Github, Mail, Heart } from 'lucide-react'
 import { cn } from '@/utils/cn'
+import { sanitizeUrl, sanitizeEmail } from '@/lib/format-utils'
+import { HEADER_HEIGHT } from '@/constants/layout'
 
 const NAV_ITEMS = [
   { href: '#hero', label: 'About' },
@@ -41,9 +43,8 @@ export default function Footer({
     const targetId = href.replace('#', '')
     const element = document.getElementById(targetId)
     if (element) {
-      const offset = 80 // Header height
       const elementPosition = element.getBoundingClientRect().top
-      const offsetPosition = elementPosition + window.scrollY - offset
+      const offsetPosition = elementPosition + window.scrollY - HEADER_HEIGHT
       window.scrollTo({
         top: offsetPosition,
         behavior: 'smooth',
@@ -100,37 +101,46 @@ export default function Footer({
               Connect
             </h3>
             <div className="flex space-x-3">
-              {socialLinks?.linkedin && (
-                <a
-                  href={socialLinks.linkedin}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-2 rounded-lg bg-[var(--background)]/60 text-[var(--text-muted)] hover:text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)]"
-                  aria-label="LinkedIn Profile"
-                >
-                  <Linkedin size={18} />
-                </a>
-              )}
-              {socialLinks?.github && (
-                <a
-                  href={socialLinks.github}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-2 rounded-lg bg-[var(--background)]/60 text-[var(--text-muted)] hover:text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)]"
-                  aria-label="GitHub Profile"
-                >
-                  <Github size={18} />
-                </a>
-              )}
-              {email && (
-                <a
-                  href={`mailto:${email}`}
-                  className="p-2 rounded-lg bg-[var(--background)]/60 text-[var(--text-muted)] hover:text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)]"
-                  aria-label="Send Email"
-                >
-                  <Mail size={18} />
-                </a>
-              )}
+              {(() => {
+                const linkedinUrl = sanitizeUrl(socialLinks?.linkedin)
+                return linkedinUrl ? (
+                  <a
+                    href={linkedinUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 rounded-lg bg-[var(--background)]/60 text-[var(--text-muted)] hover:text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)]"
+                    aria-label="LinkedIn Profile"
+                  >
+                    <Linkedin size={18} />
+                  </a>
+                ) : null
+              })()}
+              {(() => {
+                const githubUrl = sanitizeUrl(socialLinks?.github)
+                return githubUrl ? (
+                  <a
+                    href={githubUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 rounded-lg bg-[var(--background)]/60 text-[var(--text-muted)] hover:text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)]"
+                    aria-label="GitHub Profile"
+                  >
+                    <Github size={18} />
+                  </a>
+                ) : null
+              })()}
+              {(() => {
+                const safeEmail = sanitizeEmail(email)
+                return safeEmail ? (
+                  <a
+                    href={`mailto:${safeEmail}`}
+                    className="p-2 rounded-lg bg-[var(--background)]/60 text-[var(--text-muted)] hover:text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)]"
+                    aria-label="Send Email"
+                  >
+                    <Mail size={18} />
+                  </a>
+                ) : null
+              })()}
             </div>
           </div>
         </div>

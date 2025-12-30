@@ -39,3 +39,95 @@ export function formatPhoneNumber(phone: string): string {
   // (e.g., UK +44, Germany +49, US +1 have varying digit counts and groupings)
   return phone
 }
+
+/**
+ * Validate that a URL is safe for use in links
+ * Only allows http: and https: protocols to prevent javascript: and data: attacks.
+ *
+ * @param url - URL string to validate
+ * @returns true if URL is safe, false otherwise
+ *
+ * @example
+ * isValidUrl('https://linkedin.com/in/user')  // true
+ * isValidUrl('http://github.com/user')        // true
+ * isValidUrl('javascript:alert("xss")')       // false
+ * isValidUrl('data:text/html,...')            // false
+ */
+export function isValidUrl(url: string | undefined | null): boolean {
+  if (!url) return false
+
+  try {
+    const parsed = new URL(url)
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:'
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Validate that an email address is safe for use in mailto: links
+ * Performs basic format validation and sanitization check.
+ *
+ * @param email - Email string to validate
+ * @returns true if email is safe, false otherwise
+ *
+ * @example
+ * isValidEmail('user@example.com')           // true
+ * isValidEmail('user+tag@example.com')       // true
+ * isValidEmail('invalid')                    // false
+ * isValidEmail('user@example.com?subject=<script>') // false (XSS attempt)
+ */
+export function isValidEmail(email: string | undefined | null): boolean {
+  if (!email) return false
+
+  // Basic email format validation
+  // Must contain @ with text before and after, no angle brackets or scripts
+  const emailRegex = /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/
+  if (!emailRegex.test(email)) return false
+
+  // Block potential XSS attempts (query strings, HTML tags)
+  if (email.includes('?') || email.includes('<') || email.includes('>')) {
+    return false
+  }
+
+  return true
+}
+
+/**
+ * Sanitize an email for safe use in mailto: links
+ * Returns the trimmed email if valid, undefined otherwise.
+ *
+ * @param email - Email string to sanitize
+ * @returns Sanitized email or undefined if invalid
+ *
+ * @example
+ * sanitizeEmail('  user@example.com  ')  // 'user@example.com'
+ * sanitizeEmail('invalid')               // undefined
+ */
+export function sanitizeEmail(
+  email: string | undefined | null
+): string | undefined {
+  if (!email) return undefined
+
+  const trimmed = email.trim()
+  return isValidEmail(trimmed) ? trimmed : undefined
+}
+
+/**
+ * Sanitize a URL for safe use in links
+ * Returns the URL if valid (http/https), undefined otherwise.
+ *
+ * @param url - URL string to sanitize
+ * @returns Sanitized URL or undefined if invalid
+ *
+ * @example
+ * sanitizeUrl('https://github.com/user')    // 'https://github.com/user'
+ * sanitizeUrl('javascript:alert("xss")')   // undefined
+ */
+export function sanitizeUrl(
+  url: string | undefined | null
+): string | undefined {
+  if (!url) return undefined
+
+  return isValidUrl(url) ? url : undefined
+}
