@@ -188,7 +188,7 @@ describe('CV Handlers', () => {
       expect(body.error.message).toContain('not found')
     })
 
-    it('should return downloadable JSON', async () => {
+    it('should return downloadable JSON by default', async () => {
       env.CV_DATA._setData('cv:data:v1', validCVData)
 
       const request = createRequest('GET')
@@ -200,6 +200,57 @@ describe('CV Handlers', () => {
         'attachment'
       )
       expect(response.headers.get('Content-Disposition')).toContain('.json')
+    })
+
+    it('should return downloadable JSON when format=json', async () => {
+      env.CV_DATA._setData('cv:data:v1', validCVData)
+
+      const request = new Request(
+        'https://api.example.com/api/v1/cv/export?format=json',
+        { method: 'GET' }
+      )
+      const response = await handleExportCV(request, env)
+
+      expect(response.status).toBe(200)
+      expect(response.headers.get('Content-Type')).toBe('application/json')
+      expect(response.headers.get('Content-Disposition')).toContain('.json')
+
+      const text = await response.text()
+      const data = JSON.parse(text)
+      expect(data.version).toBe('1.0.0')
+    })
+
+    it('should return downloadable YAML when format=yaml', async () => {
+      env.CV_DATA._setData('cv:data:v1', validCVData)
+
+      const request = new Request(
+        'https://api.example.com/api/v1/cv/export?format=yaml',
+        { method: 'GET' }
+      )
+      const response = await handleExportCV(request, env)
+
+      expect(response.status).toBe(200)
+      expect(response.headers.get('Content-Type')).toBe('application/x-yaml')
+      expect(response.headers.get('Content-Disposition')).toContain('.yaml')
+
+      const text = await response.text()
+      expect(text).toContain('version:')
+      expect(text).toContain('personalInfo:')
+    })
+
+    it('should return 400 for invalid format parameter', async () => {
+      env.CV_DATA._setData('cv:data:v1', validCVData)
+
+      const request = new Request(
+        'https://api.example.com/api/v1/cv/export?format=xml',
+        { method: 'GET' }
+      )
+      const response = await handleExportCV(request, env)
+      const body = await response.json()
+
+      expect(response.status).toBe(400)
+      expect(body.error.message).toContain('Invalid format')
+      expect(body.error.message).toContain('json, yaml')
     })
   })
 
@@ -224,7 +275,7 @@ describe('CV Handlers', () => {
       expect(body.error.code).toBe('VALIDATION_ERROR')
     })
 
-    it('should import valid CV data', async () => {
+    it('should import valid JSON CV data', async () => {
       const request = createRequest('POST', validCVData)
       const response = await handleImportCV(request, env)
       const body = await response.json()
@@ -232,6 +283,187 @@ describe('CV Handlers', () => {
       expect(response.status).toBe(200)
       expect(body.success).toBe(true)
       expect(body.data.message).toContain('imported successfully')
+      expect(body.data.format).toBe('json')
+    })
+
+    it('should import valid YAML CV data', async () => {
+      const yamlContent = `
+version: "1.0.0"
+lastUpdated: "2025-01-15"
+personalInfo:
+  fullName: "Test User"
+  title: "Software Engineer"
+  email: "test@example.com"
+  location:
+    city: "San Francisco"
+    country: "United States"
+    countryCode: "US"
+  social: {}
+  summary: "Experienced software engineer with 10+ years in the industry."
+  availability:
+    status: "open_to_opportunities"
+experience: []
+skills: []
+education: []
+certifications: []
+achievements: []
+languages: []
+`
+      const request = new Request('https://api.example.com/api/v1/cv/import', {
+        method: 'POST',
+        body: yamlContent,
+        headers: { 'Content-Type': 'application/x-yaml' },
+      })
+      const response = await handleImportCV(request, env)
+      const body = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(body.success).toBe(true)
+      expect(body.data.message).toContain('imported successfully')
+      expect(body.data.format).toBe('yaml')
+    })
+
+    it('should support text/yaml Content-Type', async () => {
+      const yamlContent = `
+version: "1.0.0"
+lastUpdated: "2025-01-15"
+personalInfo:
+  fullName: "YAML User"
+  title: "Developer"
+  email: "yaml@example.com"
+  location:
+    city: "New York"
+    country: "United States"
+    countryCode: "US"
+  social: {}
+  summary: "A developer."
+  availability:
+    status: "open_to_opportunities"
+experience: []
+skills: []
+education: []
+certifications: []
+achievements: []
+languages: []
+`
+      const request = new Request('https://api.example.com/api/v1/cv/import', {
+        method: 'POST',
+        body: yamlContent,
+        headers: { 'Content-Type': 'text/yaml' },
+      })
+      const response = await handleImportCV(request, env)
+      const body = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(body.data.format).toBe('yaml')
+    })
+
+    it('should return 400 for unsupported Content-Type', async () => {
+      const request = new Request('https://api.example.com/api/v1/cv/import', {
+        method: 'POST',
+        body: '<xml>data</xml>',
+        headers: { 'Content-Type': 'application/xml' },
+      })
+      const response = await handleImportCV(request, env)
+      const body = await response.json()
+
+      expect(response.status).toBe(400)
+      expect(body.error.message).toContain('Unsupported Content-Type')
+    })
+
+    it('should return 400 when no Content-Type provided', async () => {
+      const request = new Request('https://api.example.com/api/v1/cv/import', {
+        method: 'POST',
+        body: JSON.stringify(validCVData),
+      })
+      const response = await handleImportCV(request, env)
+      const body = await response.json()
+
+      expect(response.status).toBe(400)
+      expect(body.error.message).toContain('Unsupported Content-Type')
+    })
+
+    it('should return 400 for invalid YAML syntax', async () => {
+      const request = new Request('https://api.example.com/api/v1/cv/import', {
+        method: 'POST',
+        body: 'invalid: yaml: syntax: [unclosed',
+        headers: { 'Content-Type': 'application/x-yaml' },
+      })
+      const response = await handleImportCV(request, env)
+      const body = await response.json()
+
+      expect(response.status).toBe(400)
+      expect(body.error.message).toContain('Invalid YAML')
+    })
+
+    it('should support preview mode without saving', async () => {
+      const request = new Request(
+        'https://api.example.com/api/v1/cv/import?preview=true',
+        {
+          method: 'POST',
+          body: JSON.stringify(validCVData),
+          headers: { 'Content-Type': 'application/json' },
+        }
+      )
+      const response = await handleImportCV(request, env)
+      const body = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(body.success).toBe(true)
+      expect(body.data.preview).toBe(true)
+      expect(body.data.message).toContain('preview mode')
+      expect(body.data.sections).toBeDefined()
+      expect(body.data.sections.personalInfo).toBe(true)
+      // Verify data was NOT saved
+      expect(env.CV_DATA.put).not.toHaveBeenCalled()
+    })
+
+    it('should return section counts in preview mode', async () => {
+      const dataWithContent = {
+        ...validCVData,
+        experience: [
+          {
+            id: 'exp1',
+            company: 'Test Company',
+            position: 'Developer',
+            type: 'full_time' as const,
+            startDate: '2020-01-01',
+            endDate: '2024-01-01',
+            location: { city: 'SF', country: 'USA', remote: false },
+            description: 'A great experience working here.',
+            order: 0,
+          },
+        ],
+        skills: [
+          {
+            id: 'cat1',
+            name: 'Programming',
+            order: 0,
+            skills: [{ name: 'TypeScript', level: 'expert' }],
+          },
+          {
+            id: 'cat2',
+            name: 'Frontend',
+            order: 1,
+            skills: [{ name: 'React', level: 'advanced' }],
+          },
+        ],
+      }
+
+      const request = new Request(
+        'https://api.example.com/api/v1/cv/import?preview=true',
+        {
+          method: 'POST',
+          body: JSON.stringify(dataWithContent),
+          headers: { 'Content-Type': 'application/json' },
+        }
+      )
+      const response = await handleImportCV(request, env)
+      const body = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(body.data.sections.experience).toBe(1)
+      expect(body.data.sections.skills).toBe(2)
     })
   })
 
