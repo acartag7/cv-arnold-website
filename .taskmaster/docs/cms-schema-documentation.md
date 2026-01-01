@@ -1,18 +1,19 @@
 # CMS Schema Documentation
 
-This document defines the data structures that the Admin CMS must support for editing the CV website content.
+This document defines the data structures that the Admin CMS must support for
+editing the CV website content.
 
 ## Overview
 
-All website content is stored in `/src/data/cv-data.json` and defined by TypeScript interfaces in `/src/types/cv.ts`. The CMS should provide forms/editors for each section.
+All website content is stored in `/src/data/cv-data.json` and defined by
+TypeScript interfaces in `/src/types/cv.ts`. The CMS should provide
+forms/editors for each section.
 
 ---
 
 ## Site Configuration (`siteConfig`)
 
 **Purpose:** Global site branding, navigation, and SEO settings.
-
-### Schema
 
 | Field        | Type   | Required | Description                                  |
 | ------------ | ------ | -------- | -------------------------------------------- |
@@ -31,7 +32,7 @@ All website content is stored in `/src/data/cv-data.json` and defined by TypeScr
 | `keywords`    | string[] | SEO keywords array   |
 | `ogImage`     | string   | Open Graph image URL |
 
-### CMS Form Requirements
+**Editor Notes:**
 
 - Text inputs for branding, version, footerText
 - Repeatable group for navLinks (label, href, external checkbox)
@@ -44,8 +45,6 @@ All website content is stored in `/src/data/cv-data.json` and defined by TypeScr
 
 **Purpose:** Statistics displayed in the hero section dashboard cards.
 
-### Schema
-
 | Field   | Type   | Required | Description                           |
 | ------- | ------ | -------- | ------------------------------------- |
 | `id`    | string | Yes      | Unique identifier                     |
@@ -54,13 +53,13 @@ All website content is stored in `/src/data/cv-data.json` and defined by TypeScr
 | `icon`  | enum   | Yes      | Icon identifier                       |
 | `order` | number | Yes      | Display order (lower first)           |
 
-### Icon Options
+**Available Icons:**
 
-```
+```text
 terminal | shield | cloud | server | code | award | users | briefcase
 ```
 
-### CMS Form Requirements
+**Editor Notes:**
 
 - Sortable/draggable list for reordering
 - Icon picker with visual preview
@@ -73,8 +72,6 @@ terminal | shield | cloud | server | code | award | users | briefcase
 
 **Purpose:** Terminal-style section headers throughout the page.
 
-### Schema
-
 | Field            | Type   | Required | Description                                 |
 | ---------------- | ------ | -------- | ------------------------------------------- |
 | `heroPath`       | string | Yes      | Hero subtitle (e.g., "~/platform-engineer") |
@@ -83,19 +80,18 @@ terminal | shield | cloud | server | code | award | users | briefcase
 | `certifications` | string | Yes      | Certifications section title                |
 | `contact`        | string | Yes      | Contact section title                       |
 
-### CMS Form Requirements
+**Editor Notes:**
 
 - Text inputs with monospace font preview
-- Suggested format hints (e.g., "Use terminal-style paths like ~/path or file.ext")
+- Suggested format hints (e.g., "Use terminal-style paths like ~/path")
 - Live preview of how titles render
 
 ---
 
 ## Featured Highlights (`featuredHighlights`)
 
-**Purpose:** Special badges/achievements displayed prominently (e.g., Kubestronaut badge).
-
-### Schema
+**Purpose:** Special badges/achievements displayed prominently
+(e.g., Kubestronaut badge).
 
 | Field      | Type    | Required | Description                        |
 | ---------- | ------- | -------- | ---------------------------------- |
@@ -106,19 +102,19 @@ terminal | shield | cloud | server | code | award | users | briefcase
 | `section`  | enum    | Yes      | Which section to display in        |
 | `enabled`  | boolean | Yes      | Toggle visibility                  |
 
-### Icon Options
+**Available Icons:**
 
-```
+```text
 award | shield | star | trophy
 ```
 
-### Section Options
+**Available Sections:**
 
-```
+```text
 certifications | achievements | experience
 ```
 
-### CMS Form Requirements
+**Editor Notes:**
 
 - Toggle switch for enabled/disabled
 - Icon picker with visual icons
@@ -129,9 +125,8 @@ certifications | achievements | experience
 
 ## Theme Configuration (`themeConfig`)
 
-**Purpose:** Full color palette and theme behavior settings. Allows complete customization of the site's visual appearance.
-
-### Schema
+**Purpose:** Full color palette and theme behavior settings. Allows complete
+customization of the site's visual appearance.
 
 | Field          | Type         | Required | Description                |
 | -------------- | ------------ | -------- | -------------------------- |
@@ -141,19 +136,19 @@ certifications | achievements | experience
 | `dark`         | ColorPalette | Yes      | Dark mode full palette     |
 | `light`        | ColorPalette | Yes      | Light mode full palette    |
 
-### Default Theme Options
+**Default Theme Options:**
 
-```
+```text
 dark | light | system
 ```
 
-### Palette Preset Options
+**Palette Preset Options:**
 
-```
+```text
 green | blue | purple | orange | custom
 ```
 
-### ColorPalette Sub-schema (dark/light)
+### ColorPalette Sub-schema
 
 | Field          | Type   | Description                   | Example (Blue Dark)        |
 | -------------- | ------ | ----------------------------- | -------------------------- |
@@ -189,24 +184,43 @@ green | blue | purple | orange | custom
 - Dark: `#FB923C` accent, `#D4C4B0` muted text
 - Light: `#EA580C` accent, `#78716C` muted text
 
-### CMS Form Requirements
+**Editor Notes:**
 
 - Radio buttons for defaultTheme
 - Toggle for allowToggle
 - Preset dropdown for quick palette switching
 - Color pickers for each palette field (collapsible "Advanced" section)
 - Live preview showing both themes side-by-side
-- Validation: Ensure sufficient contrast ratios (WCAG AA minimum)
+- Validation: Ensure sufficient contrast ratios (see below)
 - "Copy from preset" button to populate fields from preset
 - Reset to defaults button
+
+### Accessibility: Color Contrast (WCAG AA)
+
+Custom color palettes must meet WCAG AA contrast ratio requirements:
+
+| Element Type                     | Minimum Ratio | Applies To                               |
+| -------------------------------- | ------------- | ---------------------------------------- |
+| Normal text                      | 4.5:1         | `text` on `bg`, `textMuted` on `surface` |
+| Large text (18px+ or 14px+ bold) | 3:1           | Headings, titles                         |
+| UI components                    | 3:1           | `accent` on `bg`, borders, icons         |
+
+**Validation Tools:**
+
+- [WebAIM Contrast Checker](https://webaim.org/resources/contrastchecker/)
+- [Coolors Contrast Checker](https://coolors.co/contrast-checker)
+
+**Built-in Presets:** All preset palettes (green, blue, purple, orange) are
+pre-validated for WCAG AA compliance.
+
+**Custom Palettes:** When using `activePreset: "custom"`, manually verify
+contrast ratios before deployment.
 
 ---
 
 ## Personal Info (`personalInfo`)
 
 **Purpose:** Core personal and contact information.
-
-### Schema
 
 | Field          | Type   | Required | Description                     |
 | -------------- | ------ | -------- | ------------------------------- |
@@ -245,7 +259,7 @@ green | blue | purple | orange | custom
 | `status`  | enum   | `available`, `not_available`, `open_to_opportunities` |
 | `message` | string | Optional custom message                               |
 
-### CMS Form Requirements
+**Editor Notes:**
 
 - Markdown editor for summary
 - Image upload for profileImage
@@ -257,8 +271,6 @@ green | blue | purple | orange | custom
 ## Experience (`experience[]`)
 
 **Purpose:** Work history entries.
-
-### Schema
 
 | Field          | Type     | Required | Description                     |
 | -------------- | -------- | -------- | ------------------------------- |
@@ -276,13 +288,13 @@ green | blue | purple | orange | custom
 | `order`        | number   | Yes      | Display order                   |
 | `featured`     | boolean  | No       | Highlight this entry            |
 
-### Employment Types
+**Employment Types:**
 
-```
+```text
 full_time | part_time | contract | freelance | internship
 ```
 
-### CMS Form Requirements
+**Editor Notes:**
 
 - Date pickers with "Present" option for endDate
 - Sortable achievements list
@@ -296,7 +308,7 @@ full_time | part_time | contract | freelance | internship
 
 **Purpose:** Skills organized by category.
 
-### Category Schema
+### Category Fields
 
 | Field         | Type    | Required | Description          |
 | ------------- | ------- | -------- | -------------------- |
@@ -307,7 +319,7 @@ full_time | part_time | contract | freelance | internship
 | `order`       | number  | Yes      | Display order        |
 | `icon`        | string  | No       | Icon identifier      |
 
-### Skill Schema
+### Skill Fields
 
 | Field               | Type    | Required | Description            |
 | ------------------- | ------- | -------- | ---------------------- |
@@ -317,13 +329,13 @@ full_time | part_time | contract | freelance | internship
 | `lastUsed`          | string  | No       | ISO 8601 date          |
 | `featured`          | boolean | No       | Core/highlighted skill |
 
-### Skill Levels
+**Skill Levels:**
 
-```
+```text
 beginner | intermediate | advanced | expert
 ```
 
-### CMS Form Requirements
+**Editor Notes:**
 
 - Nested structure: Categories contain skills
 - Drag-to-reorder categories and skills within
@@ -335,8 +347,6 @@ beginner | intermediate | advanced | expert
 ## Certifications (`certifications[]`)
 
 **Purpose:** Professional certifications.
-
-### Schema
 
 | Field            | Type   | Required | Description                       |
 | ---------------- | ------ | -------- | --------------------------------- |
@@ -352,13 +362,13 @@ beginner | intermediate | advanced | expert
 | `description`    | string | No       | Description                       |
 | `order`          | number | Yes      | Display order                     |
 
-### Status Options
+**Status Options:**
 
-```
+```text
 active | expired | in_progress
 ```
 
-### CMS Form Requirements
+**Editor Notes:**
 
 - Auto-calculate status from dates
 - URL validation for credentialUrl
@@ -370,8 +380,6 @@ active | expired | in_progress
 ## Education (`education[]`)
 
 **Purpose:** Educational background.
-
-### Schema
 
 | Field            | Type     | Required | Description                         |
 | ---------------- | -------- | -------- | ----------------------------------- |
@@ -394,8 +402,6 @@ active | expired | in_progress
 
 **Purpose:** Awards, publications, and notable accomplishments.
 
-### Schema
-
 | Field          | Type     | Required | Description                |
 | -------------- | -------- | -------- | -------------------------- |
 | `id`           | string   | Yes      | Unique identifier          |
@@ -409,9 +415,9 @@ active | expired | in_progress
 | `order`        | number   | Yes      | Display order              |
 | `featured`     | boolean  | No       | Highlight this achievement |
 
-### Category Options
+**Category Options:**
 
-```
+```text
 award | publication | speaking | project | contribution | other
 ```
 
@@ -421,8 +427,6 @@ award | publication | speaking | project | contribution | other
 
 **Purpose:** Language proficiencies.
 
-### Schema
-
 | Field         | Type    | Required | Description         |
 | ------------- | ------- | -------- | ------------------- |
 | `name`        | string  | Yes      | Language name       |
@@ -430,9 +434,9 @@ award | publication | speaking | project | contribution | other
 | `proficiency` | enum    | Yes      | CEFR level          |
 | `native`      | boolean | No       | Native speaker flag |
 
-### Proficiency Levels (CEFR)
+**Proficiency Levels (CEFR):**
 
-```
+```text
 a1 | a2 | b1 | b2 | c1 | c2 | native
 ```
 
