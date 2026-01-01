@@ -283,6 +283,10 @@ KV_CV_DATA_ID=c9df8a4271984ad8bb0a02c30ff3568d
 KV_RATE_LIMIT_ID=30a87d8776c04d54a423fdd4e84cba5f
 KV_HISTORY_ID=0c0ada9ed85a427fb87b97bd5761e407
 
+# Optional: Configure KV fetch timeout (default: 10000ms / 10 seconds)
+# Reduce for faster CI builds, increase for slow networks
+KV_FETCH_TIMEOUT_MS=10000
+
 # Cloudflare R2
 R2_BUCKET_NAME=cv-assets
 

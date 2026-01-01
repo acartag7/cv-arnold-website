@@ -1,6 +1,9 @@
 import { CVData } from '@/types'
 import { CVPageClient } from '@/components/CVPageClient'
 import { getCVData } from '@/lib/get-cv-data'
+import { createLogger } from '@/lib/logger'
+
+const logger = createLogger('HomePage')
 
 /**
  * Error fallback component for data loading failures
@@ -28,7 +31,7 @@ async function safeFetchCVData(): Promise<CVData | null> {
   try {
     return await getCVData()
   } catch (error) {
-    console.error('[HomePage] Failed to load CV data:', error)
+    logger.error('Failed to load CV data', error)
     return null
   }
 }
