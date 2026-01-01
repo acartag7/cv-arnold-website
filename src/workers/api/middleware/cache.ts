@@ -25,8 +25,19 @@
  * - Purges all related cache keys (full CV + sections)
  * - No manual intervention required - it's built into the write handlers
  *
+ * ## TTL Rationale (5 minutes)
+ *
+ * The default 5-minute TTL balances freshness with performance:
+ * - CV data changes infrequently (days/weeks between updates)
+ * - Automatic invalidation on POST ensures consistency after writes
+ * - 5 minutes provides good cache hit ratio while limiting stale data window
+ * - Longer TTLs (15-30 min) could be considered for read-heavy workloads
+ * - stale-while-revalidate provides fallback during invalidation
+ *
  * @module workers/api/middleware/cache
  */
+
+import { CV_SECTION_NAMES } from '@/types/cv'
 
 /**
  * Cache configuration options
@@ -255,18 +266,8 @@ export class ResponseCache {
       `${baseUrl}${CACHE_KEYS.CV_EXPORT}?format=yaml`,
     ]
 
-    // Also invalidate section endpoints
-    const sections = [
-      'personalInfo',
-      'experience',
-      'skills',
-      'education',
-      'certifications',
-      'achievements',
-      'languages',
-      'metadata',
-    ]
-    for (const section of sections) {
+    // Also invalidate section endpoints (using shared constant from types)
+    for (const section of CV_SECTION_NAMES) {
       keysToInvalidate.push(`${baseUrl}${CACHE_KEYS.CV_SECTIONS}${section}`)
       keysToInvalidate.push(`${baseUrl}${CACHE_KEYS.CV_SECTIONS}${section}/`)
     }

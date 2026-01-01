@@ -307,17 +307,18 @@ export function createRouter(config: RouterConfig = {}) {
         }
       }
 
+      // Invalidate cache BEFORE write operations to prevent race conditions
+      // This ensures concurrent GET requests don't serve stale data during POST
+      if (cacheMiddleware && method === 'POST') {
+        await cacheMiddleware.invalidate(request)
+      }
+
       // Execute handler
       let response = await route.handler(request, env, params)
 
       // Cache successful GET responses
       if (cacheMiddleware && method === 'GET' && !route.requiresAuth) {
         response = await cacheMiddleware.put(request, response)
-      }
-
-      // Invalidate cache on write operations (POST creates/updates data)
-      if (cacheMiddleware && method === 'POST' && response.ok) {
-        await cacheMiddleware.invalidate(request)
       }
 
       // Add rate limit headers to successful responses

@@ -5,7 +5,7 @@
  * authentication, and CORS handling.
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import {
   matchRoute,
   getAllowedMethods,
@@ -203,6 +203,191 @@ describe('Router', () => {
 
       expect(response.status).toBe(404)
       expect(body.error.message).toContain('not found')
+    })
+  })
+
+  describe('Cache Integration', () => {
+    let env: Env
+    let mockCache: {
+      _store: Map<string, Response>
+      match: ReturnType<typeof vi.fn>
+      put: ReturnType<typeof vi.fn>
+      delete: ReturnType<typeof vi.fn>
+    }
+
+    beforeEach(() => {
+      env = createMockEnv()
+      // Create mock cache
+      mockCache = {
+        _store: new Map<string, Response>(),
+        match: vi.fn(async (key: string | Request) => {
+          const keyStr = typeof key === 'string' ? key : key.url
+          return mockCache._store.get(keyStr) ?? null
+        }),
+        put: vi.fn(async (key: string | Request, response: Response) => {
+          const keyStr = typeof key === 'string' ? key : key.url
+          mockCache._store.set(keyStr, response.clone())
+        }),
+        delete: vi.fn(async (key: string | Request) => {
+          const keyStr = typeof key === 'string' ? key : key.url
+          return mockCache._store.delete(keyStr)
+        }),
+      }
+      // Stub global caches
+      vi.stubGlobal('caches', { default: mockCache })
+    })
+
+    afterEach(() => {
+      vi.unstubAllGlobals()
+    })
+
+    it('should return X-Cache: MISS on first request', async () => {
+      // Pre-populate KV with CV data in the correct format
+      const cvData = {
+        personalInfo: { name: 'Test User', title: 'Developer' },
+        experience: [],
+        skills: [],
+        education: [],
+        certifications: [],
+        achievements: [],
+        languages: [],
+        metadata: { version: '1.0.0', lastUpdated: new Date().toISOString() },
+      }
+      // KVStorageAdapter uses versioned keys and wrapped format
+      const storedData = {
+        data: cvData,
+        compressed: false,
+        timestamp: new Date().toISOString(),
+      }
+      ;(env.CV_DATA as ReturnType<typeof createMockKV>)._store.set(
+        'cv:data:v1',
+        JSON.stringify(storedData)
+      )
+
+      const router = createRouter({ enableCache: true })
+      const request = createRequest('GET', '/api/v1/cv')
+
+      const response = await router(request, env)
+
+      expect(response.status).toBe(200)
+      expect(response.headers.get('X-Cache')).toBe('MISS')
+    })
+
+    it('should return X-Cache: HIT on second request', async () => {
+      // Pre-populate KV with CV data in the correct format
+      const cvData = {
+        personalInfo: { name: 'Test User', title: 'Developer' },
+        experience: [],
+        skills: [],
+        education: [],
+        certifications: [],
+        achievements: [],
+        languages: [],
+        metadata: { version: '1.0.0', lastUpdated: new Date().toISOString() },
+      }
+      // KVStorageAdapter uses versioned keys and wrapped format
+      const storedData = {
+        data: cvData,
+        compressed: false,
+        timestamp: new Date().toISOString(),
+      }
+      ;(env.CV_DATA as ReturnType<typeof createMockKV>)._store.set(
+        'cv:data:v1',
+        JSON.stringify(storedData)
+      )
+
+      const router = createRouter({ enableCache: true })
+
+      // First request - cache miss
+      const request1 = createRequest('GET', '/api/v1/cv')
+      const response1 = await router(request1, env)
+      expect(response1.status).toBe(200)
+      expect(response1.headers.get('X-Cache')).toBe('MISS')
+
+      // Second request - should hit cache
+      const request2 = createRequest('GET', '/api/v1/cv')
+      const response2 = await router(request2, env)
+      expect(response2.status).toBe(200)
+      expect(response2.headers.get('X-Cache')).toBe('HIT')
+    })
+
+    it('should invalidate cache before POST operations', async () => {
+      // Pre-populate cache with a response
+      const cachedResponse = new Response(JSON.stringify({ cached: true }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      })
+      mockCache._store.set('https://cv-api.cache/api/v1/cv', cachedResponse)
+
+      const router = createRouter({ enableCache: true })
+
+      // POST request should invalidate cache
+      const request = createRequest('POST', '/api/v1/cv', {
+        body: JSON.stringify({
+          personalInfo: { name: 'New Name', title: 'New Title' },
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+          'CF-Access-Authenticated-User-Email': 'test@example.com',
+        },
+      })
+
+      await router(request, env)
+
+      // Verify cache.delete was called (invalidation happened)
+      expect(mockCache.delete).toHaveBeenCalled()
+    })
+
+    it('should add CORS headers to cached responses', async () => {
+      // Pre-populate KV with CV data in the correct format
+      const cvData = {
+        personalInfo: { name: 'Test User', title: 'Developer' },
+        experience: [],
+        skills: [],
+        education: [],
+        certifications: [],
+        achievements: [],
+        languages: [],
+        metadata: { version: '1.0.0', lastUpdated: new Date().toISOString() },
+      }
+      // KVStorageAdapter uses versioned keys and wrapped format
+      const storedData = {
+        data: cvData,
+        compressed: false,
+        timestamp: new Date().toISOString(),
+      }
+      ;(env.CV_DATA as ReturnType<typeof createMockKV>)._store.set(
+        'cv:data:v1',
+        JSON.stringify(storedData)
+      )
+
+      const router = createRouter({ enableCache: true })
+
+      // First request to populate cache
+      const request1 = createRequest('GET', '/api/v1/cv', {
+        headers: { Origin: 'https://example.com' },
+      })
+      await router(request1, env)
+
+      // Second request from cache should still have CORS headers
+      const request2 = createRequest('GET', '/api/v1/cv', {
+        headers: { Origin: 'https://example.com' },
+      })
+      const response2 = await router(request2, env)
+
+      expect(response2.headers.get('X-Cache')).toBe('HIT')
+      expect(response2.headers.get('Access-Control-Allow-Origin')).toBeTruthy()
+    })
+
+    it('should skip caching when disabled', async () => {
+      const router = createRouter({ enableCache: false })
+      const request = createRequest('GET', '/api/v1/cv')
+
+      await router(request, env)
+
+      // Cache should not be used
+      expect(mockCache.match).not.toHaveBeenCalled()
+      expect(mockCache.put).not.toHaveBeenCalled()
     })
   })
 })
