@@ -228,10 +228,12 @@ export async function handleExportCV(
 
     if (format === 'yaml') {
       content = yaml.dump(data, {
-        indent: 2,
-        lineWidth: 120,
-        noRefs: true, // Avoid YAML anchors for cleaner output
-        sortKeys: false, // Preserve key order
+        indent: 2, // Matches JSON formatting for consistency
+        lineWidth: 120, // Prevents excessive line wrapping in long strings
+        // Security: noRefs prevents YAML anchors/aliases which could be
+        // exploited for "billion laughs" attacks on re-import
+        noRefs: true,
+        sortKeys: false, // Preserve schema key order for readability
       })
       filename = `cv-export-${dateStr}.yaml`
     } else {
