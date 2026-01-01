@@ -32,6 +32,18 @@ bucket = "./out"  # Next.js static export output directory
 binding = "CV_DATA"
 id = "YOUR_KV_NAMESPACE_ID"  # TODO: Replace with actual namespace ID
 
+# Rate Limiting KV Namespace
+#
+# Optional: Required only if rate limiting is enabled.
+# Create using the same methods as CV_DATA above.
+# If not configured, rate limiting will be disabled (graceful degradation).
+#
+# npx wrangler kv namespace create RATE_LIMIT_KV
+#
+[[kv_namespaces]]
+binding = "RATE_LIMIT_KV"
+id = "YOUR_RATE_LIMIT_KV_ID"  # TODO: Replace with actual namespace ID (optional)
+
 # Build configuration
 [build]
 command = "pnpm build"
