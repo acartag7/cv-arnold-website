@@ -30,19 +30,21 @@ bucket = "./out"  # Next.js static export output directory
 
 [[kv_namespaces]]
 binding = "CV_DATA"
-id = "YOUR_KV_NAMESPACE_ID"  # TODO: Replace with actual namespace ID
+id = "c9df8a4271984ad8bb0a02c30ff3568d"
 
-# Rate Limiting KV Namespace
-#
-# Optional: Required only if rate limiting is enabled.
-# Create using the same methods as CV_DATA above.
-# If not configured, rate limiting will be disabled (graceful degradation).
-#
-# npx wrangler kv namespace create RATE_LIMIT_KV
-#
 [[kv_namespaces]]
 binding = "RATE_LIMIT_KV"
-id = "YOUR_RATE_LIMIT_KV_ID"  # TODO: Replace with actual namespace ID (optional)
+id = "30a87d8776c04d54a423fdd4e84cba5f"
+
+[[kv_namespaces]]
+binding = "CV_HISTORY"
+id = "0c0ada9ed85a427fb87b97bd5761e407"
+
+# R2 Bucket for images and backups
+# Free tier: 10GB storage, 1M writes/month, 10M reads/month
+[[r2_buckets]]
+binding = "CV_ASSETS"
+bucket_name = "cv-assets"
 
 # Build configuration
 [build]
