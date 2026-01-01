@@ -30,6 +30,12 @@ interface CVDataConfig {
   fallbackPath: string
 }
 
+/** Default timeout for KV fetch (configurable via KV_FETCH_TIMEOUT_MS env var) */
+const DEFAULT_KV_TIMEOUT = parseInt(
+  process.env.KV_FETCH_TIMEOUT_MS || '10000',
+  10
+)
+
 const DEFAULT_CONFIG: CVDataConfig = {
   kvNamespaceId:
     process.env.KV_CV_DATA_ID || 'c9df8a4271984ad8bb0a02c30ff3568d',
@@ -66,7 +72,7 @@ async function fetchFromKV(
       ],
       {
         encoding: 'utf-8',
-        timeout: 30000, // 30 second timeout
+        timeout: DEFAULT_KV_TIMEOUT,
         stdio: ['pipe', 'pipe', 'pipe'], // Capture stderr too
       }
     )

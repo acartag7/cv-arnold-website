@@ -222,16 +222,17 @@ ${validKVResponse}`
       expect(result.personalInfo.fullName).toBe('Arnold Cartagena')
     })
 
-    it('should handle timeout correctly', async () => {
+    it('should handle timeout correctly with default value', async () => {
       vi.stubEnv('NODE_ENV', 'production')
       mockExecFileSync.mockReturnValue(validKVResponse)
 
       await getCVData()
 
+      // Default timeout is 10000ms (configurable via KV_FETCH_TIMEOUT_MS)
       expect(mockExecFileSync).toHaveBeenCalledWith(
         expect.any(String),
         expect.any(Array),
-        expect.objectContaining({ timeout: 30000 })
+        expect.objectContaining({ timeout: 10000 })
       )
     })
   })
