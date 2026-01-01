@@ -1,10 +1,34 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import {
+  Inter,
+  Playfair_Display,
+  JetBrains_Mono,
+  DM_Sans,
+} from 'next/font/google'
 import { ThemeProvider } from '@/components/providers'
 import './globals.css'
 import '../styles/high-contrast-improvements.css'
 
 const inter = Inter({ subsets: ['latin'] })
+
+// Design variant fonts
+const playfair = Playfair_Display({
+  subsets: ['latin'],
+  variable: '--font-playfair',
+  display: 'swap',
+})
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-jetbrains',
+  display: 'swap',
+})
+
+const dmSans = DM_Sans({
+  subsets: ['latin'],
+  variable: '--font-dm-sans',
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   title: 'Arnold Cartagena - Platform Engineering Lead',
@@ -35,7 +59,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className} antialiased`}>
+      <body
+        className={`${inter.className} ${playfair.variable} ${jetbrainsMono.variable} ${dmSans.variable} antialiased`}
+      >
         <ThemeProvider enableTransitions={true}>{children}</ThemeProvider>
       </body>
     </html>

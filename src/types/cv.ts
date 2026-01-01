@@ -347,6 +347,159 @@ export interface Language {
 }
 
 // ============================================================================
+// Site Configuration Interfaces
+// ============================================================================
+
+/**
+ * Site branding and configuration
+ */
+export interface SiteConfig {
+  /** Site branding text (e.g., "~/arnold.dev") */
+  branding: string
+
+  /** Version display (e.g., "v2024.12") */
+  version: string
+
+  /** Navigation links */
+  navLinks?: {
+    label: string
+    href: string
+    external?: boolean
+  }[]
+
+  /** Footer text (supports year placeholder {{year}}) */
+  footerText?: string
+
+  /** SEO metadata */
+  seo?: {
+    title?: string
+    description?: string
+    keywords?: string[]
+    ogImage?: string
+  }
+}
+
+/**
+ * Hero stats configuration
+ */
+export interface HeroStat {
+  /** Unique identifier */
+  id: string
+
+  /** Stat value (e.g., "8+", "50+") */
+  value: string
+
+  /** Stat label (e.g., "Years Experience") */
+  label: string
+
+  /** Icon identifier for rendering */
+  icon:
+    | 'terminal'
+    | 'shield'
+    | 'cloud'
+    | 'server'
+    | 'code'
+    | 'award'
+    | 'users'
+    | 'briefcase'
+
+  /** Display order */
+  order: number
+}
+
+/**
+ * Section titles configuration (for terminal-style display)
+ */
+export interface SectionTitles {
+  /** Hero section subtitle (e.g., "~/platform-engineer") */
+  heroPath: string
+
+  /** Experience section title (e.g., "experience.log") */
+  experience: string
+
+  /** Skills section title (e.g., "skills.json") */
+  skills: string
+
+  /** Certifications section title (e.g., "certifications.yaml") */
+  certifications: string
+
+  /** Contact section title (e.g., "./send_message.sh") */
+  contact: string
+}
+
+/**
+ * Featured highlight (e.g., Kubestronaut badge)
+ */
+export interface FeaturedHighlight {
+  /** Unique identifier */
+  id: string
+
+  /** Highlight title (e.g., "KUBESTRONAUT") */
+  title: string
+
+  /** Subtitle/status text */
+  subtitle: string
+
+  /** Icon identifier */
+  icon: 'award' | 'shield' | 'star' | 'trophy'
+
+  /** Which section this highlight belongs to */
+  section: 'certifications' | 'achievements' | 'experience'
+
+  /** Whether to display this highlight */
+  enabled: boolean
+}
+
+/**
+ * Color palette definition for a single mode (dark or light)
+ */
+export interface ColorPalette {
+  /** Background color */
+  bg: string
+  /** Surface/card background */
+  surface: string
+  /** Surface hover state */
+  surfaceHover: string
+  /** Border color */
+  border: string
+  /** Primary text color */
+  text: string
+  /** Muted/secondary text color */
+  textMuted: string
+  /** Dim text (lowest contrast) */
+  textDim: string
+  /** Primary accent color */
+  accent: string
+  /** Dimmed accent for backgrounds */
+  accentDim: string
+}
+
+/**
+ * Preset palette identifier
+ */
+export type PalettePreset = 'green' | 'blue' | 'purple' | 'orange' | 'custom'
+
+/**
+ * Dashboard theme configuration
+ */
+export interface ThemeConfig {
+  /** Default theme ('dark' | 'light' | 'system') */
+  defaultTheme: 'dark' | 'light' | 'system'
+
+  /** Allow theme switching */
+  allowToggle: boolean
+
+  /** Active palette preset (for quick switching) */
+  activePreset?: PalettePreset
+
+  /** Dark mode palette */
+  dark: ColorPalette
+
+  /** Light mode palette */
+  light: ColorPalette
+}
+
+// ============================================================================
 // Main CV Data Interface
 // ============================================================================
 
@@ -362,6 +515,21 @@ export interface CVData {
 
   /** Last updated timestamp (ISO 8601) */
   lastUpdated: string
+
+  /** Site configuration (branding, version, SEO) */
+  siteConfig?: SiteConfig
+
+  /** Hero stats displayed on the homepage */
+  heroStats?: HeroStat[]
+
+  /** Section titles (terminal-style) */
+  sectionTitles?: SectionTitles
+
+  /** Featured highlights (badges, special achievements) */
+  featuredHighlights?: FeaturedHighlight[]
+
+  /** Theme configuration */
+  themeConfig?: ThemeConfig
 
   /** Personal information */
   personalInfo: PersonalInfo
