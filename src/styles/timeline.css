@@ -246,6 +246,35 @@
   margin: 0;
 }
 
+/* Responsibilities List */
+.timeline-card-body .description .responsibilities-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.timeline-card-body .description .responsibilities-list li {
+  position: relative;
+  padding-left: var(--space-6);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-muted);
+}
+
+.timeline-card-body .description .responsibilities-list li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  width: 6px;
+  height: 6px;
+  background: var(--color-primary);
+  border-radius: var(--radius-full);
+}
+
 .timeline-card-body .section-heading {
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);

@@ -17,10 +17,10 @@ interface SectionProps {
 }
 
 const spacingMap = {
-  sm: 'py-8', // 32px top/bottom
-  md: 'py-12', // 48px top/bottom
-  lg: 'py-16', // 64px top/bottom
-  xl: 'py-20', // 80px top/bottom
+  sm: 'py-4', // 16px top/bottom
+  md: 'py-6', // 24px top/bottom
+  lg: 'py-10', // 40px top/bottom
+  xl: 'py-14', // 56px top/bottom
 }
 
 const backgroundMap = {

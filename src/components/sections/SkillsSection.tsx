@@ -2,6 +2,11 @@
 
 import { motion } from 'framer-motion'
 import { CVData } from '@/types'
+import { Section } from '@/components/ui/Section'
+import { Container } from '@/components/ui/Container'
+import { Grid } from '@/components/ui/Grid'
+import { Stack } from '@/components/ui/Stack'
+import { Flex } from '@/components/ui/Flex'
 
 interface SkillsSectionProps {
   data: CVData
@@ -52,103 +57,118 @@ const skillCategories = [
 
 export default function SkillsSection({}: SkillsSectionProps) {
   return (
-    <section id="skills" className="py-16 px-4">
-      <div className="container mx-auto max-w-6xl">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          className="text-center mb-12"
-        >
-          <h2 className="text-3xl lg:text-4xl font-bold text-[var(--text)] mb-4">
-            Skills & Expertise
-          </h2>
-          <p className="text-lg text-[var(--text-muted)] max-w-2xl mx-auto">
-            Comprehensive technical skills spanning cloud platforms,
-            infrastructure automation, and modern DevOps practices
-          </p>
-        </motion.div>
+    <Section id="skills" spacing="lg">
+      <Container size="xl" className="max-w-6xl">
+        <Stack gap={12}>
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+          >
+            <Stack gap={4} align="center" className="text-center">
+              <h2 className="text-3xl lg:text-4xl font-bold text-[var(--text)]">
+                Skills & Expertise
+              </h2>
+              <p className="text-lg text-[var(--text-muted)] max-w-2xl">
+                Comprehensive technical skills spanning cloud platforms,
+                infrastructure automation, and modern DevOps practices
+              </p>
+            </Stack>
+          </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {skillCategories.map((category, index) => (
-            <motion.div
-              key={category.title}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-              viewport={{ once: true }}
-              className="p-6 rounded-xl bg-[var(--surface)]/60 hover:bg-[var(--surface)] border border-[var(--color-border)] hover:border-[var(--color-primary)]/30 transition-all duration-300 group"
-            >
-              <div className="flex items-center space-x-3 mb-4">
-                <div className={`w-3 h-3 rounded-full ${category.color}`}></div>
-                <h3 className="font-semibold text-[var(--text)] group-hover:text-[var(--primary)] transition-colors">
-                  {category.title}
-                </h3>
-              </div>
+          <Grid cols={1} mdCols={2} lgCols={3} gap={6}>
+            {skillCategories.map((category, index) => (
+              <motion.div
+                key={category.title}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+                viewport={{ once: true }}
+                className="p-6 rounded-xl bg-[var(--surface)]/60 hover:bg-[var(--surface)] border border-[var(--color-border)] hover:border-[var(--color-primary)]/30 transition-all duration-300 group"
+              >
+                <Stack gap={4}>
+                  <Flex align="center" gap={3}>
+                    <div
+                      className={`w-3 h-3 rounded-full ${category.color}`}
+                    ></div>
+                    <h3 className="font-semibold text-[var(--text)] group-hover:text-[var(--primary)] transition-colors">
+                      {category.title}
+                    </h3>
+                  </Flex>
 
-              <div className="flex flex-wrap gap-2">
-                {category.skills.map((skill, skillIndex) => (
-                  <motion.span
-                    key={skill}
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    transition={{
-                      duration: 0.3,
-                      delay: index * 0.1 + skillIndex * 0.05,
-                    }}
-                    viewport={{ once: true }}
-                    className="px-3 py-1 bg-[var(--primary)]/10 text-[var(--primary)] rounded-full text-sm font-medium border border-[var(--primary)]/20 hover:bg-[var(--primary)]/20 transition-colors cursor-default"
-                  >
-                    {skill}
-                  </motion.span>
-                ))}
-              </div>
-            </motion.div>
-          ))}
-        </div>
+                  <Flex wrap gap={2}>
+                    {category.skills.map((skill, skillIndex) => (
+                      <motion.span
+                        key={skill}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        transition={{
+                          duration: 0.3,
+                          delay: index * 0.1 + skillIndex * 0.05,
+                        }}
+                        viewport={{ once: true }}
+                        className="px-3 py-1 bg-[var(--primary)]/10 text-[var(--primary)] rounded-full text-sm font-medium border border-[var(--primary)]/20 hover:bg-[var(--primary)]/20 transition-colors cursor-default"
+                      >
+                        {skill}
+                      </motion.span>
+                    ))}
+                  </Flex>
+                </Stack>
+              </motion.div>
+            ))}
+          </Grid>
 
-        {/* Additional Skills Grid */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          viewport={{ once: true }}
-          className="mt-12 p-6 rounded-xl bg-[var(--surface)]/30 border border-[var(--primary)]/10"
-        >
-          <h3 className="font-semibold text-[var(--text)] mb-4 text-center">
-            Platform Engineering Expertise
-          </h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-            <div className="space-y-2">
-              <div className="text-2xl font-bold text-[var(--primary)]">8+</div>
-              <div className="text-sm text-[var(--text-muted)]">
-                Years Experience
-              </div>
-            </div>
-            <div className="space-y-2">
-              <div className="text-2xl font-bold text-[var(--primary)]">
-                Multi-Cloud
-              </div>
-              <div className="text-sm text-[var(--text-muted)]">
-                Architecture
-              </div>
-            </div>
-            <div className="space-y-2">
-              <div className="text-2xl font-bold text-[var(--primary)]">
-                IaC
-              </div>
-              <div className="text-sm text-[var(--text-muted)]">Frameworks</div>
-            </div>
-            <div className="space-y-2">
-              <div className="text-2xl font-bold text-[var(--primary)]">
-                GitOps
-              </div>
-              <div className="text-sm text-[var(--text-muted)]">Workflows</div>
-            </div>
-          </div>
-        </motion.div>
-      </div>
-    </section>
+          {/* Additional Skills Grid */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            viewport={{ once: true }}
+            className="p-6 rounded-xl bg-[var(--surface)]/30 border border-[var(--primary)]/10"
+          >
+            <Stack gap={4}>
+              <h3 className="font-semibold text-[var(--text)] text-center">
+                Platform Engineering Expertise
+              </h3>
+              <Grid cols={2} mdCols={4} gap={4} className="text-center">
+                <Stack gap={2} align="center">
+                  <div className="text-2xl font-bold text-[var(--primary)]">
+                    8+
+                  </div>
+                  <div className="text-sm text-[var(--text-muted)]">
+                    Years Experience
+                  </div>
+                </Stack>
+                <Stack gap={2} align="center">
+                  <div className="text-2xl font-bold text-[var(--primary)]">
+                    Multi-Cloud
+                  </div>
+                  <div className="text-sm text-[var(--text-muted)]">
+                    Architecture
+                  </div>
+                </Stack>
+                <Stack gap={2} align="center">
+                  <div className="text-2xl font-bold text-[var(--primary)]">
+                    IaC
+                  </div>
+                  <div className="text-sm text-[var(--text-muted)]">
+                    Frameworks
+                  </div>
+                </Stack>
+                <Stack gap={2} align="center">
+                  <div className="text-2xl font-bold text-[var(--primary)]">
+                    GitOps
+                  </div>
+                  <div className="text-sm text-[var(--text-muted)]">
+                    Workflows
+                  </div>
+                </Stack>
+              </Grid>
+            </Stack>
+          </motion.div>
+        </Stack>
+      </Container>
+    </Section>
   )
 }
