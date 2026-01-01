@@ -37,3 +37,15 @@ export {
   createRateLimitMiddleware,
   HTTP_TOO_MANY_REQUESTS,
 } from './rateLimit'
+
+export {
+  type CacheConfig,
+  type CacheMiddlewareOptions,
+  DEFAULT_CACHE_CONFIG,
+  CACHE_KEYS,
+  ResponseCache,
+  getCacheKey,
+  isCacheable,
+  createCacheControl,
+  createCacheMiddleware,
+} from './cache'
