@@ -358,6 +358,56 @@ languages: []
       expect(body.data.format).toBe('yaml')
     })
 
+    it('should import YAML with application/yaml Content-Type', async () => {
+      const yamlBody = `
+version: "1.0.0"
+lastUpdated: "2025-01-15"
+personalInfo:
+  fullName: "YAML User"
+  title: "Developer"
+  email: "yaml@example.com"
+  location:
+    city: "New York"
+    country: "United States"
+    countryCode: "US"
+  social: {}
+  summary: "A developer."
+  availability:
+    status: "open_to_opportunities"
+experience: []
+skills: []
+education: []
+certifications: []
+achievements: []
+languages: []
+`
+      const request = new Request('https://api.example.com/api/v1/cv/import', {
+        method: 'POST',
+        body: yamlBody,
+        headers: { 'Content-Type': 'application/yaml' },
+      })
+      const response = await handleImportCV(request, env)
+      const body = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(body.success).toBe(true)
+      expect(body.data.message).toContain('imported successfully')
+      expect(body.data.format).toBe('yaml')
+    })
+
+    it('should handle Content-Type with charset parameter', async () => {
+      const request = new Request('https://api.example.com/api/v1/cv/import', {
+        method: 'POST',
+        body: JSON.stringify(validCVData),
+        headers: { 'Content-Type': 'application/json; charset=utf-8' },
+      })
+      const response = await handleImportCV(request, env)
+      const body = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(body.data.format).toBe('json')
+    })
+
     it('should return 400 for unsupported Content-Type', async () => {
       const request = new Request('https://api.example.com/api/v1/cv/import', {
         method: 'POST',
