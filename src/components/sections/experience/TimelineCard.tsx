@@ -126,9 +126,18 @@ export function TimelineCard({
       {/* Card body - expandable content */}
       {isExpanded && (
         <div className="timeline-card-body" aria-live="polite">
-          {/* Description */}
+          {/* Description - split into bullet points */}
           <div className="description">
-            <p>{description}</p>
+            <ul className="responsibilities-list">
+              {description
+                .split(/(?<=\.)\s+/)
+                .filter(item => item.trim().length > 0)
+                .map((item, index) => (
+                  <li key={`${experience.id}-desc-${index}`}>
+                    {item.trim().replace(/\.$/, '')}
+                  </li>
+                ))}
+            </ul>
           </div>
 
           {/* Achievements */}

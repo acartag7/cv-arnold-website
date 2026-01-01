@@ -1,6 +1,96 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "lastUpdated": "2025-10-18T17:00:00.000Z",
+  "siteConfig": {
+    "branding": "~/arnold.dev",
+    "version": "v2024.12",
+    "footerText": "© {{year}} Arnold Cartagena · Built with Next.js",
+    "seo": {
+      "title": "Arnold Cartagena - Platform Engineering Lead",
+      "description": "Senior Platform Engineer specializing in Kubernetes, cloud automation, and scalable CI/CD solutions",
+      "keywords": [
+        "platform engineering",
+        "kubernetes",
+        "devops",
+        "cloud architecture",
+        "tech lead"
+      ]
+    }
+  },
+  "heroStats": [
+    {
+      "id": "years-experience",
+      "value": "8+",
+      "label": "Years Experience",
+      "icon": "terminal",
+      "order": 1
+    },
+    {
+      "id": "certifications",
+      "value": "9",
+      "label": "Certifications",
+      "icon": "shield",
+      "order": 2
+    },
+    {
+      "id": "cloud-platforms",
+      "value": "3",
+      "label": "Cloud Platforms",
+      "icon": "cloud",
+      "order": 3
+    },
+    {
+      "id": "k8s-clusters",
+      "value": "50+",
+      "label": "K8s Clusters",
+      "icon": "server",
+      "order": 4
+    }
+  ],
+  "sectionTitles": {
+    "heroPath": "~/platform-engineer",
+    "experience": "experience.log",
+    "skills": "skills.json",
+    "certifications": "certifications.yaml",
+    "contact": "./send_message.sh"
+  },
+  "featuredHighlights": [
+    {
+      "id": "kubestronaut",
+      "title": "KUBESTRONAUT",
+      "subtitle": "status: ALL_KUBERNETES_CERTS_COMPLETE",
+      "icon": "award",
+      "section": "certifications",
+      "enabled": true
+    }
+  ],
+  "themeConfig": {
+    "defaultTheme": "system",
+    "allowToggle": true,
+    "activePreset": "green",
+    "dark": {
+      "bg": "#0A0A0F",
+      "surface": "#12121A",
+      "surfaceHover": "#1A1A24",
+      "border": "#1E1E2E",
+      "text": "#FFFFFF",
+      "textMuted": "#B4B4BC",
+      "textDim": "#6B7280",
+      "accent": "#00FF94",
+      "accentDim": "rgba(0, 255, 148, 0.15)"
+    },
+    "light": {
+      "bg": "#F8FAFB",
+      "surface": "#FFFFFF",
+      "surfaceHover": "#F1F5F9",
+      "border": "#E2E8F0",
+      "text": "#0F172A",
+      "textMuted": "#64748B",
+      "textDim": "#CBD5E1",
+      "accent": "#059669",
+      "accentDim": "rgba(5, 150, 105, 0.1)"
+    }
+  },
   "personalInfo": {
     "fullName": "Arnold Cartagena",
     "title": "Senior Platform Engineer",
@@ -132,8 +222,9 @@
       "order": 3
     },
     {
-      "id": "atsistemas",
-      "company": "atSistemas",
+      "id": "knowmadmood",
+      "company": "knowmadmood",
+      "companyUrl": "https://www.knowmadmood.com",
       "position": "DevOps Engineer",
       "type": "full_time",
       "startDate": "2021-06-01",
