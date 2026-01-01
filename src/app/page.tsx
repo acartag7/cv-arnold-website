@@ -21,9 +21,10 @@ import {
   Star,
   Trophy,
 } from 'lucide-react'
-import { CVData, HeroStat } from '@/types'
+import { CVData, HeroStat, isCVData } from '@/types'
 import cvData from '@/data/cv-data.json'
 import { useState, useEffect, useMemo } from 'react'
+import { DEFAULT_PALETTES } from '@/styles/themes'
 
 /**
  * CV Website - Dashboard/Technical Design
@@ -33,7 +34,11 @@ import { useState, useEffect, useMemo } from 'react'
  * All display values are CMS-editable via cv-data.json
  */
 
-const data = cvData as CVData
+// Validate CV data at runtime
+if (!isCVData(cvData)) {
+  throw new Error('Invalid CV data structure in cv-data.json')
+}
+const data: CVData = cvData
 
 // Icon mapping for dynamic icon rendering
 const iconMap = {
@@ -49,34 +54,6 @@ const iconMap = {
   trophy: Trophy,
 } as const
 
-// Default palettes (fallback if CMS config is missing) - Green theme
-const defaultPalettes = {
-  dark: {
-    bg: '#0A0A0F',
-    surface: '#12121A',
-    surfaceHover: '#1A1A24',
-    border: '#1E1E2E',
-    text: '#FFFFFF',
-    textMuted: '#B4B4BC',
-    textDim: '#6B7280',
-    accent: '#00FF94',
-    accentDim: 'rgba(0, 255, 148, 0.15)',
-    scanlines: 'rgba(255, 255, 255, 0.03)',
-  },
-  light: {
-    bg: '#F8FAFB',
-    surface: '#FFFFFF',
-    surfaceHover: '#F1F5F9',
-    border: '#E2E8F0',
-    text: '#0F172A',
-    textMuted: '#64748B',
-    textDim: '#CBD5E1',
-    accent: '#059669',
-    accentDim: 'rgba(5, 150, 105, 0.1)',
-    scanlines: 'rgba(0, 0, 0, 0.02)',
-  },
-}
-
 const TypewriterText = ({
   text,
   delay = 0,
@@ -89,19 +66,25 @@ const TypewriterText = ({
   const [displayedText, setDisplayedText] = useState('')
 
   useEffect(() => {
+    let intervalRef: ReturnType<typeof setInterval> | null = null
+
     const timeout = setTimeout(() => {
       let i = 0
-      const interval = setInterval(() => {
+      intervalRef = setInterval(() => {
         if (i <= text.length) {
           setDisplayedText(text.slice(0, i))
           i++
         } else {
-          clearInterval(interval)
+          if (intervalRef) clearInterval(intervalRef)
         }
       }, 40)
-      return () => clearInterval(interval)
     }, delay)
-    return () => clearTimeout(timeout)
+
+    // Cleanup both timeout and interval on unmount
+    return () => {
+      clearTimeout(timeout)
+      if (intervalRef) clearInterval(intervalRef)
+    }
   }, [text, delay])
 
   return (
@@ -133,7 +116,7 @@ export default function HomePage() {
   // Build theme colors from CMS config with fallback to defaults
   const colors = useMemo(() => {
     const cmsColors = themeConfig?.[theme]
-    const defaults = defaultPalettes[theme]
+    const defaults = DEFAULT_PALETTES[theme]
 
     return {
       bg: cmsColors?.bg || defaults.bg,
