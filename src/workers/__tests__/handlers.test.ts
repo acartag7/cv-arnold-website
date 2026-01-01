@@ -418,6 +418,59 @@ languages: []
       expect(env.CV_DATA.put).not.toHaveBeenCalled()
     })
 
+    it('should reject payloads exceeding size limit', async () => {
+      // Create a payload larger than 1MB
+      const largePayload = JSON.stringify({
+        ...validCVData,
+        // Add padding to exceed 1MB
+        _padding: 'x'.repeat(1024 * 1024 + 1000),
+      })
+
+      const request = new Request('https://api.example.com/api/v1/cv/import', {
+        method: 'POST',
+        body: largePayload,
+        headers: { 'Content-Type': 'application/json' },
+      })
+      const response = await handleImportCV(request, env)
+      const body = await response.json()
+
+      expect(response.status).toBe(400)
+      expect(body.error.message).toContain('too large')
+      expect(body.error.message).toContain('Maximum size: 1024KB')
+    })
+
+    it('should preserve data through YAML round-trip', async () => {
+      // First, set up some data
+      env.CV_DATA._setData('cv:data:v1', validCVData)
+
+      // Export as YAML
+      const exportReq = new Request(
+        'https://api.example.com/api/v1/cv/export?format=yaml',
+        { method: 'GET' }
+      )
+      const exportRes = await handleExportCV(exportReq, env)
+      expect(exportRes.status).toBe(200)
+      const yamlContent = await exportRes.text()
+
+      // Clear the data
+      env.CV_DATA._store.clear()
+
+      // Import back from YAML
+      const importReq = new Request(
+        'https://api.example.com/api/v1/cv/import',
+        {
+          method: 'POST',
+          body: yamlContent,
+          headers: { 'Content-Type': 'application/x-yaml' },
+        }
+      )
+      const importRes = await handleImportCV(importReq, env)
+      expect(importRes.status).toBe(200)
+
+      // Verify data was stored
+      expect(env.CV_DATA.put).toHaveBeenCalled()
+    })
+
     it('should return section counts in preview mode', async () => {
       const dataWithContent = {
         ...validCVData,

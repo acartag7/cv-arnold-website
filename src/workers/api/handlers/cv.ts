@@ -306,8 +306,18 @@ export async function handleImportCV(
     try {
       const rawBody = await request.text()
 
+      // Protect against YAML bombs and oversized payloads
+      // 1MB is generous for CV data (typical CV JSON is 10-50KB)
+      const MAX_IMPORT_SIZE = 1024 * 1024 // 1MB
+      if (rawBody.length > MAX_IMPORT_SIZE) {
+        return badRequest(
+          `Import payload too large (${Math.round(rawBody.length / 1024)}KB). Maximum size: 1024KB`
+        )
+      }
+
       if (format === 'yaml') {
-        body = yaml.load(rawBody, { schema: yaml.JSON_SCHEMA })
+        // json: true prevents !!tag directives for additional security
+        body = yaml.load(rawBody, { schema: yaml.JSON_SCHEMA, json: true })
       } else {
         body = JSON.parse(rawBody)
       }
