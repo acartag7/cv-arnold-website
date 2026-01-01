@@ -13,7 +13,10 @@
 
 import type { CVData } from '@/types/cv'
 import { isCVData } from '@/types/cv'
-import { execSync } from 'child_process'
+import { execFileSync } from 'child_process'
+import { createLogger } from './logger'
+
+const logger = createLogger('get-cv-data')
 
 /**
  * Configuration for data fetching
@@ -49,11 +52,22 @@ async function fetchFromKV(
   try {
     // Use wrangler CLI to fetch from KV
     // This works during build if wrangler is authenticated
-    const result = execSync(
-      `npx wrangler kv key get "${config.kvKey}" --namespace-id="${config.kvNamespaceId}" --remote 2>/dev/null`,
+    // Using execFileSync with argument array to prevent command injection
+    const result = execFileSync(
+      'npx',
+      [
+        'wrangler',
+        'kv',
+        'key',
+        'get',
+        config.kvKey,
+        `--namespace-id=${config.kvNamespaceId}`,
+        '--remote',
+      ],
       {
         encoding: 'utf-8',
         timeout: 30000, // 30 second timeout
+        stdio: ['pipe', 'pipe', 'pipe'], // Capture stderr too
       }
     )
 
@@ -61,7 +75,7 @@ async function fetchFromKV(
     const lines = result.split('\n')
     const jsonStart = lines.findIndex(line => line.trim().startsWith('{'))
     if (jsonStart === -1) {
-      console.warn('[get-cv-data] No JSON found in KV response')
+      logger.warn('No JSON found in KV response')
       return null
     }
 
@@ -69,13 +83,15 @@ async function fetchFromKV(
     const data = JSON.parse(jsonContent)
 
     if (!isCVData(data)) {
-      console.warn('[get-cv-data] KV data failed validation')
+      logger.warn('KV data failed validation')
       return null
     }
 
     return data
   } catch (error) {
-    console.warn('[get-cv-data] Failed to fetch from KV:', error)
+    logger.warn('Failed to fetch from KV', {
+      error: error instanceof Error ? error.message : String(error),
+    })
     return null
   }
 }
@@ -90,17 +106,19 @@ async function fetchFromKV(
 async function fetchFromFile(): Promise<CVData | null> {
   try {
     // Dynamic import of the JSON file
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const data = require('@/data/cv-data.json')
+    const jsonModule = await import('@/data/cv-data.json')
+    const data = jsonModule.default || jsonModule
 
     if (!isCVData(data)) {
-      console.warn('[get-cv-data] Local file data failed validation')
+      logger.warn('Local file data failed validation')
       return null
     }
 
     return data
   } catch (error) {
-    console.warn('[get-cv-data] Failed to read local file:', error)
+    logger.warn('Failed to read local file', {
+      error: error instanceof Error ? error.message : String(error),
+    })
     return null
   }
 }
@@ -127,19 +145,19 @@ export async function getCVData(
 
   // In production/CI builds, try KV first
   if (isProduction || isCI || forceKV) {
-    console.log('[get-cv-data] Attempting to fetch from KV...')
+    logger.info('Attempting to fetch from KV')
     const kvData = await fetchFromKV(config)
     if (kvData) {
-      console.log('[get-cv-data] Successfully fetched from KV')
+      logger.info('Successfully fetched from KV')
       return kvData
     }
-    console.log('[get-cv-data] KV fetch failed, falling back to local file')
+    logger.info('KV fetch failed, falling back to local file')
   }
 
   // Fall back to local file
   const fileData = await fetchFromFile()
   if (fileData) {
-    console.log('[get-cv-data] Using local file data')
+    logger.info('Using local file data')
     return fileData
   }
 
@@ -153,3 +171,10 @@ export async function getCVData(
  * Export default for convenient importing
  */
 export default getCVData
+
+// Export internal functions for testing
+export const __testing = {
+  fetchFromKV,
+  fetchFromFile,
+  DEFAULT_CONFIG,
+}
