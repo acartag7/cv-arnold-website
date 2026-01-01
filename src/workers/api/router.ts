@@ -33,6 +33,7 @@ import {
   createRateLimitMiddleware,
   type RateLimitConfig,
 } from './middleware/rateLimit'
+import { createCacheMiddleware, type CacheConfig } from './middleware/cache'
 import {
   handleGetCV,
   handlePostCV,
@@ -89,6 +90,10 @@ export interface RouterConfig {
   rateLimit?: Partial<RateLimitConfig>
   /** Whether to enable rate limiting (default: true if RATE_LIMIT_KV is available) */
   enableRateLimit?: boolean
+  /** Response cache configuration */
+  cache?: Partial<CacheConfig>
+  /** Whether to enable response caching (default: true) */
+  enableCache?: boolean
 }
 
 /**
@@ -191,6 +196,14 @@ export function getAllowedMethods(pathname: string): string[] {
 export function createRouter(config: RouterConfig = {}) {
   const corsMiddleware = createCORSMiddleware(config.cors)
 
+  // Create cache middleware (enabled by default)
+  const cacheMiddleware =
+    config.enableCache !== false
+      ? createCacheMiddleware({
+          ...(config.cache && { config: config.cache }),
+        })
+      : null
+
   return async function handleRequest(
     request: Request,
     env: Env
@@ -281,8 +294,32 @@ export function createRouter(config: RouterConfig = {}) {
         }
       }
 
+      // Check cache for GET requests on public endpoints
+      if (cacheMiddleware && method === 'GET' && !route.requiresAuth) {
+        const cachedResponse = await cacheMiddleware.get(request)
+        if (cachedResponse) {
+          // Add rate limit headers to cached response
+          let response = cachedResponse
+          if (rateLimiter && rateLimitStatus) {
+            response = rateLimiter.addHeaders(response, rateLimitStatus)
+          }
+          return addCORSHeaders(response)
+        }
+      }
+
+      // Invalidate cache BEFORE write operations to prevent race conditions
+      // This ensures concurrent GET requests don't serve stale data during POST
+      if (cacheMiddleware && method === 'POST') {
+        await cacheMiddleware.invalidate(request)
+      }
+
       // Execute handler
       let response = await route.handler(request, env, params)
+
+      // Cache successful GET responses
+      if (cacheMiddleware && method === 'GET' && !route.requiresAuth) {
+        response = await cacheMiddleware.put(request, response)
+      }
 
       // Add rate limit headers to successful responses
       if (rateLimiter && rateLimitStatus) {

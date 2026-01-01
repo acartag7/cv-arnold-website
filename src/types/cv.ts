@@ -396,6 +396,34 @@ export interface CVData {
 }
 
 // ============================================================================
+// CV Section Names
+// ============================================================================
+
+/**
+ * CV section names as a const array
+ * Used for iteration, validation, and cache invalidation
+ *
+ * @remarks
+ * This is the single source of truth for CV section names.
+ * Keep in sync with CVData interface properties.
+ */
+export const CV_SECTION_NAMES = [
+  'personalInfo',
+  'experience',
+  'skills',
+  'education',
+  'certifications',
+  'achievements',
+  'languages',
+  'metadata',
+] as const
+
+/**
+ * Type representing valid CV section names
+ */
+export type CVSectionName = (typeof CV_SECTION_NAMES)[number]
+
+// ============================================================================
 // Utility Types
 // ============================================================================
 
