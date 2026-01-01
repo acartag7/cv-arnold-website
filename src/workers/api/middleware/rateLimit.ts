@@ -233,6 +233,13 @@ export class RateLimiter {
 
     // Increment counter for current window
     // Use expirationTtl to auto-cleanup old keys (2× window for sliding calc)
+    //
+    // Note: This read-modify-write is not atomic. Cloudflare KV is eventually
+    // consistent, so concurrent requests across edge locations may result in
+    // slightly inaccurate counts. This is acceptable for rate limiting:
+    // - Worst case: allows slightly more requests than limit (briefly)
+    // - The sliding window algorithm already approximates (~1% variance)
+    // - Trade-off is acceptable for simplicity and global distribution
     await this.kv.put(currentKey, String(currentCount + 1), {
       expirationTtl: this.config.windowSeconds * 2,
     })

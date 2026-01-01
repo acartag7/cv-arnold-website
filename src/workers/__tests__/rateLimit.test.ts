@@ -4,7 +4,7 @@
  * Tests for the sliding window counter rate limiting implementation.
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import {
   RateLimiter,
   getClientIdentifier,
@@ -132,6 +132,10 @@ describe('Rate Limiting', () => {
       mockKV = createMockKV()
       vi.useFakeTimers()
       vi.setSystemTime(new Date('2025-01-15T12:00:30.000Z'))
+    })
+
+    afterEach(() => {
+      vi.useRealTimers()
     })
 
     it('should allow requests under the limit', async () => {
@@ -389,6 +393,10 @@ describe('Rate Limiting', () => {
       mockKV = createMockKV()
       vi.useFakeTimers()
       vi.setSystemTime(new Date('2025-01-15T12:00:30.000Z'))
+    })
+
+    afterEach(() => {
+      vi.useRealTimers()
     })
 
     it('should skip rate limiting when no KV provided', async () => {
