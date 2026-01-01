@@ -30,6 +30,10 @@ import { notFound, methodNotAllowed, internalError } from './utils/response'
 import { createCORSMiddleware, type CORSConfig } from './middleware/cors'
 import { requireAuth } from './middleware/auth'
 import {
+  createRateLimitMiddleware,
+  type RateLimitConfig,
+} from './middleware/rateLimit'
+import {
   handleGetCV,
   handlePostCV,
   handleExportCV,
@@ -42,6 +46,8 @@ import {
  */
 export interface Env {
   CV_DATA: KVNamespace
+  /** Optional: KV namespace for rate limiting */
+  RATE_LIMIT_KV?: KVNamespace
   /** Optional: Allowed CORS origins (comma-separated) */
   ALLOWED_ORIGINS?: string
 }
@@ -79,6 +85,10 @@ export interface RouterConfig {
   version?: string
   /** CORS configuration */
   cors?: Partial<CORSConfig>
+  /** Rate limiting configuration */
+  rateLimit?: Partial<RateLimitConfig>
+  /** Whether to enable rate limiting (default: true if RATE_LIMIT_KV is available) */
+  enableRateLimit?: boolean
 }
 
 /**
@@ -193,6 +203,15 @@ export function createRouter(config: RouterConfig = {}) {
     // Use existing X-Request-ID header if provided, otherwise generate new UUID
     const requestId = request.headers.get('X-Request-ID') ?? crypto.randomUUID()
 
+    // Create rate limiter if KV is available and not explicitly disabled
+    const rateLimiter =
+      config.enableRateLimit !== false && env.RATE_LIMIT_KV
+        ? createRateLimitMiddleware({
+            kv: env.RATE_LIMIT_KV,
+            ...(config.rateLimit && { config: config.rateLimit }),
+          })
+        : null
+
     // Handle CORS preflight
     if (method === 'OPTIONS') {
       const response = corsMiddleware.handlePreflight(request)
@@ -242,6 +261,18 @@ export function createRouter(config: RouterConfig = {}) {
 
       const { route, params } = matched
 
+      // Check rate limit for public endpoints (authenticated requests bypass rate limiting)
+      // This assumes authenticated users are trusted and shouldn't be rate limited
+      let rateLimitStatus = null
+      if (rateLimiter && !route.requiresAuth) {
+        const { response: rateLimitResponse, status } =
+          await rateLimiter.check(request)
+        rateLimitStatus = status
+        if (rateLimitResponse) {
+          return addCORSHeaders(rateLimitResponse)
+        }
+      }
+
       // Check authentication if required
       if (route.requiresAuth) {
         const authError = requireAuth(request)
@@ -251,7 +282,13 @@ export function createRouter(config: RouterConfig = {}) {
       }
 
       // Execute handler
-      const response = await route.handler(request, env, params)
+      let response = await route.handler(request, env, params)
+
+      // Add rate limit headers to successful responses
+      if (rateLimiter && rateLimitStatus) {
+        response = rateLimiter.addHeaders(response, rateLimitStatus)
+      }
+
       return addCORSHeaders(response)
     } catch (error) {
       console.error(`[${requestId}] Router error:`, error)
