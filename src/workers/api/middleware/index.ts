@@ -23,3 +23,17 @@ export {
   requireEmail,
   createAuthMiddleware,
 } from './auth'
+
+export {
+  type RateLimitConfig,
+  type RateLimitStatus,
+  type RateLimitMiddlewareOptions,
+  DEFAULT_RATE_LIMIT_CONFIG,
+  RateLimiter,
+  getClientIdentifier,
+  getWindowKey,
+  createRateLimitHeaders,
+  tooManyRequests,
+  createRateLimitMiddleware,
+  HTTP_TOO_MANY_REQUESTS,
+} from './rateLimit'
