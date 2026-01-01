@@ -390,6 +390,8 @@ languages: []
       const body = await response.json()
 
       expect(response.status).toBe(200)
+      expect(body.success).toBe(true)
+      expect(body.data.message).toContain('imported successfully')
       expect(body.data.format).toBe('yaml')
     })
 
