@@ -3,10 +3,12 @@
  *
  * Handles CRUD operations for CV data via the Workers API.
  * Uses KVStorageAdapter for persistence and Zod for validation.
+ * Supports both JSON and YAML formats for export/import.
  *
  * @module workers/api/handlers/cv
  */
 
+import yaml from 'js-yaml'
 import type { KVNamespace } from '@/services/storage/KVConfig'
 import type { CVData } from '@/types/cv'
 import { KVStorageAdapter } from '@/services/storage/KVStorageAdapter'
@@ -19,6 +21,54 @@ import {
   internalError,
   HttpStatus,
 } from '../utils/response'
+
+/**
+ * Supported export/import formats
+ */
+export type ExportFormat = 'json' | 'yaml'
+
+/**
+ * Content type mapping for export formats
+ */
+const FORMAT_CONTENT_TYPES: Record<ExportFormat, string> = {
+  json: 'application/json',
+  yaml: 'application/x-yaml',
+}
+
+/**
+ * Parse format from query parameter with validation
+ */
+function parseExportFormat(formatParam: string | null): ExportFormat | null {
+  if (!formatParam) return 'json' // Default to JSON
+  const normalized = formatParam.toLowerCase()
+  if (normalized === 'json' || normalized === 'yaml') {
+    return normalized
+  }
+  return null // Invalid format
+}
+
+/**
+ * Detect format from Content-Type header
+ */
+function detectImportFormat(contentType: string | null): ExportFormat | null {
+  if (!contentType) return null
+
+  const normalized = contentType.toLowerCase()
+  if (
+    normalized.includes('application/json') ||
+    normalized.includes('text/json')
+  ) {
+    return 'json'
+  }
+  if (
+    normalized.includes('application/x-yaml') ||
+    normalized.includes('text/yaml') ||
+    normalized.includes('application/yaml')
+  ) {
+    return 'yaml'
+  }
+  return null
+}
 
 /**
  * Environment bindings for CV handlers
@@ -134,18 +184,36 @@ export async function handlePostCV(
 /**
  * GET /api/v1/cv/export
  *
- * Export CV data in JSON format for download.
+ * Export CV data in JSON or YAML format for download.
  * This is a public endpoint for portability.
+ *
+ * Query parameters:
+ * - format: 'json' (default) or 'yaml'
  *
  * @param request - Incoming request
  * @param env - Environment bindings
- * @returns JSON file download response
+ * @returns File download response in requested format
+ *
+ * @example
+ * GET /api/v1/cv/export           → JSON download
+ * GET /api/v1/cv/export?format=yaml → YAML download
  */
 export async function handleExportCV(
   request: Request,
   env: CVHandlerEnv
 ): Promise<Response> {
   try {
+    // Parse format from query parameter
+    const url = new URL(request.url)
+    const formatParam = url.searchParams.get('format')
+    const format = parseExportFormat(formatParam)
+
+    if (!format) {
+      return badRequest(
+        `Invalid format: ${formatParam}. Supported formats: json, yaml`
+      )
+    }
+
     const adapter = createAdapter(env)
     const data = await adapter.getData()
 
@@ -153,14 +221,30 @@ export async function handleExportCV(
       return notFound('CV data not found')
     }
 
-    // Format as downloadable JSON
-    const json = JSON.stringify(data, null, 2)
-    const filename = `cv-export-${new Date().toISOString().split('T')[0]}.json`
+    // Serialize data in requested format
+    const dateStr = new Date().toISOString().split('T')[0]
+    let content: string
+    let filename: string
 
-    return new Response(json, {
+    if (format === 'yaml') {
+      content = yaml.dump(data, {
+        indent: 2, // Matches JSON formatting for consistency
+        lineWidth: 120, // Prevents excessive line wrapping in long strings
+        // Security: noRefs prevents YAML anchors/aliases which could be
+        // exploited for "billion laughs" attacks on re-import
+        noRefs: true,
+        sortKeys: false, // Preserve schema key order for readability
+      })
+      filename = `cv-export-${dateStr}.yaml`
+    } else {
+      content = JSON.stringify(data, null, 2)
+      filename = `cv-export-${dateStr}.json`
+    }
+
+    return new Response(content, {
       status: HttpStatus.OK,
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': FORMAT_CONTENT_TYPES[format],
         'Content-Disposition': `attachment; filename="${filename}"`,
         'Cache-Control': 'no-cache',
       },
@@ -174,25 +258,76 @@ export async function handleExportCV(
 /**
  * POST /api/v1/cv/import
  *
- * Import CV data from JSON.
+ * Import CV data from JSON or YAML.
  * Requires authentication via Cloudflare Access.
  * Validates data before import to prevent corruption.
  *
- * @param request - Incoming request with CV JSON in body
+ * Content-Type header determines format:
+ * - application/json → JSON parsing
+ * - application/x-yaml, text/yaml → YAML parsing
+ *
+ * Query parameters:
+ * - preview: 'true' → Validate only, don't save (dry run)
+ *
+ * @param request - Incoming request with CV data in body
  * @param env - Environment bindings
- * @returns JSON response with imported data or validation error
+ * @returns JSON response with import result or validation error
+ *
+ * @example
+ * POST /api/v1/cv/import
+ * Content-Type: application/json
+ * Body: { "version": "1.0", ... }
+ *
+ * @example
+ * POST /api/v1/cv/import?preview=true
+ * Content-Type: application/x-yaml
+ * Body: version: "1.0"\n...
  */
 export async function handleImportCV(
   request: Request,
   env: CVHandlerEnv
 ): Promise<Response> {
   try {
-    // Parse request body
+    // Check for preview mode (dry run)
+    const url = new URL(request.url)
+    const isPreview = url.searchParams.get('preview') === 'true'
+
+    // Detect format from Content-Type header
+    const contentType = request.headers.get('Content-Type')
+    const format = detectImportFormat(contentType)
+
+    if (!format) {
+      return badRequest(
+        `Unsupported Content-Type: ${contentType ?? 'none'}. ` +
+          'Supported types: application/json, application/x-yaml, text/yaml'
+      )
+    }
+
+    // Parse request body based on format
     let body: unknown
     try {
-      body = await request.json()
-    } catch {
-      return badRequest('Invalid JSON in request body')
+      const rawBody = await request.text()
+
+      // Protect against YAML bombs and oversized payloads
+      // 1MB is generous for CV data (typical CV JSON is 10-50KB)
+      const MAX_IMPORT_SIZE = 1024 * 1024 // 1MB
+      if (rawBody.length > MAX_IMPORT_SIZE) {
+        return badRequest(
+          `Import payload too large (${Math.round(rawBody.length / 1024)}KB). Maximum size: 1024KB`
+        )
+      }
+
+      if (format === 'yaml') {
+        // json: true prevents !!tag directives for additional security
+        body = yaml.load(rawBody, { schema: yaml.JSON_SCHEMA, json: true })
+      } else {
+        body = JSON.parse(rawBody)
+      }
+    } catch (parseError) {
+      const formatName = format.toUpperCase()
+      return badRequest(
+        `Invalid ${formatName} in request body: ${parseError instanceof Error ? parseError.message : 'parse error'}`
+      )
     }
 
     // Validate against schema
@@ -204,13 +339,40 @@ export async function handleImportCV(
       )
     }
 
-    // Store in KV - cast validated data to CVData type
-    const adapter = createAdapter(env)
     const cvData = validation.data as CVData
+
+    // Preview mode: return validation success without saving
+    if (isPreview) {
+      return jsonResponse(
+        {
+          message: 'Validation successful (preview mode - data not saved)',
+          preview: true,
+          format,
+          version: cvData.version,
+          sections: {
+            personalInfo: !!cvData.personalInfo,
+            experience: cvData.experience?.length ?? 0,
+            skills: cvData.skills?.length ?? 0,
+            education: cvData.education?.length ?? 0,
+            certifications: cvData.certifications?.length ?? 0,
+            languages: cvData.languages?.length ?? 0,
+          },
+        },
+        HttpStatus.OK,
+        { version: 'v1' }
+      )
+    }
+
+    // Store in KV
+    const adapter = createAdapter(env)
     await adapter.updateData(cvData)
 
     return jsonResponse(
-      { message: 'CV data imported successfully', version: cvData.version },
+      {
+        message: 'CV data imported successfully',
+        format,
+        version: cvData.version,
+      },
       HttpStatus.OK,
       { version: 'v1' }
     )
