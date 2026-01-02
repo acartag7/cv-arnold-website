@@ -1,19 +1,23 @@
 # Deploy to Cloudflare Pages
-# NOTE: Deployment disabled - infrastructure managed in separate repository
-# This workflow is kept for future reference but disabled via 'if: false'
-# To enable: Remove the 'if: false' condition and configure secrets
+# Automatically deploys:
+# - Production: on push to main
+# - Preview: on pull requests (with unique preview URL)
 
 name: Deploy to Cloudflare Pages
 
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    # DISABLED: Remove this line when infrastructure is ready
-    if: false
+    permissions:
+      contents: read
+      deployments: write
+      pull-requests: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -45,15 +49,58 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build static export
-        run: pnpm run build
+      - name: Build
+        run: pnpm build
 
       - name: Deploy to Cloudflare Pages
-        uses: cloudflare/pages-action@v1
+        id: deploy
+        uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: cv-arnold-website
-          directory: out
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
-          wranglerVersion: '3'
+          command: pages deploy out --project-name=cv-arnold-website
+
+      - name: Comment preview URL on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const output = `${{ steps.deploy.outputs.deployment-url }}`;
+            const prNumber = context.payload.pull_request.number;
+
+            // Find existing comment
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+            });
+
+            const botComment = comments.data.find(c =>
+              c.user.type === 'Bot' && c.body.includes('Cloudflare Pages Preview')
+            );
+
+            const body = `## 🚀 Cloudflare Pages Preview
+
+            | Name | Link |
+            |------|------|
+            | Preview URL | ${output} |
+            | Latest commit | \`${context.sha.substring(0, 7)}\` |
+
+            ---
+            _Deployed with Cloudflare Pages_`;
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body: body
+              });
+            }
