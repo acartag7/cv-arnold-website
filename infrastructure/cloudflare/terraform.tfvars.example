@@ -16,11 +16,7 @@ cloudflare_account_id = "your-account-id-here"
 cloudflare_zone_id = "your-zone-id-here"
 
 # Optional: Override defaults
-# domain     = "arnoldcartagena.com"
-# subdomain  = "cv"
+# domain      = "arnoldcartagena.com"
+# subdomain   = "cv"
 # worker_name = "cv-arnold-website"
 # environment = "production"
-
-# Optional: Enable R2 bucket for image storage
-# enable_r2_bucket = true
-# r2_bucket_name   = "cv-arnold-assets"

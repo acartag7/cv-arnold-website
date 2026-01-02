@@ -20,12 +20,25 @@ locals {
 }
 
 # =============================================================================
-# KV Namespace
+# KV Namespaces
 # =============================================================================
 
+# Main CV data storage
 resource "cloudflare_workers_kv_namespace" "cv_data" {
   account_id = var.cloudflare_account_id
-  title      = "${var.kv_namespace_title}-${var.environment}"
+  title      = "CV_DATA"
+}
+
+# Rate limiting counters
+resource "cloudflare_workers_kv_namespace" "rate_limit" {
+  account_id = var.cloudflare_account_id
+  title      = "RATE_LIMIT_KV"
+}
+
+# CV edit history/snapshots
+resource "cloudflare_workers_kv_namespace" "cv_history" {
+  account_id = var.cloudflare_account_id
+  title      = "CV_HISTORY"
 }
 
 # =============================================================================
@@ -59,15 +72,13 @@ resource "cloudflare_worker_domain" "cv_site" {
 # }
 
 # =============================================================================
-# R2 Bucket (Optional - for image storage)
+# R2 Bucket (for image storage)
 # =============================================================================
 
-resource "cloudflare_r2_bucket" "assets" {
-  count = var.enable_r2_bucket ? 1 : 0
-
+resource "cloudflare_r2_bucket" "cv_assets" {
   account_id = var.cloudflare_account_id
-  name       = var.r2_bucket_name
-  location   = "WEUR"  # Western Europe
+  name       = "cv-assets"
+  location   = "WEUR" # Western Europe
 }
 
 # =============================================================================

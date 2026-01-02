@@ -46,21 +46,6 @@ variable "environment" {
   }
 }
 
-variable "kv_namespace_title" {
-  description = "Title for the KV namespace"
-  type        = string
-  default     = "cv-data"
-}
-
-# Optional: For future R2 bucket management
-variable "enable_r2_bucket" {
-  description = "Whether to create R2 bucket for image storage"
-  type        = bool
-  default     = false
-}
-
-variable "r2_bucket_name" {
-  description = "Name for the R2 bucket (if enabled)"
-  type        = string
-  default     = "cv-arnold-assets"
-}
+# Note: KV namespace names and R2 bucket names are hardcoded in main.tf
+# to match existing resources created via Wrangler CLI.
+# See imports.tf for the import blocks that bring these into Terraform state.
