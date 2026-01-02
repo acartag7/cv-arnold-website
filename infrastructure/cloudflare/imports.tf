@@ -38,19 +38,13 @@ import {
 }
 
 # =============================================================================
-# Cloudflare Access (created via Dashboard)
+# Cloudflare Access (Application imported, Policy created by Terraform)
 # =============================================================================
-# NOTE: Requires API token with "Access: Apps and Policies: Edit" permission
-# Uncomment once token has proper permissions:
 
-# import {
-#   to = cloudflare_zero_trust_access_application.admin
-#   id = "${var.cloudflare_account_id}/ebf8c467-e85e-4e3b-a7de-dd71af63e1eb"
-# }
-#
-# import {
-#   to = cloudflare_zero_trust_access_policy.admin_allow
-#   id = "${var.cloudflare_account_id}/ebf8c467-e85e-4e3b-a7de-dd71af63e1eb/1c01a904-12e0-4c12-963d-1ea20f3c4397"
-# }
+import {
+  to = cloudflare_zero_trust_access_application.admin
+  id = "${var.cloudflare_account_id}/ebf8c467-e85e-4e3b-a7de-dd71af63e1eb"
+}
 
+# Access Policy managed by Terraform (ID: fdc0e7ae-f6ba-4328-9bd2-f0f58f0c7401)
 # Access App AUD: 20f09cf4ff703120bd78d2cc3005e7fb86f3f7017d401aad3c777772d1f883f8
