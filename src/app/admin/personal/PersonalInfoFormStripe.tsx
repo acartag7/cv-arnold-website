@@ -268,7 +268,11 @@ export function PersonalInfoFormStripe({
                 description="ISO 3166-1 alpha-2"
               >
                 <FormInput
-                  {...register('location.countryCode')}
+                  {...register('location.countryCode', {
+                    onChange: e => {
+                      e.target.value = e.target.value.toUpperCase()
+                    },
+                  })}
                   placeholder="US"
                   maxLength={2}
                   className="uppercase"
