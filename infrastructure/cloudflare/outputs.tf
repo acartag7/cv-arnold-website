@@ -28,12 +28,12 @@ output "kv_cv_history_id" {
 
 output "custom_domain" {
   description = "Custom domain for the CV website"
-  value       = cloudflare_worker_domain.cv_site.hostname
+  value       = cloudflare_workers_domain.cv_site.hostname
 }
 
 output "worker_url" {
   description = "URL of the CV website"
-  value       = "https://${cloudflare_worker_domain.cv_site.hostname}"
+  value       = "https://${cloudflare_workers_domain.cv_site.hostname}"
 }
 
 # =============================================================================

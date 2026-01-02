@@ -47,7 +47,7 @@ resource "cloudflare_workers_kv_namespace" "cv_history" {
 
 # Custom domain for the Worker
 # This routes cv.arnoldcartagena.com to the Worker
-resource "cloudflare_worker_domain" "cv_site" {
+resource "cloudflare_workers_domain" "cv_site" {
   account_id = var.cloudflare_account_id
   zone_id    = var.cloudflare_zone_id
   hostname   = local.full_domain
@@ -116,15 +116,10 @@ resource "cloudflare_zone_settings_override" "security" {
     security_level = "medium"
     browser_check  = "on"
 
-    # Performance
-    minify {
-      css  = "on"
-      js   = "on"
-      html = "on"
-    }
+    # Performance (minify removed - not available on all plans)
     brotli = "on"
 
     # Caching
-    browser_cache_ttl = 14400  # 4 hours
+    browser_cache_ttl = 14400 # 4 hours
   }
 }

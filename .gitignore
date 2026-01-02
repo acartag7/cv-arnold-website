@@ -96,8 +96,8 @@ infrastructure/**/*.tfvars
 infrastructure/**/*.tfplan
 infrastructure/**/crash.log
 infrastructure/**/crash.*.log
-infrastructure/**/.terraform.lock.hcl
 infrastructure/**/override.tf
 infrastructure/**/override.tf.json
 infrastructure/**/*_override.tf
 infrastructure/**/*_override.tf.json
+infrastructure/**/.env.terraform
