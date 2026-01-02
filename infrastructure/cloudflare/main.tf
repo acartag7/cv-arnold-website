@@ -20,7 +20,7 @@ locals {
 }
 
 # =============================================================================
-# KV Namespaces
+# KV Namespaces - Production
 # =============================================================================
 
 # Main CV data storage
@@ -42,16 +42,41 @@ resource "cloudflare_workers_kv_namespace" "cv_history" {
 }
 
 # =============================================================================
-# Worker Custom Domain
+# KV Namespaces - Staging
 # =============================================================================
 
-# Custom domain for the Worker
-# This routes cv.arnoldcartagena.com to the Worker
+# Staging CV data storage (isolated from production)
+resource "cloudflare_workers_kv_namespace" "cv_data_staging" {
+  account_id = var.cloudflare_account_id
+  title      = "CV_DATA_STAGING"
+}
+
+# Staging rate limiting counters
+resource "cloudflare_workers_kv_namespace" "rate_limit_staging" {
+  account_id = var.cloudflare_account_id
+  title      = "RATE_LIMIT_KV_STAGING"
+}
+
+# =============================================================================
+# Worker Custom Domains
+# =============================================================================
+
+# Production: cv.arnoldcartagena.com
 resource "cloudflare_workers_domain" "cv_site" {
   account_id = var.cloudflare_account_id
   zone_id    = var.cloudflare_zone_id
   hostname   = local.full_domain
   service    = var.worker_name
+}
+
+# Staging: staging-cv.arnoldcartagena.com
+resource "cloudflare_workers_domain" "cv_site_staging" {
+  count = var.enable_staging ? 1 : 0
+
+  account_id = var.cloudflare_account_id
+  zone_id    = var.cloudflare_zone_id
+  hostname   = "staging-${local.full_domain}"
+  service    = "${var.worker_name}-staging"
 }
 
 # =============================================================================
@@ -96,6 +121,20 @@ resource "cloudflare_r2_bucket" "cv_assets" {
 #   name        = "API_KEY"
 #   secret_text = var.api_key  # From TF_VAR_api_key
 # }
+
+# =============================================================================
+# Cloudflare Access - Admin Protection
+# =============================================================================
+# Note: Access Application and Policy already exist (created via Dashboard).
+# Managed via Cloudflare Zero Trust Dashboard for now.
+#
+# Existing config:
+# - App: "CV Admin Portal" (AUD: 20f09cf4ff703120bd78d2cc3005e7fb86f3f7017d401aad3c777772d1f883f8)
+# - Protects: cv.arnoldcartagena.com/admin, dev-cv.arnoldcartagena.com/admin
+# - Policy: Allow specific emails via GitHub/One-time PIN
+#
+# To import into Terraform later, use:
+# terraform import cloudflare_zero_trust_access_application.admin <account_id>/<app_id>
 
 # =============================================================================
 # Zone Settings (Security Headers at Edge)

@@ -36,3 +36,20 @@ import {
   to = cloudflare_r2_bucket.cv_assets
   id = "${var.cloudflare_account_id}/cv-assets"
 }
+
+# =============================================================================
+# Cloudflare Access (created via Dashboard)
+# =============================================================================
+# Currently managed via Zero Trust Dashboard. To import into Terraform:
+#
+# 1. Get the Application ID from the URL when editing the app:
+#    https://one.dash.cloudflare.com/.../access/apps/edit/<APP_ID>
+#
+# 2. Uncomment and add the resource to main.tf, then import:
+#
+# import {
+#   to = cloudflare_zero_trust_access_application.admin
+#   id = "${var.cloudflare_account_id}/<APP_ID>"
+# }
+#
+# Access App AUD: 20f09cf4ff703120bd78d2cc3005e7fb86f3f7017d401aad3c777772d1f883f8

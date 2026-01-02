@@ -46,6 +46,35 @@ output "r2_bucket_name" {
 }
 
 # =============================================================================
+# Staging Environment (when enabled)
+# =============================================================================
+
+output "staging_kv_cv_data_id" {
+  description = "ID of the staging CV_DATA KV namespace"
+  value       = cloudflare_workers_kv_namespace.cv_data_staging.id
+}
+
+output "staging_kv_rate_limit_id" {
+  description = "ID of the staging RATE_LIMIT_KV namespace"
+  value       = cloudflare_workers_kv_namespace.rate_limit_staging.id
+}
+
+output "staging_domain" {
+  description = "Staging domain (if enabled)"
+  value       = var.enable_staging ? cloudflare_workers_domain.cv_site_staging[0].hostname : null
+}
+
+output "staging_url" {
+  description = "Staging URL (if enabled)"
+  value       = var.enable_staging ? "https://${cloudflare_workers_domain.cv_site_staging[0].hostname}" : null
+}
+
+# =============================================================================
+# Cloudflare Access (managed via Dashboard)
+# =============================================================================
+# AUD for JWT verification: 20f09cf4ff703120bd78d2cc3005e7fb86f3f7017d401aad3c777772d1f883f8
+
+# =============================================================================
 # Environment
 # =============================================================================
 

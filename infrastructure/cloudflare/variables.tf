@@ -46,6 +46,16 @@ variable "environment" {
   }
 }
 
+# =============================================================================
+# Staging Environment
+# =============================================================================
+
+variable "enable_staging" {
+  description = "Enable staging environment resources (KV namespaces, worker domain)"
+  type        = bool
+  default     = false
+}
+
 # Note: KV namespace names and R2 bucket names are hardcoded in main.tf
 # to match existing resources created via Wrangler CLI.
 # See imports.tf for the import blocks that bring these into Terraform state.
