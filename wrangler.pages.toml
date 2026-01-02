@@ -5,7 +5,7 @@
 name = "cv-arnold-website"
 main = ".open-next/worker.js"
 compatibility_date = "2025-01-19"
-compatibility_flags = ["nodejs_compat"]
+compatibility_flags = ["nodejs_compat", "global_fetch_strictly_public"]
 
 # Static assets (required for OpenNext)
 [assets]
