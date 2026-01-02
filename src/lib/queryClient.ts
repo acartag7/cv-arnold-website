@@ -9,7 +9,7 @@
  * @module lib/queryClient
  */
 
-import { QueryClient } from '@tanstack/react-query'
+import { QueryClient, keepPreviousData } from '@tanstack/react-query'
 
 /**
  * Default stale time for queries (5 minutes)
@@ -33,8 +33,8 @@ export function createQueryClient(): QueryClient {
         retry: 3,
         // Don't refetch on window focus in admin (manual control)
         refetchOnWindowFocus: false,
-        // Keep previous data while refetching
-        placeholderData: (previousData: unknown) => previousData,
+        // Keep previous data while refetching (React Query v5 recommended pattern)
+        placeholderData: keepPreviousData,
       },
       mutations: {
         // Retry mutations once on failure

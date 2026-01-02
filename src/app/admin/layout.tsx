@@ -9,6 +9,12 @@ import { AdminLayoutClient } from './AdminLayoutClient'
  *
  * Authentication is handled by Cloudflare Access at the edge.
  * This layout just reads the authenticated user email from headers.
+ *
+ * Security Note: In production, Cloudflare Access validates JWTs at the edge
+ * before requests reach this server. For additional security, consider
+ * validating the `Cf-Access-Jwt-Assertion` header against your team's
+ * public key from Cloudflare to prevent header spoofing.
+ * See: https://developers.cloudflare.com/cloudflare-one/identity/authorization-cookie/validating-json/
  */
 export default async function AdminLayout({
   children,

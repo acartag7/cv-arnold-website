@@ -93,7 +93,21 @@ async function apiRequest<T>(
     },
   })
 
-  const result: APIResponse<T> = await response.json()
+  let result: APIResponse<T>
+  try {
+    result = await response.json()
+  } catch (parseError) {
+    // Wrap JSON parse errors in AdminAPIError for consistent error handling
+    logger.error('Failed to parse API response', parseError as Error, {
+      endpoint,
+      status: response.status,
+    })
+    throw new AdminAPIError(
+      'Failed to parse API response',
+      response.status,
+      'PARSE_ERROR'
+    )
+  }
 
   if (!response.ok || !result.success) {
     const errorMessage =

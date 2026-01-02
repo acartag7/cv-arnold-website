@@ -65,7 +65,7 @@ describe('AdminDataService', () => {
       await expect(AdminDataService.getData()).rejects.toThrow(AdminAPIError)
     })
 
-    it('should handle JSON parse error in error response', async () => {
+    it('should wrap JSON parse error in AdminAPIError', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 500,
@@ -74,10 +74,18 @@ describe('AdminDataService', () => {
         },
       })
 
-      // JSON parse error propagates as-is, not wrapped in AdminAPIError
-      await expect(AdminDataService.getData()).rejects.toThrow(
-        'JSON parse error'
-      )
+      // JSON parse errors are wrapped in AdminAPIError for consistent handling
+      try {
+        await AdminDataService.getData()
+        expect.fail('Should have thrown an error')
+      } catch (error) {
+        expect(error).toBeInstanceOf(AdminAPIError)
+        expect((error as AdminAPIError).message).toBe(
+          'Failed to parse API response'
+        )
+        expect((error as AdminAPIError).status).toBe(500)
+        expect((error as AdminAPIError).code).toBe('PARSE_ERROR')
+      }
     })
   })
 
