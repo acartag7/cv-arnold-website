@@ -1,59 +1,76 @@
 # Terraform Import Blocks
 #
 # These blocks import existing Cloudflare resources that were created
-# manually via Wrangler CLI into Terraform state management.
+# manually via Wrangler CLI or Dashboard into Terraform state management.
 #
-# Import blocks are processed during `terraform plan` and `terraform apply`.
-# After successful import, these blocks can be removed (but keeping them
-# is harmless and documents the resource history).
+# USAGE FOR EXISTING RESOURCES:
+# 1. Uncomment the relevant import block below
+# 2. Replace the placeholder ID with your actual resource ID
+# 3. Run `terraform plan` to preview the import
+# 4. Run `terraform apply` to import into state
+# 5. After successful import, you can keep or remove the import block
+#
+# HOW TO FIND RESOURCE IDs:
+# - KV Namespaces: `wrangler kv namespace list` or Cloudflare Dashboard → Workers & Pages → KV
+# - R2 Buckets: `wrangler r2 bucket list` or Dashboard → R2
+# - Access Apps: Dashboard URL contains the ID, e.g., /access/apps/self-hosted/<APP_ID>
+# - Access IDPs: Dashboard URL contains the ID, e.g., /identity-providers/edit/<IDP_ID>
 #
 # Reference: https://developer.hashicorp.com/terraform/language/import
 
 # =============================================================================
 # KV Namespaces (created via: wrangler kv namespace create)
 # =============================================================================
-
-import {
-  to = cloudflare_workers_kv_namespace.cv_data
-  id = "${var.cloudflare_account_id}/c9df8a4271984ad8bb0a02c30ff3568d"
-}
-
-import {
-  to = cloudflare_workers_kv_namespace.rate_limit
-  id = "${var.cloudflare_account_id}/30a87d8776c04d54a423fdd4e84cba5f"
-}
-
-import {
-  to = cloudflare_workers_kv_namespace.cv_history
-  id = "${var.cloudflare_account_id}/0c0ada9ed85a427fb87b97bd5761e407"
-}
+# Find IDs with: wrangler kv namespace list
+#
+# import {
+#   to = cloudflare_workers_kv_namespace.cv_data
+#   id = "${var.cloudflare_account_id}/<KV_NAMESPACE_ID>"
+# }
+#
+# import {
+#   to = cloudflare_workers_kv_namespace.rate_limit
+#   id = "${var.cloudflare_account_id}/<KV_NAMESPACE_ID>"
+# }
+#
+# import {
+#   to = cloudflare_workers_kv_namespace.cv_history
+#   id = "${var.cloudflare_account_id}/<KV_NAMESPACE_ID>"
+# }
 
 # =============================================================================
 # R2 Bucket (created via: wrangler r2 bucket create)
 # =============================================================================
-
-import {
-  to = cloudflare_r2_bucket.cv_assets
-  id = "${var.cloudflare_account_id}/cv-assets"
-}
-
-# =============================================================================
-# Cloudflare Access - Identity Providers
-# =============================================================================
-
-import {
-  to = cloudflare_zero_trust_access_identity_provider.github
-  id = "${var.cloudflare_account_id}/25849e22-6651-4117-b808-5bfe41e3f111"
-}
+# Find bucket name with: wrangler r2 bucket list
+#
+# import {
+#   to = cloudflare_r2_bucket.cv_assets
+#   id = "${var.cloudflare_account_id}/<BUCKET_NAME>"
+# }
 
 # =============================================================================
-# Cloudflare Access - Application & Policy
+# Cloudflare Access - Identity Provider (GitHub)
 # =============================================================================
+# Find ID in Zero Trust Dashboard URL: /identity-providers/edit/<IDP_ID>
+#
+# import {
+#   to = cloudflare_zero_trust_access_identity_provider.github
+#   id = "${var.cloudflare_account_id}/<IDP_ID>"
+# }
 
-import {
-  to = cloudflare_zero_trust_access_application.admin
-  id = "${var.cloudflare_account_id}/ebf8c467-e85e-4e3b-a7de-dd71af63e1eb"
-}
+# =============================================================================
+# Cloudflare Access - Application
+# =============================================================================
+# Find ID in Access Dashboard URL: /access/apps/self-hosted/<APP_ID>
+#
+# import {
+#   to = cloudflare_zero_trust_access_application.admin
+#   id = "${var.cloudflare_account_id}/<APP_ID>"
+# }
 
-# Access Policy managed by Terraform (ID: fdc0e7ae-f6ba-4328-9bd2-f0f58f0c7401)
-# Access App AUD: 20f09cf4ff703120bd78d2cc3005e7fb86f3f7017d401aad3c777772d1f883f8
+# Note: Access Policy is created by Terraform, not imported
+# If you have an existing policy to import, use:
+# import {
+#   to = cloudflare_zero_trust_access_policy.admin_allow
+#   id = "account/${var.cloudflare_account_id}/<APP_ID>/<POLICY_ID>"
+# }

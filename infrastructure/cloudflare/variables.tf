@@ -61,9 +61,9 @@ variable "enable_staging" {
 # =============================================================================
 
 variable "access_allowed_emails" {
-  description = "List of email addresses allowed to access the admin portal"
+  description = "List of email addresses allowed to access the admin portal. Set via TF_VAR_access_allowed_emails environment variable as JSON array, e.g., '[\"user@example.com\"]'"
   type        = list(string)
-  default     = ["cartagena.arnold@gmail.com", "awca22@gmail.com"]
+  # No default - must be provided via environment variable or tfvars
 }
 
 # =============================================================================

@@ -20,3 +20,14 @@ cloudflare_zone_id = "your-zone-id-here"
 # subdomain   = "cv"
 # worker_name = "cv-arnold-website"
 # environment = "production"
+
+# Required: Cloudflare Access - Allowed emails for admin portal
+# Can also be set via: export TF_VAR_access_allowed_emails='["user@example.com"]'
+access_allowed_emails = ["your-email@example.com"]
+
+# Required: GitHub OAuth credentials for Cloudflare Access IDP
+# These should be set via environment variables for security:
+#   export TF_VAR_github_oauth_client_id="your-client-id"
+#   export TF_VAR_github_oauth_client_secret="your-client-secret"
+# github_oauth_client_id     = "your-github-oauth-client-id"
+# github_oauth_client_secret = "your-github-oauth-client-secret"
