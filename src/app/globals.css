@@ -3,6 +3,9 @@
 @import '../styles/theme-transitions.css';
 @import '../styles/timeline.css';
 
+/* Configure dark mode to use data-theme attribute (Tailwind v4) */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 /* Apply design tokens to body */
 body {
   background: var(--background);

@@ -1,26 +1,27 @@
-import nextCoreWebVitals from "eslint-config-next/core-web-vitals";
-import nextTypescript from "eslint-config-next/typescript";
+import { FlatCompat } from "@eslint/eslintrc";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const compat = new FlatCompat({
+  baseDirectory: __dirname,
+});
 
 const eslintConfig = [
-  ...nextCoreWebVitals,
-  ...nextTypescript,
+  ...compat.extends("next/core-web-vitals", "next/typescript"),
   {
     ignores: [
       "node_modules/**",
       ".next/**",
+      ".open-next/**",
+      ".vercel/**",
       "out/**",
       "build/**",
       "coverage/**",
       "next-env.d.ts"
     ]
-  },
-  {
-    // Temporarily disable new React 19 strict rules that require significant refactoring
-    // TODO: Address these in a follow-up PR to adopt React 19 patterns fully
-    rules: {
-      "react-hooks/set-state-in-effect": "off",
-      "react-hooks/immutability": "off"
-    }
   }
 ];
 

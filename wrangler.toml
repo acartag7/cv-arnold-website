@@ -6,9 +6,8 @@ main = "src/index.ts"
 compatibility_date = "2025-01-19"
 compatibility_flags = ["nodejs_compat"]
 
-# Workers Site configuration (for static assets)
-[site]
-bucket = "./out"  # Next.js static export output directory
+# Note: The Next.js frontend is deployed via OpenNext (see wrangler.pages.toml)
+# This wrangler.toml is for the API worker (src/workers/)
 
 # KV Namespace Bindings
 #

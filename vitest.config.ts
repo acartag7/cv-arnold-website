@@ -2,6 +2,11 @@ import { defineConfig } from 'vitest/config'
 import path from 'path'
 
 export default defineConfig({
+  // Configure JSX transform for tests (tsconfig has jsx: "preserve" for Next.js)
+  esbuild: {
+    jsx: 'automatic',
+    jsxImportSource: 'react',
+  },
   test: {
     // Test environment (happy-dom for React component testing)
     environment: 'happy-dom',

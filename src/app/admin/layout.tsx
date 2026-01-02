@@ -33,6 +33,7 @@ export default async function AdminLayout({
 
 /**
  * Admin routes must be dynamic (not statically generated)
- * to read request headers for authentication
+ * to read request headers for authentication.
+ * Note: OpenNext handles Cloudflare Workers deployment automatically.
  */
 export const dynamic = 'force-dynamic'

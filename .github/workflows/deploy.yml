@@ -1,30 +1,35 @@
-# Deploy to Cloudflare Pages
-# NOTE: Deployment disabled - infrastructure managed in separate repository
-# This workflow is kept for future reference but disabled via 'if: false'
-# To enable: Remove the 'if: false' condition and configure secrets
+# Deploy to Cloudflare Workers (via OpenNext)
+# Automatically deploys:
+# - Production: on push to main
+# - Preview: on pull requests (with unique preview URL)
 
-name: Deploy to Cloudflare Pages
+name: Deploy to Cloudflare Workers
 
 on:
+  workflow_dispatch: # Manual trigger
   push:
+    branches: [main]
+  pull_request:
     branches: [main]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    # DISABLED: Remove this line when infrastructure is ready
-    if: false
+    permissions:
+      contents: read
+      deployments: write
+      pull-requests: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Setup Node.js 20.x
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: '20.x'
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
         with:
           version: 9
           run_install: false
@@ -35,7 +40,7 @@ jobs:
           echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
 
       - name: Setup pnpm cache
-        uses: actions/cache@v4
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
         with:
           path: ${{ env.STORE_PATH }}
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
@@ -45,15 +50,79 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build static export
-        run: pnpm run build
+      - name: Build with OpenNext
+        run: pnpm pages:build
 
-      - name: Deploy to Cloudflare Pages
-        uses: cloudflare/pages-action@v1
+      - name: Deploy to Cloudflare Workers
+        id: deploy
+        uses: cloudflare/wrangler-action@392082e81ffbcb9ebdde27400634aa004b35ea37 # v3.14.1
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: cv-arnold-website
-          directory: out
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
-          wranglerVersion: '3'
+          wranglerVersion: '4.54.0'
+          command: deploy --config wrangler.pages.toml
+
+      - name: Comment preview URL on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          script: |
+            // Sanitize output to prevent script injection
+            const rawOutput = `${{ steps.deploy.outputs.deployment-url }}`;
+            const output = rawOutput.replace(/[<>&"']/g, '');
+            const prNumber = context.payload.pull_request.number;
+
+            // Check if deployment URL is valid
+            const isValidUrl = output && output.startsWith('https://');
+
+            // Find existing comment
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+            });
+
+            const botComment = comments.data.find(c =>
+              c.user.type === 'Bot' && c.body.includes('Cloudflare Workers Preview')
+            );
+
+            let body;
+            if (isValidUrl) {
+              body = `## 🚀 Cloudflare Workers Preview
+
+            | Name | Link |
+            |------|------|
+            | Preview URL | ${output} |
+            | Latest commit | \`${context.sha.substring(0, 7)}\` |
+
+            ---
+            _Deployed with OpenNext + Cloudflare Workers_`;
+            } else {
+              body = `## ⚠️ Cloudflare Workers Deployment Issue
+
+            | Name | Status |
+            |------|--------|
+            | Deployment | Failed or pending |
+            | Latest commit | \`${context.sha.substring(0, 7)}\` |
+
+            The deployment URL was not available. Please check the [workflow logs](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}) for details.
+
+            ---
+            _OpenNext + Cloudflare Workers_`;
+            }
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body: body
+              });
+            }
