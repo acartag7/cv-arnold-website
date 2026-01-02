@@ -34,7 +34,6 @@ export default async function AdminLayout({
 /**
  * Admin routes must be dynamic (not statically generated)
  * to read request headers for authentication.
- * Edge runtime is required for Cloudflare Pages deployment.
+ * Note: OpenNext handles Cloudflare Workers deployment automatically.
  */
 export const dynamic = 'force-dynamic'
-export const runtime = 'edge'
