@@ -56,6 +56,16 @@ variable "enable_staging" {
   default     = false
 }
 
+# =============================================================================
+# Cloudflare Access
+# =============================================================================
+
+variable "access_allowed_emails" {
+  description = "List of email addresses allowed to access the admin portal"
+  type        = list(string)
+  default     = ["cartagena.arnold@gmail.com", "awca22@gmail.com"]
+}
+
 # Note: KV namespace names and R2 bucket names are hardcoded in main.tf
 # to match existing resources created via Wrangler CLI.
 # See imports.tf for the import blocks that bring these into Terraform state.

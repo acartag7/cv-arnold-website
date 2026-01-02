@@ -125,16 +125,42 @@ resource "cloudflare_r2_bucket" "cv_assets" {
 # =============================================================================
 # Cloudflare Access - Admin Protection
 # =============================================================================
-# Note: Access Application and Policy already exist (created via Dashboard).
-# Managed via Cloudflare Zero Trust Dashboard for now.
+# NOTE: Requires API token with "Access: Apps and Policies: Edit" permission
+# Currently managed via Zero Trust Dashboard until token is updated.
 #
-# Existing config:
-# - App: "CV Admin Portal" (AUD: 20f09cf4ff703120bd78d2cc3005e7fb86f3f7017d401aad3c777772d1f883f8)
-# - Protects: cv.arnoldcartagena.com/admin, dev-cv.arnoldcartagena.com/admin
-# - Policy: Allow specific emails via GitHub/One-time PIN
+# App ID: ebf8c467-e85e-4e3b-a7de-dd71af63e1eb
+# Policy ID: 1c01a904-12e0-4c12-963d-1ea20f3c4397
+# AUD: 20f09cf4ff703120bd78d2cc3005e7fb86f3f7017d401aad3c777772d1f883f8
 #
-# To import into Terraform later, use:
-# terraform import cloudflare_zero_trust_access_application.admin <account_id>/<app_id>
+# Uncomment below once API token has Access permissions:
+
+# resource "cloudflare_zero_trust_access_application" "admin" {
+#   account_id       = var.cloudflare_account_id
+#   name             = "CV Admin Portal"
+#   type             = "self_hosted"
+#   session_duration = "24h"
+#
+#   destinations {
+#     type = "public"
+#     uri  = "cv.arnoldcartagena.com/admin"
+#   }
+#   destinations {
+#     type = "public"
+#     uri  = "dev-cv.arnoldcartagena.com/admin"
+#   }
+# }
+#
+# resource "cloudflare_zero_trust_access_policy" "admin_allow" {
+#   account_id     = var.cloudflare_account_id
+#   application_id = cloudflare_zero_trust_access_application.admin.id
+#   name           = "CV Admin Portal"
+#   precedence     = 1
+#   decision       = "allow"
+#
+#   include {
+#     email = var.access_allowed_emails
+#   }
+# }
 
 # =============================================================================
 # Zone Settings (Security Headers at Edge)

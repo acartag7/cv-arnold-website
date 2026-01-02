@@ -40,16 +40,17 @@ import {
 # =============================================================================
 # Cloudflare Access (created via Dashboard)
 # =============================================================================
-# Currently managed via Zero Trust Dashboard. To import into Terraform:
-#
-# 1. Get the Application ID from the URL when editing the app:
-#    https://one.dash.cloudflare.com/.../access/apps/edit/<APP_ID>
-#
-# 2. Uncomment and add the resource to main.tf, then import:
-#
+# NOTE: Requires API token with "Access: Apps and Policies: Edit" permission
+# Uncomment once token has proper permissions:
+
 # import {
 #   to = cloudflare_zero_trust_access_application.admin
-#   id = "${var.cloudflare_account_id}/<APP_ID>"
+#   id = "${var.cloudflare_account_id}/ebf8c467-e85e-4e3b-a7de-dd71af63e1eb"
 # }
 #
+# import {
+#   to = cloudflare_zero_trust_access_policy.admin_allow
+#   id = "${var.cloudflare_account_id}/ebf8c467-e85e-4e3b-a7de-dd71af63e1eb/1c01a904-12e0-4c12-963d-1ea20f3c4397"
+# }
+
 # Access App AUD: 20f09cf4ff703120bd78d2cc3005e7fb86f3f7017d401aad3c777772d1f883f8
