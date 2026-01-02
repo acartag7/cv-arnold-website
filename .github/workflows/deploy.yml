@@ -49,16 +49,16 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build for Cloudflare Pages
+      - name: Build with OpenNext
         run: pnpm pages:build
 
-      - name: Deploy to Cloudflare Pages
+      - name: Deploy to Cloudflare Workers
         id: deploy
         uses: cloudflare/wrangler-action@392082e81ffbcb9ebdde27400634aa004b35ea37 # v3.14.1
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy .vercel/output/static --project-name=cv-arnold-website
+          command: deploy --config wrangler.pages.toml
 
       - name: Comment preview URL on PR
         if: github.event_name == 'pull_request'
@@ -81,12 +81,12 @@ jobs:
             });
 
             const botComment = comments.data.find(c =>
-              c.user.type === 'Bot' && c.body.includes('Cloudflare Pages')
+              c.user.type === 'Bot' && c.body.includes('Cloudflare Workers Preview')
             );
 
             let body;
             if (isValidUrl) {
-              body = `## 🚀 Cloudflare Pages Preview
+              body = `## 🚀 Cloudflare Workers Preview
 
             | Name | Link |
             |------|------|
@@ -94,9 +94,9 @@ jobs:
             | Latest commit | \`${context.sha.substring(0, 7)}\` |
 
             ---
-            _Deployed with Cloudflare Pages_`;
+            _Deployed with OpenNext + Cloudflare Workers_`;
             } else {
-              body = `## ⚠️ Cloudflare Pages Deployment Issue
+              body = `## ⚠️ Cloudflare Workers Deployment Issue
 
             | Name | Status |
             |------|--------|
@@ -106,7 +106,7 @@ jobs:
             The deployment URL was not available. Please check the [workflow logs](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}) for details.
 
             ---
-            _Cloudflare Pages_`;
+            _OpenNext + Cloudflare Workers_`;
             }
 
             if (botComment) {

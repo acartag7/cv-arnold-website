@@ -12,7 +12,9 @@
     "format": "prettier --write '**/*.{js,jsx,ts,tsx,json,css,md,yaml,yml}'",
     "format:check": "prettier --check '**/*.{js,jsx,ts,tsx,json,css,md,yaml,yml}'",
     "typecheck": "tsc --noEmit",
-    "pages:build": "npx @cloudflare/next-on-pages",
+    "pages:build": "opennextjs-cloudflare build",
+    "pages:preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "pages:deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "validate:cv": "tsx scripts/validate-cv-data.ts",
     "test:schemas": "tsx scripts/test-date-validation.ts",
     "test": "vitest run",
@@ -39,8 +41,8 @@
     "zod": "^4.0.14"
   },
   "devDependencies": {
-    "@cloudflare/next-on-pages": "^1.13.16",
     "@faker-js/faker": "^10.1.0",
+    "@opennextjs/cloudflare": "^1.14.7",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
