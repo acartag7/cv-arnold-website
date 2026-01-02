@@ -6,12 +6,8 @@ plugin "terraform" {
   preset  = "recommended"
 }
 
-# Cloudflare-specific rules
-plugin "cloudflare" {
-  enabled = true
-  version = "0.2.0"
-  source  = "github.com/cloudflare/tflint-ruleset-cloudflare"
-}
+# Note: Cloudflare doesn't have an official TFLint ruleset yet
+# Using standard Terraform rules only
 
 # General rules
 rule "terraform_deprecated_interpolation" {
