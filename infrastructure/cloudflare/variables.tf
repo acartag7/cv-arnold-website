@@ -56,6 +56,12 @@ variable "enable_staging" {
   default     = false
 }
 
+variable "enable_dev_access" {
+  description = "Enable dev/staging domain in Cloudflare Access (dev-<subdomain>.<domain>/admin)"
+  type        = bool
+  default     = true
+}
+
 # =============================================================================
 # Cloudflare Access
 # =============================================================================

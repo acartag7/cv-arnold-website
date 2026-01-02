@@ -59,6 +59,12 @@ resource "cloudflare_workers_kv_namespace" "rate_limit_staging" {
   title      = "RATE_LIMIT_KV_STAGING"
 }
 
+# Staging CV edit history/snapshots
+resource "cloudflare_workers_kv_namespace" "cv_history_staging" {
+  account_id = var.cloudflare_account_id
+  title      = "CV_HISTORY_STAGING"
+}
+
 # =============================================================================
 # Worker Custom Domains
 # =============================================================================
@@ -153,13 +159,19 @@ resource "cloudflare_zero_trust_access_application" "admin" {
   type             = "self_hosted"
   session_duration = "24h"
 
+  # Production admin route
   destinations {
     type = "public"
-    uri  = "cv.arnoldcartagena.com/admin"
+    uri  = "${local.full_domain}/admin"
   }
-  destinations {
-    type = "public"
-    uri  = "dev-cv.arnoldcartagena.com/admin"
+
+  # Dev/staging admin route (optional)
+  dynamic "destinations" {
+    for_each = var.enable_dev_access ? [1] : []
+    content {
+      type = "public"
+      uri  = "dev-${local.full_domain}/admin"
+    }
   }
 }
 
