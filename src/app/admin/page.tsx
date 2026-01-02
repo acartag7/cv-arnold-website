@@ -1,17 +1,11 @@
-import { getCVData } from '@/lib/get-cv-data'
-import { AdminPageClient } from './AdminPageClient'
+import { AdminDashboard } from './AdminDashboard'
 
 /**
- * Admin Page (Server Component)
+ * Admin Dashboard Page (Server Component)
  *
- * Fetches initial CV data at build time and passes to client component.
- * This is a placeholder admin page - Phase 1 will build the full CMS.
+ * Entry point for the admin dashboard.
+ * The actual dashboard UI is in AdminDashboard client component.
  */
-export default async function AdminPage() {
-  const cvData = await getCVData()
-
-  return <AdminPageClient initialData={cvData} />
+export default function AdminPage() {
+  return <AdminDashboard />
 }
-
-export const dynamic = 'force-static'
-export const revalidate = false

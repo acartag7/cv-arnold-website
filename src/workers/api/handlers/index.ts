@@ -12,3 +12,13 @@ export {
   handleImportCV,
   handleGetSection,
 } from './cv'
+
+export {
+  type HistoryHandlerEnv,
+  type SnapshotMetadata,
+  type Snapshot,
+  handleListHistory,
+  handleGetSnapshot,
+  handleCreateSnapshot,
+  handleDeleteSnapshot,
+} from './history'
