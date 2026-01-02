@@ -10,6 +10,8 @@ import { defineCloudflareConfig } from '@opennextjs/cloudflare'
  * @see https://opennext.js.org/cloudflare
  */
 export default defineCloudflareConfig({
-  // Default configuration - no overrides needed for basic setup
-  // The adapter will use KV for caching by default
+  // Disable cache interception until KV bindings are configured
+  enableCacheInterception: false,
+  // Use dummy cache purge (no CDN invalidation)
+  cachePurge: 'dummy',
 })
