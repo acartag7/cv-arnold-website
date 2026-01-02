@@ -16,5 +16,11 @@ directory = ".open-next/assets"
 [observability]
 enabled = true
 
+# Custom domain - Cloudflare will auto-provision SSL
+# The domain must be on Cloudflare DNS (proxied)
+routes = [
+  { pattern = "cv.arnoldcartagena.com", custom_domain = true }
+]
+
 # Note: For PR preview deployments, we deploy with --env preview
 # which creates a separate worker instance
