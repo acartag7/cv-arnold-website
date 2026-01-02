@@ -14,6 +14,9 @@ import {
   GraduationCap,
   Languages,
   Trophy,
+  BarChart3,
+  Type,
+  Palette,
   Settings,
   ExternalLink,
   ChevronLeft,
@@ -30,9 +33,13 @@ interface AdminLayoutClientProps {
 
 /**
  * Navigation items for admin sidebar
+ * Organized in logical sections: Content, Homepage, Site Settings
  */
 const navItems = [
+  // Dashboard
   { id: 'dashboard', label: 'Dashboard', href: '/admin', icon: Home },
+
+  // Content Sections
   {
     id: 'personal',
     label: 'Personal Info',
@@ -70,10 +77,27 @@ const navItems = [
     href: '/admin/achievements',
     icon: Trophy,
   },
+
+  // Homepage Customization
   {
-    id: 'settings',
-    label: 'Settings',
-    href: '/admin/settings',
+    id: 'hero-stats',
+    label: 'Hero Stats',
+    href: '/admin/hero-stats',
+    icon: BarChart3,
+  },
+  {
+    id: 'section-titles',
+    label: 'Section Titles',
+    href: '/admin/section-titles',
+    icon: Type,
+  },
+
+  // Site Settings
+  { id: 'theme', label: 'Theme', href: '/admin/theme', icon: Palette },
+  {
+    id: 'site-config',
+    label: 'Site Config',
+    href: '/admin/site-config',
     icon: Settings,
   },
 ]
