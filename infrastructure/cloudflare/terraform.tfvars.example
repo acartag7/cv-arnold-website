@@ -1,0 +1,33 @@
+# Example Terraform Variables
+#
+# Copy this file to terraform.tfvars and fill in your values.
+# NEVER commit terraform.tfvars to version control!
+#
+# Alternatively, set environment variables:
+#   export TF_VAR_cloudflare_account_id="your-account-id"
+#   export TF_VAR_cloudflare_zone_id="your-zone-id"
+
+# Required: Cloudflare Account ID
+# Find at: https://dash.cloudflare.com → Account Home → Account ID (right sidebar)
+cloudflare_account_id = "your-account-id-here"
+
+# Required: Zone ID for arnoldcartagena.com
+# Find at: https://dash.cloudflare.com → select domain → Overview → Zone ID (right sidebar)
+cloudflare_zone_id = "your-zone-id-here"
+
+# Optional: Override defaults
+# domain      = "arnoldcartagena.com"
+# subdomain   = "cv"
+# worker_name = "cv-arnold-website"
+# environment = "production"
+
+# Required: Cloudflare Access - Allowed emails for admin portal
+# Can also be set via: export TF_VAR_access_allowed_emails='["user@example.com"]'
+access_allowed_emails = ["your-email@example.com"]
+
+# Required: GitHub OAuth credentials for Cloudflare Access IDP
+# These should be set via environment variables for security:
+#   export TF_VAR_github_oauth_client_id="your-client-id"
+#   export TF_VAR_github_oauth_client_secret="your-client-secret"
+# github_oauth_client_id     = "your-github-oauth-client-id"
+# github_oauth_client_secret = "your-github-oauth-client-secret"
