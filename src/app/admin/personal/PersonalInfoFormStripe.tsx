@@ -514,6 +514,11 @@ function SectionDivider() {
   )
 }
 
+// NOTE: These form components use Stripe-inspired styling.
+// The UI components (src/components/ui/Input, Textarea) now support variant="stripe"
+// which provides the same styling. Future refactor can migrate to use those.
+// See: Input.tsx, Textarea.tsx with variant="stripe"
+
 interface FormFieldProps {
   label: string
   required?: boolean

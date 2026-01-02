@@ -11,8 +11,10 @@ import { forwardRef } from 'react'
 
 export interface InputProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
-  /** Error message to display below the input */
-  error?: string
+  /** Error message to display below the input (string) or error state (boolean) */
+  error?: string | boolean
+  /** Visual variant */
+  variant?: 'default' | 'stripe'
 }
 
 /**
@@ -29,21 +31,44 @@ export interface InputProps
  * ```
  */
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ className = '', error, type = 'text', ...props }, ref) => {
-    const baseStyles = `
-      block w-full px-3 py-2
-      bg-white dark:bg-gray-800
-      border rounded-lg
-      text-gray-900 dark:text-gray-100
-      placeholder:text-gray-400 dark:placeholder:text-gray-500
-      focus:outline-none focus:ring-2 focus:ring-offset-0
-      disabled:opacity-50 disabled:cursor-not-allowed
-      transition-colors
-    `
+  (
+    { className = '', error, type = 'text', variant = 'default', ...props },
+    ref
+  ) => {
+    const hasError = !!error
+    const errorMessage = typeof error === 'string' ? error : undefined
 
-    const borderStyles = error
-      ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
-      : 'border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-500/20'
+    const baseStyles =
+      variant === 'stripe'
+        ? `
+          w-full px-4 py-2.5
+          bg-slate-50 dark:bg-slate-900
+          border rounded-xl
+          text-slate-900 dark:text-slate-100
+          placeholder:text-slate-400 dark:placeholder:text-slate-500
+          focus:outline-none focus:ring-2 focus:border-transparent
+          disabled:opacity-50 disabled:cursor-not-allowed
+          transition-all
+        `
+        : `
+          block w-full px-3 py-2
+          bg-white dark:bg-gray-800
+          border rounded-lg
+          text-gray-900 dark:text-gray-100
+          placeholder:text-gray-400 dark:placeholder:text-gray-500
+          focus:outline-none focus:ring-2 focus:ring-offset-0
+          disabled:opacity-50 disabled:cursor-not-allowed
+          transition-colors
+        `
+
+    const borderStyles =
+      variant === 'stripe'
+        ? hasError
+          ? 'border-red-300 dark:border-red-700 focus:ring-red-500/30'
+          : 'border-slate-200 dark:border-slate-600 focus:ring-blue-500/30'
+        : hasError
+          ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
+          : 'border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-500/20'
 
     return (
       <div className="w-full">
@@ -51,17 +76,17 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           ref={ref}
           type={type}
           className={`${baseStyles} ${borderStyles} ${className}`}
-          aria-invalid={!!error}
-          aria-describedby={error ? `${props.id}-error` : undefined}
+          aria-invalid={hasError}
+          aria-describedby={errorMessage ? `${props.id}-error` : undefined}
           {...props}
         />
-        {error && (
+        {errorMessage && (
           <p
             id={`${props.id}-error`}
             className="mt-1 text-sm text-red-500"
             role="alert"
           >
-            {error}
+            {errorMessage}
           </p>
         )}
       </div>
