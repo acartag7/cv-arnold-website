@@ -41,6 +41,12 @@ import {
   handleImportCV,
   handleGetSection,
 } from './handlers/cv'
+import {
+  handleListHistory,
+  handleGetSnapshot,
+  handleCreateSnapshot,
+  handleDeleteSnapshot,
+} from './handlers/history'
 
 /**
  * Environment bindings for the Worker
@@ -134,6 +140,35 @@ const routes: Route[] = [
       handleGetSection(req, env, params.section ?? ''),
     requiresAuth: false,
     params: ['section'],
+  },
+  // History endpoints
+  {
+    method: 'GET',
+    pattern: /^\/api\/v1\/cv\/history\/?$/,
+    handler: async (req, env) => handleListHistory(req, env),
+    requiresAuth: true,
+  },
+  {
+    method: 'GET',
+    pattern: /^\/api\/v1\/cv\/history\/([a-zA-Z0-9-]+)\/?$/,
+    handler: async (req, env, params) =>
+      handleGetSnapshot(req, env, params.id ?? ''),
+    requiresAuth: true,
+    params: ['id'],
+  },
+  {
+    method: 'POST',
+    pattern: /^\/api\/v1\/cv\/history\/?$/,
+    handler: async (req, env) => handleCreateSnapshot(req, env),
+    requiresAuth: true,
+  },
+  {
+    method: 'DELETE',
+    pattern: /^\/api\/v1\/cv\/history\/([a-zA-Z0-9-]+)\/?$/,
+    handler: async (req, env, params) =>
+      handleDeleteSnapshot(req, env, params.id ?? ''),
+    requiresAuth: true,
+    params: ['id'],
   },
 ]
 
