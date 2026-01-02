@@ -1,0 +1,26 @@
+# Example Terraform Variables
+#
+# Copy this file to terraform.tfvars and fill in your values.
+# NEVER commit terraform.tfvars to version control!
+#
+# Alternatively, set environment variables:
+#   export TF_VAR_cloudflare_account_id="your-account-id"
+#   export TF_VAR_cloudflare_zone_id="your-zone-id"
+
+# Required: Cloudflare Account ID
+# Find at: https://dash.cloudflare.com → Account Home → Account ID (right sidebar)
+cloudflare_account_id = "your-account-id-here"
+
+# Required: Zone ID for arnoldcartagena.com
+# Find at: https://dash.cloudflare.com → select domain → Overview → Zone ID (right sidebar)
+cloudflare_zone_id = "your-zone-id-here"
+
+# Optional: Override defaults
+# domain     = "arnoldcartagena.com"
+# subdomain  = "cv"
+# worker_name = "cv-arnold-website"
+# environment = "production"
+
+# Optional: Enable R2 bucket for image storage
+# enable_r2_bucket = true
+# r2_bucket_name   = "cv-arnold-assets"

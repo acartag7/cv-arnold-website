@@ -86,3 +86,18 @@ tasks/
 
 # OpenNext build output
 .open-next
+
+# Terraform / OpenTofu
+infrastructure/**/.terraform/
+infrastructure/**/*.tfstate
+infrastructure/**/*.tfstate.*
+infrastructure/**/*.tfvars
+!infrastructure/**/*.tfvars.example
+infrastructure/**/*.tfplan
+infrastructure/**/crash.log
+infrastructure/**/crash.*.log
+infrastructure/**/.terraform.lock.hcl
+infrastructure/**/override.tf
+infrastructure/**/override.tf.json
+infrastructure/**/*_override.tf
+infrastructure/**/*_override.tf.json
