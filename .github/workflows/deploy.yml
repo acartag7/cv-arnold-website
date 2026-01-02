@@ -66,8 +66,12 @@ jobs:
         with:
           script: |
             // Sanitize output to prevent script injection
-            const output = `${{ steps.deploy.outputs.deployment-url }}`.replace(/[<>&"']/g, '');
+            const rawOutput = `${{ steps.deploy.outputs.deployment-url }}`;
+            const output = rawOutput.replace(/[<>&"']/g, '');
             const prNumber = context.payload.pull_request.number;
+
+            // Check if deployment URL is valid
+            const isValidUrl = output && output.startsWith('https://');
 
             // Find existing comment
             const comments = await github.rest.issues.listComments({
@@ -77,10 +81,12 @@ jobs:
             });
 
             const botComment = comments.data.find(c =>
-              c.user.type === 'Bot' && c.body.includes('Cloudflare Pages Preview')
+              c.user.type === 'Bot' && c.body.includes('Cloudflare Pages')
             );
 
-            const body = `## 🚀 Cloudflare Pages Preview
+            let body;
+            if (isValidUrl) {
+              body = `## 🚀 Cloudflare Pages Preview
 
             | Name | Link |
             |------|------|
@@ -89,6 +95,19 @@ jobs:
 
             ---
             _Deployed with Cloudflare Pages_`;
+            } else {
+              body = `## ⚠️ Cloudflare Pages Deployment Issue
+
+            | Name | Status |
+            |------|--------|
+            | Deployment | Failed or pending |
+            | Latest commit | \`${context.sha.substring(0, 7)}\` |
+
+            The deployment URL was not available. Please check the [workflow logs](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}) for details.
+
+            ---
+            _Cloudflare Pages_`;
+            }
 
             if (botComment) {
               await github.rest.issues.updateComment({
