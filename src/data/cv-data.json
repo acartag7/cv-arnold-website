@@ -504,6 +504,50 @@
       "status": "active",
       "credentialId": "LF-123460",
       "order": 5
+    },
+    {
+      "id": "terraform-associate",
+      "name": "HashiCorp Certified: Terraform Associate",
+      "issuer": "HashiCorp",
+      "issuerUrl": "https://www.hashicorp.com/certification/terraform-associate",
+      "issueDate": "2022-01-01",
+      "expirationDate": "2025-01-01",
+      "status": "active",
+      "credentialId": "HC-123456",
+      "order": 6
+    },
+    {
+      "id": "gitops-argo",
+      "name": "GitOps Certified for Argo",
+      "issuer": "Codefresh",
+      "issuerUrl": "https://codefresh.io/gitops-certification/",
+      "issueDate": "2022-06-01",
+      "expirationDate": null,
+      "status": "active",
+      "credentialId": "CF-123456",
+      "order": 7
+    },
+    {
+      "id": "jenkins-admin",
+      "name": "Jenkins Level 1: Administration",
+      "issuer": "CloudBees, Inc.",
+      "issuerUrl": "https://www.cloudbees.com/jenkins/certification",
+      "issueDate": "2021-06-01",
+      "expirationDate": null,
+      "status": "active",
+      "credentialId": "CB-123456",
+      "order": 8
+    },
+    {
+      "id": "azure-fundamentals",
+      "name": "Microsoft Certified: Azure Fundamentals",
+      "issuer": "Microsoft",
+      "issuerUrl": "https://learn.microsoft.com/en-us/certifications/azure-fundamentals/",
+      "issueDate": "2021-03-01",
+      "expirationDate": null,
+      "status": "active",
+      "credentialId": "MS-123456",
+      "order": 9
     }
   ],
   "achievements": [

@@ -57,6 +57,7 @@ export default defineConfig({
         'src/components/ui/Stack.tsx', // TODO: Add tests
         'src/components/ui/ThemeSwitcher.tsx', // TODO: Add tests
         'src/components/ui/Typography.tsx', // TODO: Add tests
+        'src/components/CVPageClient.tsx', // Large client component - E2E testing preferred
         'node_modules/**',
         'dist/**',
         '.next/**',
