@@ -30,7 +30,7 @@ on:
           - apply
 
 env:
-  TF_VERSION: '1.6.0'
+  TF_VERSION: '1.14.3'
   TF_WORKING_DIR: 'infrastructure/cloudflare'
   # Cloudflare Provider
   CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -65,6 +65,19 @@ jobs:
       - name: Terraform Format Check
         id: fmt
         run: terraform fmt -check -recursive
+        continue-on-error: true
+
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@19a52fbac37dacb22a09518e4ef6ee234f2d4987 # v4.0.0
+        with:
+          tflint_version: latest
+
+      - name: Init TFLint
+        run: tflint --init
+
+      - name: Run TFLint
+        id: tflint
+        run: tflint --format compact
         continue-on-error: true
 
       - name: Terraform Init
@@ -103,6 +116,7 @@ jobs:
             const output = `## Terraform Plan Results
 
             #### Format Check: \`${{ steps.fmt.outcome }}\`
+            #### TFLint: \`${{ steps.tflint.outcome }}\`
             #### Initialization: \`${{ steps.init.outcome }}\`
             #### Validation: \`${{ steps.validate.outcome }}\`
             #### Plan: \`${{ steps.plan.outcome }}\`

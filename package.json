@@ -80,6 +80,9 @@
     ],
     "*.{json,css,yaml,yml}": [
       "prettier --write"
+    ],
+    "infrastructure/**/*.tf": [
+      "terraform fmt"
     ]
   }
 }

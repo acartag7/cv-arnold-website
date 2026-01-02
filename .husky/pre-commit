@@ -9,11 +9,47 @@ if [ -n "$TS_JS_FILES" ]; then
   # Run TypeScript type checking only if TS/JS files changed
   echo "🔍 Running TypeScript type check..."
   pnpm exec tsc --noEmit
-  
+
   # Note: Build check moved to CI for faster commits
   echo "📦 Build check will run in CI pipeline"
 else
   echo "📝 Only non-TypeScript files changed, skipping type check"
+fi
+
+# Check if any Terraform files are staged
+TF_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.tf$' || true)
+
+if [ -n "$TF_FILES" ]; then
+  echo "🏗️  Running Terraform checks..."
+
+  # Check if terraform is installed
+  if command -v terraform &> /dev/null; then
+    # Run terraform validate (requires init, skip if not initialized)
+    if [ -d "infrastructure/cloudflare/.terraform" ]; then
+      echo "   → terraform validate..."
+      (cd infrastructure/cloudflare && terraform validate) || {
+        echo "❌ Terraform validation failed!"
+        exit 1
+      }
+    else
+      echo "   → Skipping terraform validate (not initialized locally)"
+    fi
+  else
+    echo "   → Terraform not installed, skipping validate"
+  fi
+
+  # Check if tflint is installed
+  if command -v tflint &> /dev/null; then
+    echo "   → tflint..."
+    (cd infrastructure/cloudflare && tflint) || {
+      echo "❌ TFLint found issues!"
+      exit 1
+    }
+  else
+    echo "   → TFLint not installed, skipping (install: brew install tflint)"
+  fi
+
+  echo "✅ Terraform checks passed!"
 fi
 
 echo "✅ Pre-commit checks passed!"
