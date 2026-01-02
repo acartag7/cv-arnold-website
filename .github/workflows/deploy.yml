@@ -58,6 +58,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: '4.54.0'
           command: deploy --config wrangler.pages.toml
 
       - name: Comment preview URL on PR
