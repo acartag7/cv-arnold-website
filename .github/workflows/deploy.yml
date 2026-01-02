@@ -2,14 +2,19 @@
 # Automatically deploys:
 # - Production: on push to main
 # - Preview: on pull requests (with unique preview URL)
+#
+# TEMPORARILY DISABLED: OpenNext doesn't fully support Next.js 16 yet.
+# See: https://github.com/opennextjs/opennextjs-cloudflare/issues
+# TODO: Re-enable once Next.js 16 support is stable, or after downgrading.
 
 name: Deploy to Cloudflare Pages
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+  workflow_dispatch: # Manual trigger only for now
+  # push:
+  #   branches: [main]
+  # pull_request:
+  #   branches: [main]
 
 jobs:
   deploy:

@@ -720,8 +720,29 @@ interface FormStatusBarProps {
   errors: Record<string, unknown>
 }
 
+/**
+ * Recursively counts leaf error nodes in react-hook-form errors object.
+ * Handles nested objects like location.country, location.countryCode
+ */
+function countErrors(obj: Record<string, unknown>): number {
+  let count = 0
+  for (const key in obj) {
+    const value = obj[key]
+    if (value && typeof value === 'object') {
+      // If it has a 'message' property, it's a leaf error node
+      if ('message' in value) {
+        count++
+      } else {
+        // Otherwise recurse into nested object
+        count += countErrors(value as Record<string, unknown>)
+      }
+    }
+  }
+  return count
+}
+
 function FormStatusBar({ isDirty, isValid, errors }: FormStatusBarProps) {
-  const errorCount = Object.keys(errors).length
+  const errorCount = countErrors(errors)
 
   if (!isDirty) {
     return null
