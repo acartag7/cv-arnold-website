@@ -71,7 +71,7 @@ jobs:
         id: init
         run: |
           terraform init -input=false \
-            -backend-config="endpoints={s3=\"https://${{ secrets.CLOUDFLARE_ACCOUNT_ID }}.r2.cloudflarestorage.com\"}"
+            -backend-config="endpoints={s3=\"https://${{ secrets.CLOUDFLARE_ACCOUNT_ID }}.eu.r2.cloudflarestorage.com\"}"
 
       - name: Terraform Validate
         id: validate

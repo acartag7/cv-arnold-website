@@ -78,7 +78,7 @@ resource "cloudflare_worker_domain" "cv_site" {
 resource "cloudflare_r2_bucket" "cv_assets" {
   account_id = var.cloudflare_account_id
   name       = "cv-assets"
-  location   = "WEUR" # Western Europe
+  location   = "EEUR" # Eastern Europe
 }
 
 # =============================================================================
