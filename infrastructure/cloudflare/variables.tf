@@ -66,6 +66,22 @@ variable "access_allowed_emails" {
   default     = ["cartagena.arnold@gmail.com", "awca22@gmail.com"]
 }
 
+# =============================================================================
+# GitHub OAuth (for Access Identity Provider)
+# =============================================================================
+
+variable "github_oauth_client_id" {
+  description = "GitHub OAuth App Client ID for Cloudflare Access"
+  type        = string
+  sensitive   = true
+}
+
+variable "github_oauth_client_secret" {
+  description = "GitHub OAuth App Client Secret for Cloudflare Access"
+  type        = string
+  sensitive   = true
+}
+
 # Note: KV namespace names and R2 bucket names are hardcoded in main.tf
 # to match existing resources created via Wrangler CLI.
 # See imports.tf for the import blocks that bring these into Terraform state.

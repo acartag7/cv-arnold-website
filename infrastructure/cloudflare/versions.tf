@@ -17,6 +17,7 @@ terraform {
     bucket                      = "terraform-state"
     key                         = "cv-arnold-website/terraform.tfstate"
     region                      = "auto"
+    encrypt                     = true # R2 encrypts by default, explicit for documentation
     skip_credentials_validation = true
     skip_metadata_api_check     = true
     skip_region_validation      = true

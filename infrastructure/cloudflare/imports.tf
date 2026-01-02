@@ -38,7 +38,16 @@ import {
 }
 
 # =============================================================================
-# Cloudflare Access (Application imported, Policy created by Terraform)
+# Cloudflare Access - Identity Providers
+# =============================================================================
+
+import {
+  to = cloudflare_zero_trust_access_identity_provider.github
+  id = "${var.cloudflare_account_id}/25849e22-6651-4117-b808-5bfe41e3f111"
+}
+
+# =============================================================================
+# Cloudflare Access - Application & Policy
 # =============================================================================
 
 import {

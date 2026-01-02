@@ -21,6 +21,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
+    "test:terraform": "cd infrastructure/cloudflare && bash test.sh",
     "prepare": "husky"
   },
   "dependencies": {

@@ -58,12 +58,30 @@ terraform apply
 
 ## Resources Managed
 
-| Resource                            | Description                            |
-| ----------------------------------- | -------------------------------------- |
-| `cloudflare_workers_kv_namespace`   | KV storage for CV data                 |
-| `cloudflare_worker_domain`          | Custom domain (cv.arnoldcartagena.com) |
-| `cloudflare_zone_settings_override` | Security & performance settings        |
-| `cloudflare_r2_bucket`              | (Optional) Image storage               |
+| Resource                                   | Description                            |
+| ------------------------------------------ | -------------------------------------- |
+| `cloudflare_workers_kv_namespace`          | KV storage for CV data, rate limiting  |
+| `cloudflare_workers_domain`                | Custom domain (cv.arnoldcartagena.com) |
+| `cloudflare_zone_settings_override`        | Security & performance settings        |
+| `cloudflare_r2_bucket`                     | Image storage                          |
+| `cloudflare_zero_trust_access_application` | Admin portal protection                |
+| `cloudflare_zero_trust_access_policy`      | Access control policy                  |
+
+## State Locking
+
+⚠️ **IMPORTANT:** This configuration does not include state locking.
+R2 doesn't support DynamoDB-style locking natively.
+
+**Best Practices:**
+
+- Only CI/CD pipeline should apply changes (automated via GitHub Actions on merge to main)
+- Manual applies should be avoided in favor of `workflow_dispatch`
+- If manual apply is necessary, coordinate with team to avoid concurrent modifications
+
+**Future Options:**
+
+- Implement custom locking using Cloudflare Workers KV
+- Use Terraform Cloud (free tier) for built-in state locking
 
 ## Environment Variables
 
@@ -77,13 +95,15 @@ terraform apply
 
 For GitHub Actions, add these repository secrets:
 
-| Secret                          | Description                      | Where to Find                                 |
-| ------------------------------- | -------------------------------- | --------------------------------------------- |
-| `CLOUDFLARE_API_TOKEN`          | API token for Terraform provider | Cloudflare Dashboard → Profile → API Tokens   |
-| `CLOUDFLARE_ACCOUNT_ID`         | Your Cloudflare Account ID       | Dashboard → Account Home (right sidebar)      |
-| `CLOUDFLARE_ZONE_ID`            | Zone ID for your domain          | Dashboard → Domain → Overview (right sidebar) |
-| `TF_STATE_R2_ACCESS_KEY_ID`     | R2 API token Access Key          | R2 → Manage R2 API Tokens                     |
-| `TF_STATE_R2_SECRET_ACCESS_KEY` | R2 API token Secret              | (generated with access key)                   |
+| Secret                          | Description                      | Where to Find                                       |
+| ------------------------------- | -------------------------------- | --------------------------------------------------- |
+| `CLOUDFLARE_API_TOKEN`          | API token for Terraform provider | Cloudflare Dashboard → Profile → API Tokens         |
+| `CLOUDFLARE_ACCOUNT_ID`         | Your Cloudflare Account ID       | Dashboard → Account Home (right sidebar)            |
+| `CLOUDFLARE_ZONE_ID`            | Zone ID for your domain          | Dashboard → Domain → Overview (right sidebar)       |
+| `TF_STATE_R2_ACCESS_KEY_ID`     | R2 API token Access Key          | R2 → Manage R2 API Tokens                           |
+| `TF_STATE_R2_SECRET_ACCESS_KEY` | R2 API token Secret              | (generated with access key)                         |
+| `GITHUB_OAUTH_CLIENT_ID`        | GitHub OAuth App Client ID       | GitHub → Settings → Developer settings → OAuth Apps |
+| `GITHUB_OAUTH_CLIENT_SECRET`    | GitHub OAuth App Client Secret   | (generated when creating OAuth app)                 |
 
 The workflow automatically:
 

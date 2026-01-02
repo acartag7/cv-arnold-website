@@ -123,6 +123,21 @@ resource "cloudflare_r2_bucket" "cv_assets" {
 # }
 
 # =============================================================================
+# Cloudflare Access - Identity Provider (GitHub)
+# =============================================================================
+
+resource "cloudflare_zero_trust_access_identity_provider" "github" {
+  account_id = var.cloudflare_account_id
+  name       = "GitHub"
+  type       = "github"
+
+  config {
+    client_id     = var.github_oauth_client_id
+    client_secret = var.github_oauth_client_secret
+  }
+}
+
+# =============================================================================
 # Cloudflare Access - Admin Protection
 # =============================================================================
 
