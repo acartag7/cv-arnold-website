@@ -87,7 +87,7 @@ export function PersonalInfoFormStripe({
     mode: 'onChange',
   })
 
-  // eslint-disable-next-line react-hooks/incompatible-library -- watch() is intentional for reactive form updates
+  // watch() is used intentionally for reactive form updates
   const currentAvailability = watch('availability.status')
 
   const handleFormSubmit = handleSubmit(async data => {
