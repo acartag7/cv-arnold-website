@@ -6,7 +6,11 @@ main = "src/index.ts"
 compatibility_date = "2025-01-19"
 compatibility_flags = ["nodejs_compat"]
 
-# Workers Site configuration (for static assets)
+# Cloudflare Pages configuration (for Next.js with next-on-pages)
+# This enables Pages to use wrangler.toml settings
+pages_build_output_dir = ".vercel/output/static"
+
+# Workers Site configuration (for static assets - used by Workers, not Pages)
 [site]
 bucket = "./out"  # Next.js static export output directory
 
