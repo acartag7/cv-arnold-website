@@ -11,12 +11,6 @@
 
 locals {
   full_domain = "${var.subdomain}.${var.domain}"
-
-  common_tags = {
-    Project     = "cv-arnold-website"
-    Environment = var.environment
-    ManagedBy   = "terraform"
-  }
 }
 
 # =============================================================================
@@ -27,6 +21,10 @@ locals {
 resource "cloudflare_workers_kv_namespace" "cv_data" {
   account_id = var.cloudflare_account_id
   title      = "CV_DATA"
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 # Rate limiting counters
@@ -39,6 +37,10 @@ resource "cloudflare_workers_kv_namespace" "rate_limit" {
 resource "cloudflare_workers_kv_namespace" "cv_history" {
   account_id = var.cloudflare_account_id
   title      = "CV_HISTORY"
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 # =============================================================================
@@ -104,6 +106,10 @@ resource "cloudflare_r2_bucket" "cv_assets" {
   account_id = var.cloudflare_account_id
   name       = "cv-assets"
   location   = "EEUR" # Eastern Europe
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 # =============================================================================

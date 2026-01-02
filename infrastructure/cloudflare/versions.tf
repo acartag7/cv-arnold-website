@@ -2,7 +2,7 @@
 # Compatible with both Terraform and OpenTofu
 
 terraform {
-  required_version = ">= 1.0.0"
+  required_version = "~> 1.14.0"
 
   required_providers {
     cloudflare = {
