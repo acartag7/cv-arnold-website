@@ -269,9 +269,7 @@ export function PersonalInfoFormStripe({
               >
                 <FormInput
                   {...register('location.countryCode', {
-                    onChange: e => {
-                      e.target.value = e.target.value.toUpperCase()
-                    },
+                    setValueAs: (value: string) => value?.toUpperCase() ?? '',
                   })}
                   placeholder="US"
                   maxLength={2}

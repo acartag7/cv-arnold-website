@@ -23,11 +23,17 @@ const securityHeaders = [
   },
   {
     // Content Security Policy - defense against XSS and injection attacks
+    // NOTE: 'unsafe-inline' and 'unsafe-eval' are required by Next.js for:
+    // - Client-side hydration (inline scripts for __NEXT_DATA__)
+    // - Dynamic code evaluation in development
+    // - Styled-jsx and CSS-in-JS solutions
+    // TODO: Implement nonce-based CSP for stricter security (Task backlog)
+    // See: https://nextjs.org/docs/app/building-your-application/configuring/content-security-policy
     key: 'Content-Security-Policy',
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // Next.js requires unsafe-inline/eval for hydration
-      "style-src 'self' 'unsafe-inline'", // Tailwind and inline styles
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+      "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https:",
       "font-src 'self' data:",
       "connect-src 'self' https:",
