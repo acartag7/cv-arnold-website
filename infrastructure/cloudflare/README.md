@@ -12,8 +12,25 @@ Infrastructure as Code (IaC) for the CV Arnold Website using Terraform/OpenTofu.
   - DNS: Edit
   - Zone: Read
   - Zone Settings: Edit
+- R2 bucket named `terraform-state` for remote state storage
+- R2 API Token with read/write access to the state bucket
 
-## Quick Start
+## State Backend Setup (R2)
+
+Before running Terraform, create an R2 bucket for state storage:
+
+1. **Create R2 Bucket:**
+   - Cloudflare Dashboard → R2 → Create bucket
+   - Name: `terraform-state`
+   - Location: Auto (or your preferred region)
+
+2. **Create R2 API Token:**
+   - Cloudflare Dashboard → R2 → Manage R2 API Tokens → Create API token
+   - Permissions: Object Read & Write
+   - Specify bucket: `terraform-state`
+   - Save the Access Key ID and Secret Access Key
+
+## Quick Start (Local)
 
 ```bash
 # Navigate to infrastructure directory
@@ -23,11 +40,14 @@ cd infrastructure/cloudflare
 cp terraform.tfvars.example terraform.tfvars
 # Edit terraform.tfvars with your Cloudflare Account ID and Zone ID
 
-# Set API token (don't commit this!)
+# Set environment variables (don't commit these!)
 export CLOUDFLARE_API_TOKEN="your-api-token"
+export AWS_ACCESS_KEY_ID="your-r2-access-key-id"
+export AWS_SECRET_ACCESS_KEY="your-r2-secret-access-key"
 
-# Initialize Terraform
-terraform init
+# Initialize Terraform with R2 backend
+terraform init \
+  -backend-config="endpoints={s3=\"https://YOUR_ACCOUNT_ID.r2.cloudflarestorage.com\"}"
 
 # Preview changes
 terraform plan
@@ -55,34 +75,21 @@ terraform apply
 
 ## CI/CD Integration
 
-For GitHub Actions, add these secrets:
+For GitHub Actions, add these repository secrets:
 
-- `CLOUDFLARE_API_TOKEN`
-- `TF_VAR_cloudflare_account_id`
-- `TF_VAR_cloudflare_zone_id`
+| Secret                          | Description                      | Where to Find                                 |
+| ------------------------------- | -------------------------------- | --------------------------------------------- |
+| `CLOUDFLARE_API_TOKEN`          | API token for Terraform provider | Cloudflare Dashboard → Profile → API Tokens   |
+| `CLOUDFLARE_ACCOUNT_ID`         | Your Cloudflare Account ID       | Dashboard → Account Home (right sidebar)      |
+| `CLOUDFLARE_ZONE_ID`            | Zone ID for your domain          | Dashboard → Domain → Overview (right sidebar) |
+| `TF_STATE_R2_ACCESS_KEY_ID`     | R2 API token Access Key          | R2 → Manage R2 API Tokens                     |
+| `TF_STATE_R2_SECRET_ACCESS_KEY` | R2 API token Secret              | (generated with access key)                   |
 
-## State Management
+The workflow automatically:
 
-For production use, configure a remote backend:
-
-### Option 1: Cloudflare R2 (Recommended)
-
-```hcl
-backend "s3" {
-  bucket = "terraform-state"
-  key    = "cv-arnold-website/terraform.tfstate"
-  # ... see versions.tf for full config
-}
-```
-
-### Option 2: Terraform Cloud
-
-```hcl
-cloud {
-  organization = "your-org"
-  workspaces { name = "cv-arnold-website" }
-}
-```
+- Plans on pull requests (posts comment with plan output)
+- Applies on merge to main
+- Supports manual trigger for plan/apply
 
 ## Security Notes
 

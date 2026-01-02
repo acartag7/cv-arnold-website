@@ -11,31 +11,20 @@ terraform {
     }
   }
 
-  # Remote state configuration (recommended for team/CI usage)
-  # Uncomment and configure for your backend:
-  #
-  # Option 1: Cloudflare R2 (S3-compatible)
-  # backend "s3" {
-  #   bucket                      = "terraform-state"
-  #   key                         = "cv-arnold-website/terraform.tfstate"
-  #   region                      = "auto"
-  #   skip_credentials_validation = true
-  #   skip_metadata_api_check     = true
-  #   skip_region_validation      = true
-  #   skip_requesting_account_id  = true
-  #   skip_s3_checksum            = true
-  #   endpoints = {
-  #     s3 = "https://<account_id>.r2.cloudflarestorage.com"
-  #   }
-  # }
-  #
-  # Option 2: Terraform Cloud
-  # cloud {
-  #   organization = "your-org"
-  #   workspaces {
-  #     name = "cv-arnold-website"
-  #   }
-  # }
+  # Remote state in Cloudflare R2 (S3-compatible)
+  # Credentials passed via -backend-config in CI or environment variables
+  backend "s3" {
+    bucket                      = "terraform-state"
+    key                         = "cv-arnold-website/terraform.tfstate"
+    region                      = "auto"
+    skip_credentials_validation = true
+    skip_metadata_api_check     = true
+    skip_region_validation      = true
+    skip_requesting_account_id  = true
+    skip_s3_checksum            = true
+    use_path_style              = true
+    # endpoints and credentials configured via -backend-config flags in CI
+  }
 }
 
 provider "cloudflare" {
