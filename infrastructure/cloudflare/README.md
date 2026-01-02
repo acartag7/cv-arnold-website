@@ -95,15 +95,15 @@ R2 doesn't support DynamoDB-style locking natively.
 
 For GitHub Actions, add these repository secrets:
 
-| Secret                          | Description                      | Where to Find                                       |
-| ------------------------------- | -------------------------------- | --------------------------------------------------- |
-| `CLOUDFLARE_API_TOKEN`          | API token for Terraform provider | Cloudflare Dashboard → Profile → API Tokens         |
-| `CLOUDFLARE_ACCOUNT_ID`         | Your Cloudflare Account ID       | Dashboard → Account Home (right sidebar)            |
-| `CLOUDFLARE_ZONE_ID`            | Zone ID for your domain          | Dashboard → Domain → Overview (right sidebar)       |
-| `TF_STATE_R2_ACCESS_KEY_ID`     | R2 API token Access Key          | R2 → Manage R2 API Tokens                           |
-| `TF_STATE_R2_SECRET_ACCESS_KEY` | R2 API token Secret              | (generated with access key)                         |
-| `GITHUB_OAUTH_CLIENT_ID`        | GitHub OAuth App Client ID       | GitHub → Settings → Developer settings → OAuth Apps |
-| `GITHUB_OAUTH_CLIENT_SECRET`    | GitHub OAuth App Client Secret   | (generated when creating OAuth app)                 |
+| Secret                           | Description                      | Where to Find                                   |
+| -------------------------------- | -------------------------------- | ----------------------------------------------- |
+| `CLOUDFLARE_API_TOKEN`           | API token for Terraform provider | Cloudflare Dashboard → Profile → API Tokens     |
+| `CLOUDFLARE_ACCOUNT_ID`          | Your Cloudflare Account ID       | Dashboard → Account Home (right sidebar)        |
+| `CLOUDFLARE_ZONE_ID`             | Zone ID for your domain          | Dashboard → Domain → Overview (right sidebar)   |
+| `TF_STATE_R2_ACCESS_KEY_ID`      | R2 API token Access Key          | R2 → Manage R2 API Tokens                       |
+| `TF_STATE_R2_SECRET_ACCESS_KEY`  | R2 API token Secret              | (generated with access key)                     |
+| `CF_ACCESS_GITHUB_CLIENT_ID`     | GitHub OAuth App Client ID       | Cloudflare Zero Trust → Authentication → GitHub |
+| `CF_ACCESS_GITHUB_CLIENT_SECRET` | GitHub OAuth App Client Secret   | (from Cloudflare Access GitHub IDP config)      |
 
 The workflow automatically:
 

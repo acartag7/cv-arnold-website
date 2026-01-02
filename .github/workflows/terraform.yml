@@ -40,8 +40,8 @@ env:
   AWS_ACCESS_KEY_ID: ${{ secrets.TF_STATE_R2_ACCESS_KEY_ID }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_STATE_R2_SECRET_ACCESS_KEY }}
   # GitHub OAuth (for Cloudflare Access IDP)
-  TF_VAR_github_oauth_client_id: ${{ secrets.GITHUB_OAUTH_CLIENT_ID }}
-  TF_VAR_github_oauth_client_secret: ${{ secrets.GITHUB_OAUTH_CLIENT_SECRET }}
+  TF_VAR_github_oauth_client_id: ${{ secrets.CF_ACCESS_GITHUB_CLIENT_ID }}
+  TF_VAR_github_oauth_client_secret: ${{ secrets.CF_ACCESS_GITHUB_CLIENT_SECRET }}
 
 jobs:
   terraform:
