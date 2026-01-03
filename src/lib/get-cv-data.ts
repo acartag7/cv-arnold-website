@@ -45,6 +45,22 @@ const DEFAULT_CONFIG: CVDataConfig = {
   fallbackPath: './src/data/cv-data.json',
 }
 
+/** Timeout for wrangler CLI operations (module-level to avoid re-parsing) */
+const KV_TIMEOUT_MS = parseInt(process.env.KV_FETCH_TIMEOUT_MS || '10000', 10)
+
+/**
+ * Type guard to validate KV binding shape at runtime
+ * Catches configuration errors with clear error messages
+ */
+function isCVDataKVBinding(value: unknown): value is CVDataKVBinding {
+  return (
+    value != null &&
+    typeof value === 'object' &&
+    'get' in value &&
+    typeof (value as CVDataKVBinding).get === 'function'
+  )
+}
+
 /**
  * Fetch CV data from Cloudflare KV using worker binding (runtime)
  *
@@ -64,18 +80,18 @@ async function fetchFromKVBinding(
     // Use async mode for server components
     const { env } = await getCloudflareContext({ async: true })
 
-    // Type assertion for CV_DATA binding (configured in wrangler.pages.toml)
-    const kvBinding = (env as Record<string, unknown>).CV_DATA as
-      | CVDataKVBinding
-      | undefined
-
-    if (!kvBinding) {
-      logger.warn('CV_DATA KV binding not available')
+    // Validate KV binding shape at runtime (catches configuration errors)
+    const potentialBinding = (env as Record<string, unknown>).CV_DATA
+    if (!isCVDataKVBinding(potentialBinding)) {
+      logger.warn('CV_DATA KV binding not available or invalid', {
+        hasBinding: potentialBinding != null,
+        bindingType: typeof potentialBinding,
+      })
       return null
     }
 
     // Fetch from KV binding directly
-    const data = await kvBinding.get(kvKey, 'json')
+    const data = await potentialBinding.get(kvKey, 'json')
 
     if (!data) {
       logger.warn('No data found in KV for key', { kvKey })
@@ -89,10 +105,24 @@ async function fetchFromKVBinding(
 
     return data
   } catch (error) {
-    // This is expected to fail during build time or local dev without bindings
-    logger.debug('KV binding fetch failed (expected during build)', {
-      error: error instanceof Error ? error.message : String(error),
-    })
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    const isCI = process.env.CI === 'true'
+
+    // Detect if we're in a build context (no Request global = not runtime)
+    const isBuildTime = typeof globalThis.Request === 'undefined'
+
+    if (isCI || isBuildTime) {
+      // Expected during build - use debug level
+      logger.debug('KV binding not available during build', {
+        error: errorMessage,
+      })
+    } else {
+      // Unexpected at runtime - potential misconfiguration
+      logger.warn('KV binding fetch failed at runtime', {
+        error: errorMessage,
+        hint: 'Check wrangler.pages.toml CV_DATA binding configuration',
+      })
+    }
     return null
   }
 }
@@ -113,11 +143,6 @@ async function fetchFromWranglerCLI(
     // Dynamic import to avoid bundling issues
     const { execFileSync } = await import('child_process')
 
-    const DEFAULT_KV_TIMEOUT = parseInt(
-      process.env.KV_FETCH_TIMEOUT_MS || '10000',
-      10
-    )
-
     // Use wrangler CLI to fetch from KV
     // Using execFileSync with argument array to prevent command injection
     const result = execFileSync(
@@ -133,7 +158,7 @@ async function fetchFromWranglerCLI(
       ],
       {
         encoding: 'utf-8',
-        timeout: DEFAULT_KV_TIMEOUT,
+        timeout: KV_TIMEOUT_MS,
         stdio: ['pipe', 'pipe', 'pipe'],
       }
     )
