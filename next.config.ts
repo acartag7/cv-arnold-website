@@ -1,11 +1,28 @@
 import type { NextConfig } from 'next'
-import { initOpenNextCloudflareForDev } from '@opennextjs/cloudflare'
 
-// Initialize Cloudflare bindings for local development
+// Initialize Cloudflare bindings for local development ONLY
 // This enables getCloudflareContext() to work with `next dev`
 // by using wrangler's getPlatformProxy under the hood
-if (process.env.NODE_ENV === 'development') {
-  initOpenNextCloudflareForDev()
+//
+// Guards prevent execution during:
+// - Production builds (NODE_ENV=production)
+// - CI builds (CI=true)
+// - Test runs (VITEST=true)
+const shouldInitCloudflare =
+  process.env.NODE_ENV === 'development' &&
+  process.env.CI !== 'true' &&
+  process.env.VITEST !== 'true'
+
+if (shouldInitCloudflare) {
+  // Dynamic import to avoid bundling issues during build
+  import('@opennextjs/cloudflare')
+    .then(({ initOpenNextCloudflareForDev }) => {
+      initOpenNextCloudflareForDev()
+    })
+    .catch(() => {
+      // Silently ignore - bindings won't be available but app will still work
+      // This can happen if wrangler isn't installed or configured
+    })
 }
 
 const securityHeaders = [

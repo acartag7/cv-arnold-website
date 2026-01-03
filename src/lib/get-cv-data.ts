@@ -218,11 +218,16 @@ async function fetchFromFile(): Promise<CVData | null> {
 /**
  * Get CV data from the best available source
  *
- * Priority (runtime - Cloudflare Workers):
- * 1. KV binding via getCloudflareContext (fastest, real-time)
- * 2. Local JSON file (fallback)
+ * Data Source Strategy:
  *
- * Priority (build-time - CI/local build):
+ * **Runtime (Cloudflare Workers):**
+ * 1. KV binding via getCloudflareContext (fastest, real-time)
+ * 2. Local JSON file (fallback - embedded in build)
+ *
+ * Note: Wrangler CLI is NOT used at runtime because it's a Node.js CLI tool
+ * that cannot execute in the Cloudflare Workers JavaScript runtime.
+ *
+ * **Build-time (CI/local build):**
  * 1. Wrangler CLI to KV (requires wrangler auth)
  * 2. Local JSON file (fallback)
  *
@@ -238,6 +243,8 @@ export async function getCVData(
   const isCI = process.env.CI === 'true'
 
   // At runtime on Cloudflare Workers, try KV binding first (fastest path)
+  // Note: If KV binding fails at runtime, we fall back to local file (not CLI)
+  // because wrangler CLI cannot run in Workers runtime.
   if (!isCI) {
     logger.debug('Attempting to fetch from KV binding')
     const bindingData = await fetchFromKVBinding(config.kvKey)
@@ -245,9 +252,12 @@ export async function getCVData(
       logger.info('Successfully fetched from KV binding')
       return bindingData
     }
+    // KV binding failed - this is unexpected at runtime
+    // Fall through to local file fallback
+    logger.debug('KV binding not available, will use local file fallback')
   }
 
-  // During CI/build, use wrangler CLI
+  // During CI/build, use wrangler CLI (Node.js environment)
   if (isCI) {
     logger.info('CI detected, attempting wrangler CLI fetch')
     const cliData = await fetchFromWranglerCLI(config)
@@ -258,7 +268,7 @@ export async function getCVData(
     logger.info('Wrangler CLI fetch failed, falling back to local file')
   }
 
-  // Fall back to local file
+  // Fall back to local file (always available - embedded in build)
   const fileData = await fetchFromFile()
   if (fileData) {
     logger.info('Using local file data')
