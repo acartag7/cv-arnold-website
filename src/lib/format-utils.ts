@@ -131,3 +131,21 @@ export function sanitizeUrl(
 
   return isValidUrl(url) ? url : undefined
 }
+
+/**
+ * Generate a unique ID with a prefix
+ *
+ * Creates IDs in the format: `{prefix}-{timestamp}-{random}`
+ * Uses timestamp for rough ordering and random string for uniqueness.
+ *
+ * @param prefix - Prefix for the ID (e.g., 'exp', 'cert', 'cat')
+ * @returns Unique ID string
+ *
+ * @example
+ * generateId('exp')   // 'exp-1704067200000-k7j2m9x3q'
+ * generateId('cert')  // 'cert-1704067200001-p8f4n2w6r'
+ * generateId('toast') // 'toast-1704067200002-m3k9j5v8t'
+ */
+export function generateId(prefix: string): string {
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`
+}
