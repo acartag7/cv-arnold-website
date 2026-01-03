@@ -1,6 +1,9 @@
 # Ignore Claude Code context file (internal documentation)
 CLAUDE.md
 
+# Auto-generated files
+CHANGELOG.md
+
 # Ignore node_modules and build outputs
 node_modules/
 .next/
