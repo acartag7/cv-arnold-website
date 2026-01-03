@@ -50,9 +50,9 @@ variable "worker_name" {
 # =============================================================================
 
 variable "enable_dev_environment" {
-  description = "Enable dev environment (dev-cv.domain.com + api-dev.domain.com). Requires dev workers to be deployed first."
+  description = "Enable dev environment (dev-cv.domain.com + api-dev.domain.com)"
   type        = bool
-  default     = false # Disabled by default - enable after deploying dev workers
+  default     = true
 }
 
 # =============================================================================
