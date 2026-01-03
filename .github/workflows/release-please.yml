@@ -55,19 +55,11 @@ jobs:
     if: ${{ needs.release-please.outputs.pr && !needs.release-please.outputs.release_created }}
     runs-on: ubuntu-latest
     steps:
-      - name: Get PR head ref
-        id: pr-info
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          PR_NUMBER="${{ needs.release-please.outputs.pr }}"
-          HEAD_REF=$(gh pr view "$PR_NUMBER" --repo "${{ github.repository }}" --json headRefName -q '.headRefName')
-          echo "head_ref=$HEAD_REF" >> $GITHUB_OUTPUT
-
       - name: Checkout release branch
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          ref: ${{ steps.pr-info.outputs.head_ref }}
+          # Extract headBranchName from the pr JSON output
+          ref: ${{ fromJSON(needs.release-please.outputs.pr).headBranchName }}
 
       - name: Setup Node.js 20.x
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
