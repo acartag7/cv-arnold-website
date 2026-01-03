@@ -18,10 +18,18 @@ if (shouldInitCloudflare) {
   import('@opennextjs/cloudflare')
     .then(({ initOpenNextCloudflareForDev }) => {
       initOpenNextCloudflareForDev()
+
+      console.log('[next.config] Cloudflare bindings initialized for local dev')
     })
-    .catch(() => {
-      // Silently ignore - bindings won't be available but app will still work
-      // This can happen if wrangler isn't installed or configured
+    .catch((error: Error) => {
+      // Log warning but don't fail - app will still work with local file fallback
+
+      console.warn(
+        '[next.config] Failed to initialize Cloudflare bindings:',
+        error.message,
+        '\n  → KV bindings will not be available during local development',
+        '\n  → App will fall back to local cv-data.json'
+      )
     })
 }
 
