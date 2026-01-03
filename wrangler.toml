@@ -61,19 +61,19 @@ enabled = true
 name = "cv-arnold-api-dev"
 
 # Dev KV Namespaces (isolated from production)
-# Note: IDs will be populated after Terraform apply creates the namespaces
-# Run: terraform output kv_namespace_ids_dev
+# These are the renamed staging namespaces (CV_DATA_STAGING → CV_DATA_DEV, etc.)
+# To verify IDs: cd infrastructure/cloudflare && terraform output kv_namespace_ids_dev
 [[env.dev.kv_namespaces]]
 binding = "CV_DATA"
-id = "CV_DATA_DEV_ID_PLACEHOLDER"
+id = "80606d373eff4764b8756c28026fdae9"
 
 [[env.dev.kv_namespaces]]
 binding = "RATE_LIMIT_KV"
-id = "RATE_LIMIT_KV_DEV_ID_PLACEHOLDER"
+id = "07d3925af5594accb6bae93f7e9ba4ec"
 
 [[env.dev.kv_namespaces]]
 binding = "CV_HISTORY"
-id = "CV_HISTORY_DEV_ID_PLACEHOLDER"
+id = "169821c5c47344688128023a671f74a5"
 
 # Dev R2 Bucket (same bucket, different prefix could be used)
 [[env.dev.r2_buckets]]
