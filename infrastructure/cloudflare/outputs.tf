@@ -1,84 +1,111 @@
-# Terraform Outputs
+# Terraform Outputs for CV Arnold Website
 #
-# These values are displayed after apply and can be used
-# in CI/CD pipelines or other Terraform configurations.
+# These outputs provide the resource IDs and URLs needed for:
+# - Wrangler configuration (KV namespace IDs)
+# - CI/CD pipeline configuration
+# - Documentation
 
 # =============================================================================
-# KV Namespaces
+# URLs - Production
 # =============================================================================
 
-output "kv_cv_data_id" {
-  description = "ID of the CV_DATA KV namespace"
-  value       = cloudflare_workers_kv_namespace.cv_data.id
-}
-
-output "kv_rate_limit_id" {
-  description = "ID of the RATE_LIMIT_KV namespace"
-  value       = cloudflare_workers_kv_namespace.rate_limit.id
-}
-
-output "kv_cv_history_id" {
-  description = "ID of the CV_HISTORY KV namespace"
-  value       = cloudflare_workers_kv_namespace.cv_history.id
+output "production_urls" {
+  description = "Production environment URLs"
+  value = {
+    frontend = "https://${local.prod_frontend}"
+    admin    = "https://${local.prod_frontend}/admin"
+    api      = "https://${local.prod_api}"
+  }
 }
 
 # =============================================================================
-# Custom Domain
+# URLs - Dev Environment
 # =============================================================================
 
-output "custom_domain" {
-  description = "Custom domain for the CV website"
-  value       = cloudflare_workers_domain.cv_site.hostname
-}
-
-output "worker_url" {
-  description = "URL of the CV website"
-  value       = "https://${cloudflare_workers_domain.cv_site.hostname}"
+output "dev_urls" {
+  description = "Dev environment URLs (null if dev environment disabled)"
+  value = var.enable_dev_environment ? {
+    frontend = "https://${local.dev_frontend}"
+    admin    = "https://${local.dev_frontend}/admin"
+    api      = "https://${local.dev_api}"
+  } : null
 }
 
 # =============================================================================
-# R2 Storage
+# KV Namespace IDs - Production
+# =============================================================================
+
+output "kv_namespace_ids_prod" {
+  description = "Production KV namespace IDs for wrangler.toml"
+  value = {
+    cv_data    = cloudflare_workers_kv_namespace.cv_data.id
+    rate_limit = cloudflare_workers_kv_namespace.rate_limit.id
+    cv_history = cloudflare_workers_kv_namespace.cv_history.id
+  }
+}
+
+# =============================================================================
+# KV Namespace IDs - Dev Environment
+# =============================================================================
+
+output "kv_namespace_ids_dev" {
+  description = "Dev KV namespace IDs for wrangler.toml"
+  value = {
+    cv_data    = cloudflare_workers_kv_namespace.cv_data_dev.id
+    rate_limit = cloudflare_workers_kv_namespace.rate_limit_dev.id
+    cv_history = cloudflare_workers_kv_namespace.cv_history_dev.id
+  }
+}
+
+# =============================================================================
+# Worker Names
+# =============================================================================
+
+output "worker_names" {
+  description = "Worker names for deployment"
+  value = {
+    frontend_prod = local.frontend_worker_prod
+    frontend_dev  = local.frontend_worker_dev
+    api_prod      = local.api_worker_prod
+    api_dev       = local.api_worker_dev
+  }
+}
+
+# =============================================================================
+# R2 Bucket
 # =============================================================================
 
 output "r2_bucket_name" {
-  description = "Name of the R2 bucket for CV assets"
+  description = "R2 bucket name for asset storage"
   value       = cloudflare_r2_bucket.cv_assets.name
 }
 
 # =============================================================================
-# Staging Environment (when enabled)
+# Cloudflare Access
 # =============================================================================
 
-output "staging_kv_cv_data_id" {
-  description = "ID of the staging CV_DATA KV namespace"
-  value       = cloudflare_workers_kv_namespace.cv_data_staging.id
-}
-
-output "staging_kv_rate_limit_id" {
-  description = "ID of the staging RATE_LIMIT_KV namespace"
-  value       = cloudflare_workers_kv_namespace.rate_limit_staging.id
-}
-
-output "staging_domain" {
-  description = "Staging domain (if enabled)"
-  value       = var.enable_staging ? cloudflare_workers_domain.cv_site_staging[0].hostname : null
-}
-
-output "staging_url" {
-  description = "Staging URL (if enabled)"
-  value       = var.enable_staging ? "https://${cloudflare_workers_domain.cv_site_staging[0].hostname}" : null
+output "access_application_ids" {
+  description = "Cloudflare Access application IDs"
+  value = {
+    admin = cloudflare_zero_trust_access_application.admin.id
+    api   = cloudflare_zero_trust_access_application.api.id
+  }
 }
 
 # =============================================================================
-# Cloudflare Access (managed via Dashboard)
-# =============================================================================
-# AUD for JWT verification: 20f09cf4ff703120bd78d2cc3005e7fb86f3f7017d401aad3c777772d1f883f8
-
-# =============================================================================
-# Environment
+# Domain Configuration (for reference)
 # =============================================================================
 
-output "environment" {
-  description = "Current environment"
-  value       = var.environment
+output "domains" {
+  description = "All configured domains"
+  value = {
+    production = {
+      frontend = local.prod_frontend
+      api      = local.prod_api
+    }
+    dev = var.enable_dev_environment ? {
+      frontend = local.dev_frontend
+      api      = local.dev_api
+    } : null
+  }
 }

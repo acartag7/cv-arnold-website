@@ -1,13 +1,31 @@
 # Deploy API Worker to Cloudflare
-# Deploys the API worker (src/index.ts) using wrangler.toml
-# Separate from the frontend deployment
+#
+# Trunk-Based Development with Release Tags:
+# - Push to main → Deploy to dev (api-dev.arnoldcartagena.com)
+# - Release tag (v*) → Deploy to production (api.arnoldcartagena.com)
+#
+# Manual deployment is also available via workflow_dispatch.
+#
+# Note: This workflow deploys src/index.ts using wrangler.toml
+# Separate from the frontend (Next.js) deployment.
 
 name: Deploy API Worker
 
 on:
-  workflow_dispatch: # Manual trigger
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - production
+          - dev
   push:
     branches: [main]
+    tags:
+      - 'v*'
     paths:
       - 'src/workers/**'
       - 'src/index.ts'
@@ -19,6 +37,14 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+
+    env:
+      # Determine environment based on trigger:
+      # - Tag (v*) → production
+      # - Manual input → as specified
+      # - Push to main → dev
+      DEPLOY_ENV: ${{ (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) && 'production' || github.event.inputs.environment || 'dev' }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -50,10 +76,36 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Deploy API Worker
+      - name: Deploy API to Production
+        if: env.DEPLOY_ENV == 'production'
         uses: cloudflare/wrangler-action@392082e81ffbcb9ebdde27400634aa004b35ea37 # v3.14.1
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           wranglerVersion: '4.54.0'
           command: deploy --config wrangler.toml
+
+      - name: Deploy API to Dev
+        if: env.DEPLOY_ENV == 'dev'
+        uses: cloudflare/wrangler-action@392082e81ffbcb9ebdde27400634aa004b35ea37 # v3.14.1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: '4.54.0'
+          command: deploy --config wrangler.toml --env dev
+
+      - name: Deployment Summary
+        run: |
+          echo "## API Worker Deployment Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Environment | ${{ env.DEPLOY_ENV }} |" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ env.DEPLOY_ENV }}" = "production" ]; then
+            echo "| API URL | https://api.arnoldcartagena.com |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| API URL | https://api-dev.arnoldcartagena.com |" >> $GITHUB_STEP_SUMMARY
+          fi
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            echo "| Release Tag | ${{ github.ref_name }} |" >> $GITHUB_STEP_SUMMARY
+          fi

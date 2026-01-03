@@ -1,31 +1,22 @@
-# Cloudflare Workers configuration for CV Arnold Website
+# Cloudflare Workers Configuration - API Worker
 # https://developers.cloudflare.com/workers/configuration/
+#
+# Enterprise Architecture:
+# - Production: api.arnoldcartagena.com (cv-arnold-api)
+# - Dev: api-dev.arnoldcartagena.com (cv-arnold-api-dev)
+#
+# Deploy commands:
+#   Production: wrangler deploy
+#   Dev: wrangler deploy --env dev
 
 name = "cv-arnold-api"
 main = "src/index.ts"
 compatibility_date = "2025-01-19"
 compatibility_flags = ["nodejs_compat"]
 
-# Note: The Next.js frontend is deployed via OpenNext (see wrangler.pages.toml)
-# This wrangler.toml is for the API worker (src/workers/)
-
-# KV Namespace Bindings
-#
-# TO CREATE THE NAMESPACE (choose one method):
-#
-# Method 1 - Wrangler CLI (in your terminal, not Claude Code):
-#   npx wrangler login
-#   npx wrangler kv namespace create CV_DATA
-#   # Copy the ID from output
-#
-# Method 2 - Cloudflare Dashboard:
-#   1. Go to Cloudflare dashboard → Workers & Pages → KV
-#   2. Click "Create namespace" → Name it "CV_DATA"
-#   3. Copy the namespace ID from the list
-#
-# Then replace "YOUR_KV_NAMESPACE_ID" below with the actual ID
-#
-# For local development, Miniflare will automatically emulate KV (no setup needed)
+# =============================================================================
+# Production KV Namespaces
+# =============================================================================
 
 [[kv_namespaces]]
 binding = "CV_DATA"
@@ -39,22 +30,57 @@ id = "30a87d8776c04d54a423fdd4e84cba5f"
 binding = "CV_HISTORY"
 id = "0c0ada9ed85a427fb87b97bd5761e407"
 
-# R2 Bucket for images and backups
-# Free tier: 10GB storage, 1M writes/month, 10M reads/month
+# =============================================================================
+# R2 Bucket (shared between environments)
+# =============================================================================
+
 [[r2_buckets]]
 binding = "CV_ASSETS"
 bucket_name = "cv-assets"
 
-# Build configuration
-[build]
-command = "pnpm build"
-cwd = "."
-watch_dirs = ["src"]
+# =============================================================================
+# Production Environment Variables
+# =============================================================================
 
-# Environment variables
 [vars]
-ALLOWED_ORIGINS = "https://cv-arnold-website.cartagena-arnold.workers.dev,https://cv.arnoldcartagena.com,https://arnoldcartagena.com,http://localhost:3000"
+ENVIRONMENT = "production"
+ALLOWED_ORIGINS = "https://cv.arnoldcartagena.com,https://api.arnoldcartagena.com,http://localhost:3000"
 
-# Observability (available on all plans)
+# =============================================================================
+# Observability
+# =============================================================================
+
 [observability]
 enabled = true
+
+# =============================================================================
+# Dev Environment
+# =============================================================================
+
+[env.dev]
+name = "cv-arnold-api-dev"
+
+# Dev KV Namespaces (isolated from production)
+# These are the renamed staging namespaces (CV_DATA_STAGING → CV_DATA_DEV, etc.)
+# To verify IDs: cd infrastructure/cloudflare && terraform output kv_namespace_ids_dev
+[[env.dev.kv_namespaces]]
+binding = "CV_DATA"
+id = "80606d373eff4764b8756c28026fdae9"
+
+[[env.dev.kv_namespaces]]
+binding = "RATE_LIMIT_KV"
+id = "07d3925af5594accb6bae93f7e9ba4ec"
+
+[[env.dev.kv_namespaces]]
+binding = "CV_HISTORY"
+id = "169821c5c47344688128023a671f74a5"
+
+# Dev R2 Bucket (same bucket, different prefix could be used)
+[[env.dev.r2_buckets]]
+binding = "CV_ASSETS"
+bucket_name = "cv-assets"
+
+# Dev Environment Variables
+[env.dev.vars]
+ENVIRONMENT = "dev"
+ALLOWED_ORIGINS = "https://dev-cv.arnoldcartagena.com,https://api-dev.arnoldcartagena.com,http://localhost:3000"

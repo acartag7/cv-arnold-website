@@ -1,9 +1,15 @@
 # Input Variables for Cloudflare Infrastructure
 #
+# Enterprise Architecture Variables
+#
 # Set these via:
 # - terraform.tfvars (git-ignored, for local development)
 # - Environment variables: TF_VAR_<name>
 # - CI/CD secrets (recommended for production)
+
+# =============================================================================
+# Cloudflare Account & Zone
+# =============================================================================
 
 variable "cloudflare_account_id" {
   description = "Cloudflare Account ID"
@@ -17,6 +23,10 @@ variable "cloudflare_zone_id" {
   sensitive   = true
 }
 
+# =============================================================================
+# Domain Configuration
+# =============================================================================
+
 variable "domain" {
   description = "Base domain name"
   type        = string
@@ -24,56 +34,40 @@ variable "domain" {
 }
 
 variable "subdomain" {
-  description = "Subdomain for the CV site"
+  description = "Subdomain for the CV site (e.g., 'cv' for cv.domain.com)"
   type        = string
   default     = "cv"
 }
 
 variable "worker_name" {
-  description = "Name of the Cloudflare Worker"
+  description = "Base name for Cloudflare Workers"
   type        = string
   default     = "cv-arnold-website"
 }
 
-variable "environment" {
-  description = "Environment name (production, staging)"
-  type        = string
-  default     = "production"
-
-  validation {
-    condition     = contains(["production", "staging"], var.environment)
-    error_message = "Environment must be 'production' or 'staging'."
-  }
-}
-
 # =============================================================================
-# Staging Environment
+# Environment Configuration
 # =============================================================================
 
-variable "enable_staging" {
-  description = "Enable staging environment resources (KV namespaces, worker domain)"
-  type        = bool
-  default     = false
-}
-
-variable "enable_dev_access" {
-  description = "Enable dev/staging domain in Cloudflare Access (dev-<subdomain>.<domain>/admin)"
+variable "enable_dev_environment" {
+  description = "Enable dev environment (dev-cv.domain.com + api-dev.domain.com)"
   type        = bool
   default     = true
 }
 
 # =============================================================================
-# Cloudflare Access
+# Cloudflare Access (Zero Trust)
 # =============================================================================
 
 variable "access_allowed_emails" {
-  description = "List of email addresses allowed to access the admin portal. Set via TF_VAR_access_allowed_emails environment variable as JSON array, e.g., '[\"user@example.com\"]'"
+  description = "Email addresses allowed to access admin portal and API"
   type        = list(string)
   # No default - must be provided via environment variable or tfvars
+  # Example: TF_VAR_access_allowed_emails='["user@example.com"]'
 }
 
 # =============================================================================
-# GitHub OAuth (for Access Identity Provider)
+# GitHub OAuth (for Cloudflare Access Identity Provider)
 # =============================================================================
 
 variable "github_oauth_client_id" {
@@ -87,7 +81,3 @@ variable "github_oauth_client_secret" {
   type        = string
   sensitive   = true
 }
-
-# Note: KV namespace names and R2 bucket names are hardcoded in main.tf
-# to match existing resources created via Wrangler CLI.
-# See imports.tf for the import blocks that bring these into Terraform state.
