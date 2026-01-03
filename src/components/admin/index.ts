@@ -22,3 +22,6 @@ export { TagInput } from './TagInput'
 export type { TagInputProps } from './TagInput'
 export { DatePicker } from './DatePicker'
 export type { DatePickerProps } from './DatePicker'
+
+// Error handling
+export { AdminErrorFallback } from './AdminErrorFallback'

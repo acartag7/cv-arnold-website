@@ -25,6 +25,8 @@ import {
 import { createQueryClient } from '@/lib/queryClient'
 import { ThemeSwitcher } from '@/components/ui/ThemeSwitcher'
 import { ToastProvider } from '@/components/ui/ToastProvider'
+import { ErrorBoundary } from '@/components/common/ErrorBoundary'
+import { AdminErrorFallback } from '@/components/admin'
 
 interface AdminLayoutClientProps {
   children: React.ReactNode
@@ -264,7 +266,11 @@ export function AdminLayoutClient({
             ${sidebarOpen ? 'md:ml-64' : 'md:ml-16'}
           `}
           >
-            <div className="p-4 md:p-6 lg:p-8">{children}</div>
+            <div className="p-4 md:p-6 lg:p-8">
+              <ErrorBoundary fallback={<AdminErrorFallback />}>
+                {children}
+              </ErrorBoundary>
+            </div>
           </main>
         </div>
       </ToastProvider>
