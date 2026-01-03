@@ -1,5 +1,38 @@
 import type { NextConfig } from 'next'
 
+// Initialize Cloudflare bindings for local development ONLY
+// This enables getCloudflareContext() to work with `next dev`
+// by using wrangler's getPlatformProxy under the hood
+//
+// Guards prevent execution during:
+// - Production builds (NODE_ENV=production)
+// - CI builds (CI=true)
+// - Test runs (VITEST=true)
+const shouldInitCloudflare =
+  process.env.NODE_ENV === 'development' &&
+  process.env.CI !== 'true' &&
+  process.env.VITEST !== 'true'
+
+if (shouldInitCloudflare) {
+  // Dynamic import to avoid bundling issues during build
+  import('@opennextjs/cloudflare')
+    .then(({ initOpenNextCloudflareForDev }) => {
+      initOpenNextCloudflareForDev()
+
+      console.log('[next.config] Cloudflare bindings initialized for local dev')
+    })
+    .catch((error: Error) => {
+      // Log warning but don't fail - app will still work with local file fallback
+
+      console.warn(
+        '[next.config] Failed to initialize Cloudflare bindings:',
+        error.message,
+        '\n  → KV bindings will not be available during local development',
+        '\n  → App will fall back to local cv-data.json'
+      )
+    })
+}
+
 const securityHeaders = [
   {
     key: 'X-Content-Type-Options',

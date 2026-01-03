@@ -39,12 +39,14 @@ async function safeFetchCVData(): Promise<CVData | null> {
 /**
  * CV Website - Main Page (Server Component)
  *
- * This server component fetches CV data at build time (SSG)
- * and passes it to the client component for rendering.
+ * This server component fetches CV data at request time (SSR)
+ * from Cloudflare KV and passes it to the client component.
  *
  * Data sources (in priority order):
- * 1. Cloudflare KV (production/CI builds)
+ * 1. Cloudflare KV binding (runtime, via getCloudflareContext)
  * 2. Local cv-data.json (development fallback)
+ *
+ * Changes made in the admin CMS are reflected within the cache duration.
  */
 export default async function HomePage() {
   const cvData = await safeFetchCVData()
@@ -57,8 +59,10 @@ export default async function HomePage() {
 }
 
 /**
- * Static generation configuration
- * Ensures the page is statically generated at build time
+ * SSR with edge caching configuration
+ *
+ * - revalidate: Cache duration in seconds (60s = 1 minute)
+ * - After cache expires, next request triggers fresh KV fetch
+ * - Edge caching keeps performance fast while allowing updates
  */
-export const dynamic = 'force-static'
-export const revalidate = false
+export const revalidate = 60
