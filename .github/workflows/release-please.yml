@@ -15,6 +15,9 @@
 # - fix: → Patch version bump (1.0.0 → 1.0.1)
 # - feat!: or BREAKING CHANGE: → Major version bump (1.0.0 → 2.0.0)
 # - chore:, docs:, style:, refactor:, test: → No version bump
+#
+# Note: Uses PAT (RELEASE_PLEASE_TOKEN) if available to trigger CI on the PR,
+# otherwise falls back to GITHUB_TOKEN (CI won't auto-trigger but PR still works).
 
 name: Release Please
 
@@ -33,11 +36,60 @@ jobs:
       release_created: ${{ steps.release.outputs.release_created }}
       tag_name: ${{ steps.release.outputs.tag_name }}
       version: ${{ steps.release.outputs.version }}
+      pr: ${{ steps.release.outputs.pr }}
     steps:
       - name: Release Please
         id: release
         uses: googleapis/release-please-action@a02a34c4d625f9be7cb89156071d8567266a2445 # v4.2.0
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          # Use PAT if available to trigger CI workflows on the PR
+          # Fallback to GITHUB_TOKEN (PR created but CI won't auto-trigger)
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN || secrets.GITHUB_TOKEN }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
+
+  # Validate release PR when created/updated
+  # This runs CI checks since GITHUB_TOKEN PRs don't trigger workflows
+  validate-release:
+    needs: release-please
+    if: ${{ needs.release-please.outputs.pr && !needs.release-please.outputs.release_created }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout release branch
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: release-please--branches--main--components--cv-arnold-website
+
+      - name: Setup Node.js 20.x
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '20.x'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+        with:
+          version: 9
+          run_install: false
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run TypeScript check
+        run: pnpm run typecheck
+
+      - name: Run tests
+        run: pnpm run test
+
+      - name: Build application
+        run: pnpm run build
