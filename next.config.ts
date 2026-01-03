@@ -1,4 +1,12 @@
 import type { NextConfig } from 'next'
+import { initOpenNextCloudflareForDev } from '@opennextjs/cloudflare'
+
+// Initialize Cloudflare bindings for local development
+// This enables getCloudflareContext() to work with `next dev`
+// by using wrangler's getPlatformProxy under the hood
+if (process.env.NODE_ENV === 'development') {
+  initOpenNextCloudflareForDev()
+}
 
 const securityHeaders = [
   {

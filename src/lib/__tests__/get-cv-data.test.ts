@@ -91,26 +91,22 @@ describe('get-cv-data', () => {
       })
     })
 
-    describe('in production mode', () => {
-      it('should attempt KV fetch first when in production', async () => {
+    describe('in production mode (runtime)', () => {
+      it('should NOT use wrangler CLI (uses KV binding instead)', async () => {
         vi.stubEnv('NODE_ENV', 'production')
-        mockExecFileSync.mockImplementation(() => validKVResponse)
+        // KV binding will fail (no getCloudflareContext in tests)
+        // Should fall back to local file without calling wrangler CLI
 
         const result = await getCVData()
 
-        expect(mockExecFileSync).toHaveBeenCalledWith(
-          'npx',
-          expect.arrayContaining(['wrangler', 'kv', 'key', 'get']),
-          expect.objectContaining({ encoding: 'utf-8' })
-        )
-        expect(result.personalInfo.fullName).toBe('KV Test User')
+        // Wrangler CLI should NOT be called in production mode
+        // (KV binding is preferred, falls back to local file)
+        expect(mockExecFileSync).not.toHaveBeenCalled()
+        expect(result.personalInfo.fullName).toBe('Arnold Cartagena')
       })
 
-      it('should fall back to local file when KV fetch fails', async () => {
+      it('should fall back to local file when KV binding is unavailable', async () => {
         vi.stubEnv('NODE_ENV', 'production')
-        mockExecFileSync.mockImplementation(() => {
-          throw new Error('KV fetch failed')
-        })
 
         const result = await getCVData()
 
@@ -132,21 +128,25 @@ describe('get-cv-data', () => {
       })
     })
 
-    describe('with USE_KV flag', () => {
-      it('should attempt KV fetch when USE_KV=true', async () => {
+    describe('with USE_KV flag (legacy)', () => {
+      it('should NOT trigger wrangler CLI (USE_KV flag no longer used)', async () => {
         vi.stubEnv('NODE_ENV', 'development')
         vi.stubEnv('USE_KV', 'true')
         mockExecFileSync.mockReturnValue(validKVResponse)
 
-        await getCVData()
+        const result = await getCVData()
 
-        expect(mockExecFileSync).toHaveBeenCalled()
+        // USE_KV flag is no longer used in the new implementation
+        // Wrangler CLI only runs in CI mode
+        expect(mockExecFileSync).not.toHaveBeenCalled()
+        expect(result.personalInfo.fullName).toBe('Arnold Cartagena')
       })
     })
 
-    describe('custom configuration', () => {
+    describe('custom configuration (CI mode)', () => {
       it('should accept custom kvNamespaceId', async () => {
-        vi.stubEnv('NODE_ENV', 'production')
+        // Wrangler CLI only runs in CI mode
+        vi.stubEnv('CI', 'true')
         const customNamespaceId = 'custom-namespace-id'
         mockExecFileSync.mockReturnValue(validKVResponse)
 
@@ -160,7 +160,8 @@ describe('get-cv-data', () => {
       })
 
       it('should accept custom kvKey', async () => {
-        vi.stubEnv('NODE_ENV', 'production')
+        // Wrangler CLI only runs in CI mode
+        vi.stubEnv('CI', 'true')
         const customKey = 'custom_key'
         mockExecFileSync.mockReturnValue(validKVResponse)
 
@@ -175,9 +176,10 @@ describe('get-cv-data', () => {
     })
   })
 
-  describe('fetchFromKV', () => {
+  describe('fetchFromWranglerCLI (CI mode only)', () => {
     it('should parse JSON from wrangler output with warnings', async () => {
-      vi.stubEnv('NODE_ENV', 'production')
+      // Wrangler CLI only runs in CI mode
+      vi.stubEnv('CI', 'true')
 
       // Mock output with wrangler warnings before JSON
       const wranglerOutput = `Warning: something
@@ -194,7 +196,7 @@ ${validKVResponse}`
     })
 
     it('should return null when no JSON found in output (fallback to file)', async () => {
-      vi.stubEnv('NODE_ENV', 'production')
+      vi.stubEnv('CI', 'true')
       mockExecFileSync.mockReturnValue('No JSON here\nJust text')
 
       // Should fall back to local file
@@ -204,7 +206,7 @@ ${validKVResponse}`
     })
 
     it('should return null when JSON parse fails (fallback to file)', async () => {
-      vi.stubEnv('NODE_ENV', 'production')
+      vi.stubEnv('CI', 'true')
       mockExecFileSync.mockReturnValue('{invalid json}')
 
       // Should fall back to local file
@@ -213,7 +215,7 @@ ${validKVResponse}`
     })
 
     it('should return null when validation fails (fallback to file)', async () => {
-      vi.stubEnv('NODE_ENV', 'production')
+      vi.stubEnv('CI', 'true')
       // Valid JSON but missing required fields
       mockExecFileSync.mockReturnValue('{"invalid": "structure"}')
 
@@ -223,7 +225,7 @@ ${validKVResponse}`
     })
 
     it('should handle timeout correctly with default value', async () => {
-      vi.stubEnv('NODE_ENV', 'production')
+      vi.stubEnv('CI', 'true')
       mockExecFileSync.mockReturnValue(validKVResponse)
 
       await getCVData()
@@ -251,7 +253,8 @@ ${validKVResponse}`
 
   describe('security (command injection prevention)', () => {
     it('should use execFileSync with argument array', async () => {
-      vi.stubEnv('NODE_ENV', 'production')
+      // Wrangler CLI is only used when CI=true
+      vi.stubEnv('CI', 'true')
       mockExecFileSync.mockReturnValue(validKVResponse)
 
       await getCVData()
@@ -273,7 +276,8 @@ ${validKVResponse}`
     })
 
     it('should not interpolate user input into command string', async () => {
-      vi.stubEnv('NODE_ENV', 'production')
+      // Wrangler CLI is only used when CI=true
+      vi.stubEnv('CI', 'true')
       // Attempt to inject a malicious command via config
       const maliciousKey = 'key"; rm -rf /'
       mockExecFileSync.mockReturnValue(validKVResponse)
@@ -297,8 +301,12 @@ ${validKVResponse}`
       )
     })
 
-    it('should export fetchFromKV function', () => {
-      expect(typeof __testing.fetchFromKV).toBe('function')
+    it('should export fetchFromKVBinding function', () => {
+      expect(typeof __testing.fetchFromKVBinding).toBe('function')
+    })
+
+    it('should export fetchFromWranglerCLI function', () => {
+      expect(typeof __testing.fetchFromWranglerCLI).toBe('function')
     })
 
     it('should export fetchFromFile function', () => {

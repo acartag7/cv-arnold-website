@@ -23,6 +23,16 @@ binding = "ASSETS"
 directory = ".open-next/assets"
 
 # =============================================================================
+# KV Namespaces (for SSR data fetching)
+# =============================================================================
+# The frontend worker accesses CV data directly from KV at request time,
+# enabling real-time updates when content is changed in the admin CMS.
+
+[[kv_namespaces]]
+binding = "CV_DATA"
+id = "c9df8a4271984ad8bb0a02c30ff3568d"
+
+# =============================================================================
 # Observability
 # =============================================================================
 
@@ -39,3 +49,8 @@ name = "cv-arnold-website-dev"
 [env.dev.assets]
 binding = "ASSETS"
 directory = ".open-next/assets"
+
+# Dev KV Namespace (isolated from production)
+[[env.dev.kv_namespaces]]
+binding = "CV_DATA"
+id = "80606d373eff4764b8756c28026fdae9"
