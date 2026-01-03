@@ -93,6 +93,22 @@ output "access_application_ids" {
 }
 
 # =============================================================================
+# Service Token (for Frontend-to-API auth)
+# =============================================================================
+
+output "service_token_id" {
+  description = "Service token client ID for CF-Access-Client-Id header"
+  value       = cloudflare_zero_trust_access_service_token.frontend_api.client_id
+  sensitive   = true
+}
+
+output "service_token_secret" {
+  description = "Service token client secret for CF-Access-Client-Secret header"
+  value       = cloudflare_zero_trust_access_service_token.frontend_api.client_secret
+  sensitive   = true
+}
+
+# =============================================================================
 # Domain Configuration (for reference)
 # =============================================================================
 

@@ -163,12 +163,27 @@ resource "cloudflare_zero_trust_access_application" "admin" {
     uri  = "${local.prod_frontend}/admin*"
   }
 
+  # Production API proxy route (used by admin panel)
+  destinations {
+    type = "public"
+    uri  = "${local.prod_frontend}/api/proxy/*"
+  }
+
   # Dev admin route
   dynamic "destinations" {
     for_each = var.enable_dev_environment ? [1] : []
     content {
       type = "public"
       uri  = "${local.dev_frontend}/admin*"
+    }
+  }
+
+  # Dev API proxy route
+  dynamic "destinations" {
+    for_each = var.enable_dev_environment ? [1] : []
+    content {
+      type = "public"
+      uri  = "${local.dev_frontend}/api/proxy/*"
     }
   }
 }
@@ -188,6 +203,12 @@ resource "cloudflare_zero_trust_access_policy" "admin_allow" {
 # =============================================================================
 # Cloudflare Access - API Protection
 # =============================================================================
+# The API is protected by Cloudflare Access with two authentication methods:
+# 1. Email-based: Same allowed emails as admin (for direct API access)
+# 2. Service Token: For the frontend to call API server-side (proxy pattern)
+#
+# The frontend admin panel proxies API requests through its own API routes,
+# which include the service token headers for authentication.
 
 resource "cloudflare_zero_trust_access_application" "api" {
   account_id       = var.cloudflare_account_id
@@ -195,13 +216,11 @@ resource "cloudflare_zero_trust_access_application" "api" {
   type             = "self_hosted"
   session_duration = "24h"
 
-  # Production API - all routes protected
   destinations {
     type = "public"
     uri  = "${local.prod_api}/*"
   }
 
-  # Dev API
   dynamic "destinations" {
     for_each = var.enable_dev_environment ? [1] : []
     content {
@@ -211,15 +230,48 @@ resource "cloudflare_zero_trust_access_application" "api" {
   }
 }
 
-resource "cloudflare_zero_trust_access_policy" "api_allow" {
+# Policy 1: Allow authenticated users (email-based)
+resource "cloudflare_zero_trust_access_policy" "api_allow_users" {
   account_id     = var.cloudflare_account_id
   application_id = cloudflare_zero_trust_access_application.api.id
-  name           = "Allow API Access"
+  name           = "Allow API Users"
   precedence     = 1
   decision       = "allow"
 
   include {
     email = var.access_allowed_emails
+  }
+}
+
+# =============================================================================
+# Service Token for Frontend-to-API Communication
+# =============================================================================
+# This service token allows the frontend's server-side API routes to
+# authenticate with the API worker. The frontend proxies admin requests
+# through /api/proxy/* routes that include these headers:
+#   CF-Access-Client-Id: <client_id>
+#   CF-Access-Client-Secret: <client_secret>
+#
+# Required API Token Permission: Account > Access: Service Tokens > Edit
+
+resource "cloudflare_zero_trust_access_service_token" "frontend_api" {
+  account_id = var.cloudflare_account_id
+  name       = "CV Frontend API Token"
+
+  # Token auto-expires after 1 year, requires annual rotation
+  duration = "8760h"
+}
+
+# Policy: Allow service token (for frontend proxy)
+resource "cloudflare_zero_trust_access_policy" "api_allow_service_token" {
+  account_id     = var.cloudflare_account_id
+  application_id = cloudflare_zero_trust_access_application.api.id
+  name           = "Allow Frontend Service Token"
+  precedence     = 2
+  decision       = "non_identity"
+
+  include {
+    service_token = [cloudflare_zero_trust_access_service_token.frontend_api.id]
   }
 }
 

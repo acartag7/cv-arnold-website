@@ -33,6 +33,16 @@ binding = "CV_DATA"
 id = "c9df8a4271984ad8bb0a02c30ff3568d"
 
 # =============================================================================
+# Environment Variables
+# =============================================================================
+# Service token for authenticating with the API (protected by Cloudflare Access)
+# These are set via GitHub Secrets and injected during deployment
+
+[vars]
+API_URL = "https://api.arnoldcartagena.com"
+# CF_ACCESS_CLIENT_ID and CF_ACCESS_CLIENT_SECRET are set as secrets in Cloudflare dashboard
+
+# =============================================================================
 # Observability
 # =============================================================================
 
@@ -45,6 +55,9 @@ enabled = true
 
 [env.dev]
 name = "cv-arnold-website-dev"
+
+[env.dev.vars]
+API_URL = "https://api-dev.arnoldcartagena.com"
 
 [env.dev.assets]
 binding = "ASSETS"
