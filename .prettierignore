@@ -1,0 +1,19 @@
+# Auto-generated files
+CHANGELOG.md
+
+# Build outputs
+.next/
+.open-next/
+out/
+.vercel/
+
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Coverage
+coverage/
+
+# Terraform
+infrastructure/**/*.tfstate*
+infrastructure/**/.terraform/
