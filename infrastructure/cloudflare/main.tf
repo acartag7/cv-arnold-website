@@ -10,7 +10,6 @@
 
 locals {
   # Domain configuration
-  base_domain   = var.domain
   prod_frontend = "${var.subdomain}.${var.domain}"     # cv.arnoldcartagena.com
   prod_api      = "api.${var.domain}"                  # api.arnoldcartagena.com
   dev_frontend  = "dev-${var.subdomain}.${var.domain}" # dev-cv.arnoldcartagena.com
