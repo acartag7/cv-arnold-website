@@ -1,7 +1,7 @@
 # Cloudflare Workers configuration for CV Arnold Website
 # https://developers.cloudflare.com/workers/configuration/
 
-name = "cv-arnold-website"
+name = "cv-arnold-api"
 main = "src/index.ts"
 compatibility_date = "2025-01-19"
 compatibility_flags = ["nodejs_compat"]
@@ -50,6 +50,10 @@ bucket_name = "cv-assets"
 command = "pnpm build"
 cwd = "."
 watch_dirs = ["src"]
+
+# Environment variables
+[vars]
+ALLOWED_ORIGINS = "https://cv-arnold-website.cartagena-arnold.workers.dev,https://cv.arnoldcartagena.com,https://arnoldcartagena.com,http://localhost:3000"
 
 # Observability (available on all plans)
 [observability]
