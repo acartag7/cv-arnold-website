@@ -1,14 +1,29 @@
-# Deploy to Cloudflare Workers (via OpenNext)
-# Automatically deploys:
-# - Production: on push to main
-# - Preview: on pull requests (with unique preview URL)
+# Deploy Frontend to Cloudflare Workers (via OpenNext)
+#
+# Trunk-Based Development with Release Tags:
+# - Push to main → Deploy to dev (dev-cv.arnoldcartagena.com)
+# - Release tag (v*) → Deploy to production (cv.arnoldcartagena.com)
+# - Pull request → Temporary preview URL
+#
+# Manual deployment is also available via workflow_dispatch.
 
-name: Deploy to Cloudflare Workers
+name: Deploy Frontend
 
 on:
-  workflow_dispatch: # Manual trigger
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - production
+          - dev
   push:
     branches: [main]
+    tags:
+      - 'v*'
   pull_request:
     branches: [main]
 
@@ -19,6 +34,15 @@ jobs:
       contents: read
       deployments: write
       pull-requests: write
+
+    env:
+      # Determine environment based on trigger:
+      # - Tag (v*) → production
+      # - Manual input → as specified
+      # - Push to main → dev
+      # - PR → dev (for preview)
+      DEPLOY_ENV: ${{ (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) && 'production' || github.event.inputs.environment || 'dev' }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -50,13 +74,42 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Set API URL based on environment
+        run: |
+          if [ "${{ env.DEPLOY_ENV }}" = "production" ]; then
+            echo "API_URL=https://api.arnoldcartagena.com" >> $GITHUB_ENV
+          else
+            echo "API_URL=https://api-dev.arnoldcartagena.com" >> $GITHUB_ENV
+          fi
+
       - name: Build with OpenNext
         run: pnpm pages:build
         env:
-          NEXT_PUBLIC_API_URL: ${{ secrets.API_URL || 'https://cv-arnold-api.cartagena-arnold.workers.dev' }}
+          NEXT_PUBLIC_API_URL: ${{ env.API_URL }}
 
-      - name: Deploy to Cloudflare Workers
-        id: deploy
+      - name: Deploy to Production
+        if: env.DEPLOY_ENV == 'production' && github.event_name != 'pull_request'
+        id: deploy-prod
+        uses: cloudflare/wrangler-action@392082e81ffbcb9ebdde27400634aa004b35ea37 # v3.14.1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: '4.54.0'
+          command: deploy --config wrangler.pages.toml
+
+      - name: Deploy to Dev
+        if: env.DEPLOY_ENV == 'dev' && github.event_name != 'pull_request'
+        id: deploy-dev
+        uses: cloudflare/wrangler-action@392082e81ffbcb9ebdde27400634aa004b35ea37 # v3.14.1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: '4.54.0'
+          command: deploy --config wrangler.pages.toml --env dev
+
+      - name: Deploy Preview (PR)
+        if: github.event_name == 'pull_request'
+        id: deploy-preview
         uses: cloudflare/wrangler-action@392082e81ffbcb9ebdde27400634aa004b35ea37 # v3.14.1
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -69,15 +122,11 @@ jobs:
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         with:
           script: |
-            // Sanitize output to prevent script injection
-            const rawOutput = `${{ steps.deploy.outputs.deployment-url }}`;
+            const rawOutput = `${{ steps.deploy-preview.outputs.deployment-url }}`;
             const output = rawOutput.replace(/[<>&"']/g, '');
             const prNumber = context.payload.pull_request.number;
-
-            // Check if deployment URL is valid
             const isValidUrl = output && output.startsWith('https://');
 
-            // Find existing comment
             const comments = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -107,7 +156,7 @@ jobs:
             | Deployment | Failed or pending |
             | Latest commit | \`${context.sha.substring(0, 7)}\` |
 
-            The deployment URL was not available. Please check the [workflow logs](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}) for details.
+            Please check the [workflow logs](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}) for details.
 
             ---
             _OpenNext + Cloudflare Workers_`;
@@ -128,3 +177,20 @@ jobs:
                 body: body
               });
             }
+
+      - name: Deployment Summary
+        run: |
+          echo "## Deployment Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Environment | ${{ env.DEPLOY_ENV }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| API URL | ${{ env.API_URL }} |" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ env.DEPLOY_ENV }}" = "production" ]; then
+            echo "| Frontend URL | https://cv.arnoldcartagena.com |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| Frontend URL | https://dev-cv.arnoldcartagena.com |" >> $GITHUB_STEP_SUMMARY
+          fi
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            echo "| Release Tag | ${{ github.ref_name }} |" >> $GITHUB_STEP_SUMMARY
+          fi

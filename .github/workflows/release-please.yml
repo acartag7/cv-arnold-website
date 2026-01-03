@@ -1,0 +1,43 @@
+# Release Please - Automated Release Management
+#
+# This workflow automates semantic versioning and changelog generation.
+# It creates a "Release PR" that, when merged, creates a GitHub release.
+#
+# Workflow:
+# 1. Push conventional commits to main (feat:, fix:, chore:, etc.)
+# 2. Release Please creates/updates a Release PR with changelog
+# 3. Merge the Release PR when ready to release
+# 4. GitHub release is created with tag (v1.0.0)
+# 5. Tag triggers production deployment workflows
+#
+# Commit types and their effects:
+# - feat: → Minor version bump (1.0.0 → 1.1.0)
+# - fix: → Patch version bump (1.0.0 → 1.0.1)
+# - feat!: or BREAKING CHANGE: → Major version bump (1.0.0 → 2.0.0)
+# - chore:, docs:, style:, refactor:, test: → No version bump
+
+name: Release Please
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+      version: ${{ steps.release.outputs.version }}
+    steps:
+      - name: Release Please
+        id: release
+        uses: googleapis/release-please-action@a02a34c4d625f9be7cb89156071d8567266a2445 # v4.2.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json

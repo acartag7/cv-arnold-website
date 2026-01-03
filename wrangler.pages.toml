@@ -1,20 +1,41 @@
-# Cloudflare Workers configuration for Next.js (OpenNext)
-# This is separate from the API worker (wrangler.toml)
+# Cloudflare Workers Configuration - Frontend (Next.js via OpenNext)
 # https://opennext.js.org/cloudflare
+#
+# Enterprise Architecture:
+# - Production: cv.arnoldcartagena.com (cv-arnold-website)
+# - Dev: dev-cv.arnoldcartagena.com (cv-arnold-website-dev)
+#
+# Deploy commands:
+#   Production: wrangler deploy --config wrangler.pages.toml
+#   Dev: wrangler deploy --config wrangler.pages.toml --env dev
 
 name = "cv-arnold-website"
 main = ".open-next/worker.js"
 compatibility_date = "2025-01-19"
 compatibility_flags = ["nodejs_compat", "global_fetch_strictly_public"]
 
-# Static assets (required for OpenNext)
+# =============================================================================
+# Static Assets (required for OpenNext)
+# =============================================================================
+
 [assets]
 binding = "ASSETS"
 directory = ".open-next/assets"
 
+# =============================================================================
 # Observability
+# =============================================================================
+
 [observability]
 enabled = true
 
-# Note: For PR preview deployments, we deploy with --env preview
-# which creates a separate worker instance
+# =============================================================================
+# Dev Environment
+# =============================================================================
+
+[env.dev]
+name = "cv-arnold-website-dev"
+
+[env.dev.assets]
+binding = "ASSETS"
+directory = ".open-next/assets"
