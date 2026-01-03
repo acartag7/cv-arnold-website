@@ -15,7 +15,9 @@ import { createRouter, type Env } from './workers/api/router'
  * @param envValue - Comma-separated list of allowed origins
  * @returns Parsed origins for CORS config
  */
-function parseAllowedOrigins(envValue: string | undefined): string | string[] {
+export function parseAllowedOrigins(
+  envValue: string | undefined
+): string | string[] {
   if (!envValue) return '*'
   const origins = envValue
     .split(',')
@@ -35,7 +37,7 @@ function parseAllowedOrigins(envValue: string | undefined): string | string[] {
  * @param envValue - Raw environment variable value
  * @returns True if valid, false otherwise
  */
-function validateAllowedOrigins(envValue: string | undefined): boolean {
+export function validateAllowedOrigins(envValue: string | undefined): boolean {
   if (!envValue) return true // Empty means allow all
 
   const origins = envValue.split(',').map(o => o.trim())
