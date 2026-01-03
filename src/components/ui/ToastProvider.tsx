@@ -35,6 +35,7 @@ import {
   type ToastVariant,
   type ToastPosition,
 } from './Toast'
+import { generateId } from '@/lib/format-utils'
 
 /**
  * Toast options when showing a notification
@@ -88,13 +89,6 @@ export interface ToastProviderProps {
 const ToastContext = createContext<ToastContextValue | null>(null)
 
 /**
- * Generate a unique toast ID
- */
-function generateId(): string {
-  return `toast-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-}
-
-/**
  * Toast Provider Component
  *
  * Wrap your app with this to enable toast notifications.
@@ -121,7 +115,7 @@ export function ToastProvider({
       variant: ToastVariant = 'info',
       options?: ToastOptions
     ): string => {
-      const id = options?.id ?? generateId()
+      const id = options?.id ?? generateId('toast')
       const duration = options?.duration ?? defaultDuration
       const dismissible = options?.dismissible ?? true
 

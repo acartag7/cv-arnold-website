@@ -25,6 +25,7 @@ import {
   Briefcase,
 } from 'lucide-react'
 import type { HeroStat } from '@/types/cv'
+import { generateId } from '@/lib/format-utils'
 
 interface HeroStatFormModalProps {
   isOpen: boolean
@@ -65,10 +66,6 @@ const formSchema = z.object({
 })
 
 type FormData = z.infer<typeof formSchema>
-
-function generateId(): string {
-  return `stat-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-}
 
 export function HeroStatFormModal({
   isOpen,
@@ -116,11 +113,11 @@ export function HeroStatFormModal({
 
   const onSubmit = (data: FormData) => {
     const statData: HeroStat = {
-      id: stat?.id || generateId(),
+      id: stat?.id || generateId('stat'),
       value: data.value,
       label: data.label,
       icon: data.icon,
-      order: stat?.order || 0,
+      order: stat?.order ?? 0,
     }
 
     onSave(statData)

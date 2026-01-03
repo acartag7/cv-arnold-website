@@ -27,6 +27,7 @@ import {
   Link as LinkIcon,
 } from 'lucide-react'
 import { EmploymentType, type Experience } from '@/types/cv'
+import { generateId } from '@/lib/format-utils'
 
 interface ExperienceFormModalProps {
   isOpen: boolean
@@ -82,11 +83,6 @@ const formSchema = z
   )
 
 type FormData = z.infer<typeof formSchema>
-
-// Generate unique ID
-function generateId(): string {
-  return `exp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-}
 
 // Get default form values
 function getDefaultValues(): FormData {
@@ -184,7 +180,7 @@ export function ExperienceFormModal({
 
     // Build experience data, only including optional fields if they have values
     const experienceData: Experience = {
-      id: experience?.id || generateId(),
+      id: experience?.id || generateId('exp'),
       company: data.company,
       position: data.position,
       type: data.type,
@@ -194,7 +190,7 @@ export function ExperienceFormModal({
       description: data.description,
       achievements: data.achievements.map(a => a.value),
       technologies: data.technologies,
-      order: experience?.order || 0,
+      order: experience?.order ?? 0,
       featured: data.featured,
     }
 

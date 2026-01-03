@@ -23,6 +23,7 @@ import {
   Star,
 } from 'lucide-react'
 import { AchievementCategory, type Achievement } from '@/types/cv'
+import { generateId } from '@/lib/format-utils'
 
 interface AchievementFormModalProps {
   isOpen: boolean
@@ -82,10 +83,6 @@ const categoryOptions: {
     description: 'Miscellaneous achievement',
   },
 ]
-
-function generateId(): string {
-  return `ach-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-}
 
 export function AchievementFormModal({
   isOpen,
@@ -165,12 +162,12 @@ export function AchievementFormModal({
 
   const onSubmit = (data: FormData) => {
     const achievementData: Achievement = {
-      id: achievement?.id || generateId(),
+      id: achievement?.id || generateId('ach'),
       title: data.title,
       category: data.category,
       date: data.date,
       description: data.description,
-      order: achievement?.order || 0,
+      order: achievement?.order ?? 0,
     }
 
     // Add optional fields

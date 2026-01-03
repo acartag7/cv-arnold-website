@@ -15,6 +15,7 @@ import { z } from 'zod'
 import { Modal } from '@/components/admin'
 import { Folder, FileText } from 'lucide-react'
 import type { SkillCategory, Skill } from '@/types/cv'
+import { generateId } from '@/lib/format-utils'
 
 interface SkillCategoryModalProps {
   isOpen: boolean
@@ -31,10 +32,6 @@ const formSchema = z.object({
 })
 
 type FormData = z.infer<typeof formSchema>
-
-function generateId(): string {
-  return `cat-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-}
 
 export function SkillCategoryModal({
   isOpen,
@@ -82,10 +79,10 @@ export function SkillCategoryModal({
     const skills: Skill[] = category?.skills || []
 
     const categoryData: SkillCategory = {
-      id: category?.id || generateId(),
+      id: category?.id || generateId('cat'),
       name: data.name,
       skills,
-      order: category?.order || 0,
+      order: category?.order ?? 0,
     }
 
     // Add optional fields

@@ -5,6 +5,7 @@ import {
   isValidEmail,
   sanitizeUrl,
   sanitizeEmail,
+  generateId,
 } from '../format-utils'
 
 describe('format-utils', () => {
@@ -311,6 +312,46 @@ describe('format-utils', () => {
     it('should return undefined for null/undefined', () => {
       expect(sanitizeEmail(null)).toBeUndefined()
       expect(sanitizeEmail(undefined)).toBeUndefined()
+    })
+  })
+
+  describe('generateId', () => {
+    it('should generate ID with correct prefix', () => {
+      expect(generateId('exp')).toMatch(/^exp-\d+-[a-z0-9]+$/)
+      expect(generateId('cert')).toMatch(/^cert-\d+-[a-z0-9]+$/)
+      expect(generateId('cat')).toMatch(/^cat-\d+-[a-z0-9]+$/)
+      expect(generateId('toast')).toMatch(/^toast-\d+-[a-z0-9]+$/)
+    })
+
+    it('should generate unique IDs', () => {
+      const ids = new Set<string>()
+      for (let i = 0; i < 100; i++) {
+        ids.add(generateId('test'))
+      }
+      // All 100 IDs should be unique
+      expect(ids.size).toBe(100)
+    })
+
+    it('should include timestamp component', () => {
+      const before = Date.now()
+      const id = generateId('exp')
+      const after = Date.now()
+
+      // Extract timestamp from ID
+      const parts = id.split('-')
+      const timestamp = parseInt(parts[1] ?? '0', 10)
+
+      expect(timestamp).toBeGreaterThanOrEqual(before)
+      expect(timestamp).toBeLessThanOrEqual(after)
+    })
+
+    it('should handle empty prefix', () => {
+      expect(generateId('')).toMatch(/^-\d+-[a-z0-9]+$/)
+    })
+
+    it('should handle special characters in prefix', () => {
+      // Special characters should be preserved
+      expect(generateId('my-prefix')).toMatch(/^my-prefix-\d+-[a-z0-9]+$/)
     })
   })
 })

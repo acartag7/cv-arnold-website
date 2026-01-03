@@ -25,6 +25,7 @@ import {
   X,
 } from 'lucide-react'
 import type { Education } from '@/types/cv'
+import { generateId } from '@/lib/format-utils'
 
 interface EducationFormModalProps {
   isOpen: boolean
@@ -61,10 +62,6 @@ const formSchema = z
   )
 
 type FormData = z.infer<typeof formSchema>
-
-function generateId(): string {
-  return `edu-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-}
 
 export function EducationFormModal({
   isOpen,
@@ -164,13 +161,13 @@ export function EducationFormModal({
 
   const onSubmit = (data: FormData) => {
     const eduData: Education = {
-      id: education?.id || generateId(),
+      id: education?.id || generateId('edu'),
       institution: data.institution,
       degree: data.degree,
       field: data.field,
       startDate: data.startDate,
       endDate: data.inProgress ? null : data.endDate,
-      order: education?.order || 0,
+      order: education?.order ?? 0,
     }
 
     // Add optional fields

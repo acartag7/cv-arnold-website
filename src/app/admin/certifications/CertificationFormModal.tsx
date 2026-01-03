@@ -22,6 +22,7 @@ import {
   Hash,
 } from 'lucide-react'
 import { CertificationStatus, type Certification } from '@/types/cv'
+import { generateId } from '@/lib/format-utils'
 
 interface CertificationFormModalProps {
   isOpen: boolean
@@ -78,10 +79,6 @@ const statusOptions: {
     description: 'Currently pursuing',
   },
 ]
-
-function generateId(): string {
-  return `cert-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-}
 
 export function CertificationFormModal({
   isOpen,
@@ -159,13 +156,13 @@ export function CertificationFormModal({
 
   const onSubmit = (data: FormData) => {
     const certData: Certification = {
-      id: certification?.id || generateId(),
+      id: certification?.id || generateId('cert'),
       name: data.name,
       issuer: data.issuer,
       issueDate: data.issueDate,
       expirationDate: data.noExpiration ? null : data.expirationDate,
       status: data.status,
-      order: certification?.order || 0,
+      order: certification?.order ?? 0,
     }
 
     // Add optional fields
