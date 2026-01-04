@@ -217,6 +217,106 @@ describe('API Proxy Route', () => {
     })
   })
 
+  describe('Content-Type Validation', () => {
+    it('should reject unsupported content types', async () => {
+      const { POST } = await import('../[...path]/route')
+
+      const request = createMockRequest('api/v1/cv', {
+        method: 'POST',
+        headers: {
+          'content-type': 'text/html',
+        },
+        body: '<html></html>',
+      })
+
+      const response = await POST(request, {
+        params: Promise.resolve({ path: ['api', 'v1', 'cv'] }),
+      })
+
+      expect(response.status).toBe(415)
+      const body = await response.json()
+      expect(body.error.code).toBe('UNSUPPORTED_MEDIA_TYPE')
+    })
+
+    it('should accept application/json content type', async () => {
+      const { POST } = await import('../[...path]/route')
+
+      mockAPIFetch.mockResolvedValueOnce(
+        new Response(null, {
+          status: 200,
+          statusText: 'OK',
+          headers: new Headers({ 'content-type': 'application/json' }),
+        })
+      )
+
+      const request = createMockRequest('api/v1/cv', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json; charset=utf-8',
+        },
+        body: '{"test": true}',
+      })
+
+      const response = await POST(request, {
+        params: Promise.resolve({ path: ['api', 'v1', 'cv'] }),
+      })
+
+      expect(response.status).toBe(200)
+    })
+
+    it('should accept multipart/form-data for file uploads', async () => {
+      const { POST } = await import('../[...path]/route')
+
+      mockAPIFetch.mockResolvedValueOnce(
+        new Response(null, {
+          status: 200,
+          statusText: 'OK',
+          headers: new Headers({ 'content-type': 'application/json' }),
+        })
+      )
+
+      const request = createMockRequest('api/v1/cv', {
+        method: 'POST',
+        headers: {
+          'content-type':
+            'multipart/form-data; boundary=----WebKitFormBoundary',
+        },
+        body: '------WebKitFormBoundary--',
+      })
+
+      const response = await POST(request, {
+        params: Promise.resolve({ path: ['api', 'v1', 'cv'] }),
+      })
+
+      expect(response.status).toBe(200)
+    })
+
+    it('should skip content-type validation for GET requests', async () => {
+      const { GET } = await import('../[...path]/route')
+
+      mockAPIFetch.mockResolvedValueOnce(
+        new Response(null, {
+          status: 200,
+          statusText: 'OK',
+          headers: new Headers(),
+        })
+      )
+
+      // GET with unusual content-type should still work
+      const request = createMockRequest('api/v1/cv', {
+        headers: {
+          'content-type': 'text/html',
+        },
+      })
+
+      const response = await GET(request, {
+        params: Promise.resolve({ path: ['api', 'v1', 'cv'] }),
+      })
+
+      expect(response.status).toBe(200)
+    })
+  })
+
   describe('Request Forwarding', () => {
     it('should forward GET requests via service binding', async () => {
       const { GET } = await import('../[...path]/route')
@@ -293,6 +393,36 @@ describe('API Proxy Route', () => {
       expect(call).toBeDefined()
       const callArg = call![0] as Request
       expect(callArg.url).toBe('http://internal/api/v1/cv/export?format=yaml')
+    })
+
+    it('should preserve encoded query parameters with special characters', async () => {
+      const { GET } = await import('../[...path]/route')
+
+      mockAPIFetch.mockResolvedValueOnce(
+        new Response(null, {
+          status: 200,
+          statusText: 'OK',
+          headers: new Headers(),
+        })
+      )
+
+      // URL with encoded spaces and special characters
+      const request = new NextRequest(
+        'http://localhost:3000/api/proxy/api/v1/cv/search?name=John%20Doe&tags=skill%2Bexperience'
+      )
+
+      await GET(request, {
+        params: Promise.resolve({ path: ['api', 'v1', 'cv', 'search'] }),
+      })
+
+      const call = mockAPIFetch.mock.calls[0]
+      expect(call).toBeDefined()
+      const callArg = call![0] as Request
+      const url = new URL(callArg.url)
+
+      // Verify decoded values are correctly preserved
+      expect(url.searchParams.get('name')).toBe('John Doe')
+      expect(url.searchParams.get('tags')).toBe('skill+experience')
     })
 
     it('should add X-Request-ID header for tracing', async () => {

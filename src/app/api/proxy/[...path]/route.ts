@@ -21,6 +21,7 @@ import { getCloudflareContext } from '@opennextjs/cloudflare'
 // Security constants
 const REQUEST_TIMEOUT_MS = 25000 // 25s (under Cloudflare's 30s limit)
 const MAX_BODY_SIZE = 10 * 1024 * 1024 // 10MB
+const MAX_RESPONSE_SIZE = 50 * 1024 * 1024 // 50MB (generous for CV data + images)
 
 // Allowed request headers (allowlist approach for security)
 const ALLOWED_REQUEST_HEADERS = [
@@ -28,6 +29,15 @@ const ALLOWED_REQUEST_HEADERS = [
   'accept',
   'accept-language',
   'x-request-id',
+]
+
+// Allowed content types for request bodies (defense in depth)
+const ALLOWED_CONTENT_TYPES = [
+  'application/json',
+  'application/x-yaml',
+  'text/yaml',
+  'text/plain',
+  'multipart/form-data', // For file uploads
 ]
 
 /**
@@ -103,6 +113,42 @@ function checkBodySize(request: NextRequest): {
 }
 
 /**
+ * Validate content type for requests with body
+ * Only allows known safe content types (defense in depth)
+ */
+function validateContentType(request: NextRequest): {
+  valid: boolean
+  error?: string
+} {
+  // Only validate for methods that typically have a body
+  if (!['POST', 'PUT', 'PATCH'].includes(request.method)) {
+    return { valid: true }
+  }
+
+  const contentType = request.headers.get('content-type')
+
+  // No content-type header is ok (might be empty body)
+  if (!contentType) {
+    return { valid: true }
+  }
+
+  // Check if content type starts with any allowed type
+  // (handles charset and boundary parameters like "application/json; charset=utf-8")
+  const isAllowed = ALLOWED_CONTENT_TYPES.some(allowed =>
+    contentType.toLowerCase().startsWith(allowed)
+  )
+
+  if (!isAllowed) {
+    return {
+      valid: false,
+      error: `Content-Type '${contentType}' not allowed`,
+    }
+  }
+
+  return { valid: true }
+}
+
+/**
  * Service binding interface for the API worker
  */
 interface APIServiceBinding {
@@ -131,10 +177,12 @@ async function proxyRequest(
   try {
     const context = getCloudflareContext()
     env = context.env as CloudflareEnv
-  } catch {
+  } catch (error) {
     logProxy('error', {
       requestId,
       error: 'Failed to get Cloudflare context',
+      details: error instanceof Error ? error.message : String(error),
+      hint: 'This usually means the code is running outside Cloudflare Workers runtime',
     })
     return NextResponse.json(
       {
@@ -206,6 +254,26 @@ async function proxyRequest(
     )
   }
 
+  // Validate content type (defense in depth)
+  const contentTypeCheck = validateContentType(request)
+  if (!contentTypeCheck.valid) {
+    logProxy('error', {
+      requestId,
+      error: 'Invalid content type',
+      contentType: request.headers.get('content-type'),
+    })
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'UNSUPPORTED_MEDIA_TYPE',
+          message: contentTypeCheck.error,
+        },
+      },
+      { status: 415 }
+    )
+  }
+
   // Build target URL (internal URL for service binding)
   const targetUrl = new URL(pathValidation.sanitized!, 'http://internal')
 
@@ -224,6 +292,9 @@ async function proxyRequest(
 
   // Add request ID for tracing
   headers.set('X-Request-ID', requestId)
+
+  // Track timing for observability
+  const startTime = Date.now()
 
   logProxy('request', {
     requestId,
@@ -250,6 +321,33 @@ async function proxyRequest(
 
     clearTimeout(timeoutId)
 
+    // Calculate request duration
+    const durationMs = Date.now() - startTime
+
+    // Check response size (defense in depth)
+    const responseContentLength = response.headers.get('content-length')
+    if (
+      responseContentLength &&
+      parseInt(responseContentLength, 10) > MAX_RESPONSE_SIZE
+    ) {
+      logProxy('error', {
+        requestId,
+        error: 'Response too large',
+        contentLength: responseContentLength,
+        durationMs,
+      })
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'RESPONSE_TOO_LARGE',
+            message: 'API response exceeds size limit',
+          },
+        },
+        { status: 502 }
+      )
+    }
+
     // Create response with same status and headers
     const responseHeaders = new Headers()
     response.headers.forEach((value, key) => {
@@ -268,6 +366,8 @@ async function proxyRequest(
       requestId,
       status: response.status,
       path: pathValidation.sanitized,
+      durationMs,
+      contentLength: responseContentLength || 'unknown',
     })
 
     // Return the proxied response
@@ -278,6 +378,7 @@ async function proxyRequest(
     })
   } catch (error) {
     clearTimeout(timeoutId)
+    const durationMs = Date.now() - startTime
 
     // Handle timeout
     if (error instanceof Error && error.name === 'AbortError') {
@@ -285,6 +386,7 @@ async function proxyRequest(
         requestId,
         error: 'Request timeout',
         path: pathValidation.sanitized,
+        durationMs,
       })
       return NextResponse.json(
         {
@@ -303,6 +405,7 @@ async function proxyRequest(
       requestId,
       error: error instanceof Error ? error.message : String(error),
       path: pathValidation.sanitized,
+      durationMs,
     })
 
     return NextResponse.json(
