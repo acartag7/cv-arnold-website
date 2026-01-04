@@ -15,8 +15,8 @@
 
 import type { CVData } from '@/types/cv'
 import type { ICVRepository } from './ICVRepository'
-import type { KVStorageConfig } from './KVConfig'
-import { KV_KEYS, isGzipData } from './KVConfig'
+import type { KVStorageConfig, StoredData } from './KVConfig'
+import { KV_KEYS, isGzipData, decompressData, isStoredData } from './KVConfig'
 import { CVStorageError } from '@/lib/errors'
 import { createLogger } from '@/lib/logger'
 import { withRetry, isNetworkError } from '@/lib/retry'
@@ -30,15 +30,6 @@ interface CVMetadata {
   lastUpdated: string // ISO timestamp
   version: string // Schema version (e.g., 'v1')
   dataVersion?: number // Incremental version for change tracking
-}
-
-/**
- * Wrapper for stored data with compression metadata
- */
-interface StoredData<T = unknown> {
-  data: T
-  compressed: boolean
-  timestamp: string
 }
 
 /**
@@ -93,7 +84,7 @@ export class KVStorageAdapter implements ICVRepository {
       let jsonString: string
       if (isGzipData(buffer)) {
         logger.debug('Decompressing gzip data from KV', { key })
-        jsonString = await this.decompressData(buffer)
+        jsonString = await decompressData(buffer)
         logger.debug('CV data decompressed', {
           key,
           compressedSize: buffer.byteLength,
@@ -108,7 +99,7 @@ export class KVStorageAdapter implements ICVRepository {
       const stored = JSON.parse(jsonString) as StoredData<CVData> | CVData
 
       // Handle StoredData wrapper format (from KVStorageAdapter writes)
-      if (this.isStoredData(stored)) {
+      if (isStoredData(stored)) {
         logger.debug('CV data retrieved from KV (StoredData format)', { key })
         return stored.data
       }
@@ -203,19 +194,6 @@ export class KVStorageAdapter implements ICVRepository {
   }
 
   /**
-   * Type guard to check if data is wrapped with StoredData metadata
-   */
-  private isStoredData<T>(data: unknown): data is StoredData<T> {
-    return (
-      typeof data === 'object' &&
-      data !== null &&
-      'data' in data &&
-      'compressed' in data &&
-      'timestamp' in data
-    )
-  }
-
-  /**
    * Get specific section of CV data
    *
    * Uses BINARY-FIRST approach (same as getData) to handle compression.
@@ -247,7 +225,7 @@ export class KVStorageAdapter implements ICVRepository {
           key,
           section,
         })
-        jsonString = await this.decompressData(buffer)
+        jsonString = await decompressData(buffer)
       } else {
         jsonString = new TextDecoder().decode(buffer)
       }
@@ -256,7 +234,7 @@ export class KVStorageAdapter implements ICVRepository {
       const stored = JSON.parse(jsonString) as StoredData<CVData[K]> | CVData[K]
 
       // Handle StoredData wrapper format
-      if (this.isStoredData(stored)) {
+      if (isStoredData(stored)) {
         logger.debug('Section data retrieved from KV (StoredData format)', {
           key,
           section,
@@ -511,41 +489,6 @@ export class KVStorageAdapter implements ICVRepository {
       }
 
       return result.buffer
-    } finally {
-      // Always release the reader to prevent memory leaks
-      reader.releaseLock()
-    }
-  }
-
-  /**
-   * Decompress data using gzip (via DecompressionStream API)
-   */
-  private async decompressData(buffer: ArrayBuffer): Promise<string> {
-    const stream = new Blob([buffer])
-      .stream()
-      .pipeThrough(new DecompressionStream('gzip'))
-
-    const chunks: Uint8Array[] = []
-    const reader = stream.getReader()
-
-    try {
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-        chunks.push(value)
-      }
-
-      // Combine chunks and decode to string
-      const totalLength = chunks.reduce((sum, chunk) => sum + chunk.length, 0)
-      const result = new Uint8Array(totalLength)
-      let offset = 0
-
-      for (const chunk of chunks) {
-        result.set(chunk, offset)
-        offset += chunk.length
-      }
-
-      return new TextDecoder().decode(result)
     } finally {
       // Always release the reader to prevent memory leaks
       reader.releaseLock()

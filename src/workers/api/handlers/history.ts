@@ -20,7 +20,12 @@
 
 import type { KVNamespace } from '@/services/storage/KVConfig'
 import type { CVData } from '@/types/cv'
-import { KV_KEYS, isGzipData } from '@/services/storage/KVConfig'
+import {
+  KV_KEYS,
+  isGzipData,
+  decompressData,
+  isStoredData,
+} from '@/services/storage/KVConfig'
 import {
   jsonResponse,
   notFound,
@@ -33,61 +38,6 @@ import {
  * Maximum number of snapshots to retain
  */
 const MAX_SNAPSHOTS = 50
-
-/**
- * Decompress gzip data using the Web Streams API
- */
-async function decompressData(buffer: ArrayBuffer): Promise<string> {
-  const stream = new Blob([buffer])
-    .stream()
-    .pipeThrough(new DecompressionStream('gzip'))
-
-  const chunks: Uint8Array[] = []
-  const reader = stream.getReader()
-
-  try {
-    while (true) {
-      const { done, value } = await reader.read()
-      if (done) break
-      chunks.push(value)
-    }
-
-    const totalLength = chunks.reduce((sum, chunk) => sum + chunk.length, 0)
-    const result = new Uint8Array(totalLength)
-    let offset = 0
-
-    for (const chunk of chunks) {
-      result.set(chunk, offset)
-      offset += chunk.length
-    }
-
-    return new TextDecoder().decode(result)
-  } finally {
-    reader.releaseLock()
-  }
-}
-
-/**
- * StoredData wrapper format used by KVStorageAdapter
- */
-interface StoredData<T = unknown> {
-  data: T
-  compressed: boolean
-  timestamp: string
-}
-
-/**
- * Type guard for StoredData wrapper
- */
-function isStoredData<T>(data: unknown): data is StoredData<T> {
-  return (
-    typeof data === 'object' &&
-    data !== null &&
-    'data' in data &&
-    'compressed' in data &&
-    'timestamp' in data
-  )
-}
 
 /**
  * Read CV data from KV with compression support

@@ -14,7 +14,11 @@
 
 import type { CVData } from '@/types/cv'
 import { isCVData } from '@/types/cv'
-import { isGzipData } from '@/services/storage/KVConfig'
+import {
+  isGzipData,
+  decompressData,
+  isStoredData,
+} from '@/services/storage/KVConfig'
 import { createLogger } from './logger'
 
 const logger = createLogger('get-cv-data')
@@ -27,67 +31,6 @@ const logger = createLogger('get-cv-data')
 interface CVDataKVBinding {
   get(key: string, options: 'json'): Promise<unknown>
   get(key: string, options: 'arrayBuffer'): Promise<ArrayBuffer | null>
-}
-
-/**
- * StoredData wrapper format used by KVStorageAdapter
- * When data is written via the API, it's wrapped in this format
- */
-interface StoredData<T = unknown> {
-  data: T
-  compressed: boolean
-  timestamp: string
-}
-
-/**
- * Type guard to check if data is wrapped in StoredData format
- */
-function isStoredData<T>(data: unknown): data is StoredData<T> {
-  return (
-    typeof data === 'object' &&
-    data !== null &&
-    'data' in data &&
-    'compressed' in data &&
-    'timestamp' in data
-  )
-}
-
-/**
- * Decompress gzip data using the Web Streams API
- *
- * Uses DecompressionStream which is available in Cloudflare Workers runtime.
- * This allows the public site SSR to read compressed data from KV.
- */
-async function decompressData(buffer: ArrayBuffer): Promise<string> {
-  const stream = new Blob([buffer])
-    .stream()
-    .pipeThrough(new DecompressionStream('gzip'))
-
-  const chunks: Uint8Array[] = []
-  const reader = stream.getReader()
-
-  try {
-    while (true) {
-      const { done, value } = await reader.read()
-      if (done) break
-      chunks.push(value)
-    }
-
-    // Combine chunks and decode to string
-    const totalLength = chunks.reduce((sum, chunk) => sum + chunk.length, 0)
-    const result = new Uint8Array(totalLength)
-    let offset = 0
-
-    for (const chunk of chunks) {
-      result.set(chunk, offset)
-      offset += chunk.length
-    }
-
-    return new TextDecoder().decode(result)
-  } finally {
-    // Always release the reader to prevent memory leaks
-    reader.releaseLock()
-  }
 }
 
 /**

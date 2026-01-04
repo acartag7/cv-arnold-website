@@ -121,3 +121,84 @@ export function isGzipData(buffer: ArrayBuffer): boolean {
     bytes[1] === GZIP_MAGIC.BYTE_2
   )
 }
+
+/**
+ * Decompress gzip data using the Web Streams API
+ *
+ * Uses DecompressionStream which is available in Cloudflare Workers runtime.
+ * This is the single source of truth for decompression across:
+ * - KVStorageAdapter (CV data reads)
+ * - get-cv-data.ts (public site SSR)
+ * - history.ts (snapshot creation)
+ *
+ * @param buffer - Gzip-compressed ArrayBuffer
+ * @returns Decompressed string content
+ * @throws Error if decompression fails
+ */
+export async function decompressData(buffer: ArrayBuffer): Promise<string> {
+  const stream = new Blob([buffer])
+    .stream()
+    .pipeThrough(new DecompressionStream('gzip'))
+
+  const chunks: Uint8Array[] = []
+  const reader = stream.getReader()
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+      chunks.push(value)
+    }
+
+    // Combine chunks and decode to string
+    const totalLength = chunks.reduce((sum, chunk) => sum + chunk.length, 0)
+    const result = new Uint8Array(totalLength)
+    let offset = 0
+
+    for (const chunk of chunks) {
+      result.set(chunk, offset)
+      offset += chunk.length
+    }
+
+    return new TextDecoder().decode(result)
+  } finally {
+    // Always release the reader to prevent memory leaks
+    reader.releaseLock()
+  }
+}
+
+/**
+ * Wrapper format for stored data with compression metadata
+ *
+ * When data is written via KVStorageAdapter, it's wrapped in this format
+ * to track compression state and timestamps. Raw data (from wrangler CLI
+ * seeding) won't have this wrapper.
+ */
+export interface StoredData<T = unknown> {
+  /** The actual data payload */
+  data: T
+  /** Whether the data was compressed when stored */
+  compressed: boolean
+  /** ISO timestamp when the data was stored */
+  timestamp: string
+}
+
+/**
+ * Type guard to check if data is wrapped in StoredData format
+ *
+ * Used to distinguish between:
+ * - Wrapped data from KVStorageAdapter (has data, compressed, timestamp)
+ * - Raw data from wrangler CLI seeding (direct CVData)
+ *
+ * @param data - Unknown data to check
+ * @returns true if data matches StoredData structure
+ */
+export function isStoredData<T>(data: unknown): data is StoredData<T> {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    'data' in data &&
+    'compressed' in data &&
+    'timestamp' in data
+  )
+}
