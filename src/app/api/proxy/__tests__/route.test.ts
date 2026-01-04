@@ -568,4 +568,70 @@ describe('API Proxy Route', () => {
       expect(callArg.method).toBe('DELETE')
     })
   })
+
+  describe('Cloudflare Access Header Forwarding', () => {
+    it('should forward Cf-Access-Authenticated-User-Email header', async () => {
+      const { POST } = await import('../[...path]/route')
+
+      mockAPIFetch.mockResolvedValueOnce(
+        new Response(JSON.stringify({ success: true }), {
+          status: 200,
+          headers: new Headers({ 'content-type': 'application/json' }),
+        })
+      )
+
+      const request = createMockRequest('api/v1/cv', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'cf-access-authenticated-user-email': 'admin@example.com',
+        },
+        body: '{"test": true}',
+      })
+
+      const response = await POST(request, {
+        params: Promise.resolve({ path: ['api', 'v1', 'cv'] }),
+      })
+
+      expect(response.status).toBe(200)
+      const call = mockAPIFetch.mock.calls[0]
+      expect(call).toBeDefined()
+      const callArg = call![0] as Request
+      expect(callArg.headers.get('cf-access-authenticated-user-email')).toBe(
+        'admin@example.com'
+      )
+    })
+
+    it('should forward Cf-Access-Jwt-Assertion header', async () => {
+      const { POST } = await import('../[...path]/route')
+
+      const mockJwt = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.test.signature'
+
+      mockAPIFetch.mockResolvedValueOnce(
+        new Response(JSON.stringify({ success: true }), {
+          status: 200,
+          headers: new Headers({ 'content-type': 'application/json' }),
+        })
+      )
+
+      const request = createMockRequest('api/v1/cv', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'cf-access-jwt-assertion': mockJwt,
+        },
+        body: '{"test": true}',
+      })
+
+      const response = await POST(request, {
+        params: Promise.resolve({ path: ['api', 'v1', 'cv'] }),
+      })
+
+      expect(response.status).toBe(200)
+      const call = mockAPIFetch.mock.calls[0]
+      expect(call).toBeDefined()
+      const callArg = call![0] as Request
+      expect(callArg.headers.get('cf-access-jwt-assertion')).toBe(mockJwt)
+    })
+  })
 })
