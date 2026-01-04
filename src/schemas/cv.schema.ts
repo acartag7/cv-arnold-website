@@ -509,6 +509,112 @@ export const LanguageSchema = z.object({
 })
 
 // ============================================================================
+// Site Configuration Schemas
+// ============================================================================
+
+/**
+ * Color palette definition (dark or light mode)
+ */
+export const ColorPaletteSchema = z.object({
+  bg: z.string(),
+  surface: z.string(),
+  surfaceHover: z.string(),
+  border: z.string(),
+  text: z.string(),
+  textMuted: z.string(),
+  textDim: z.string(),
+  accent: z.string(),
+  accentDim: z.string(),
+})
+
+/**
+ * Theme configuration schema
+ */
+export const ThemeConfigSchema = z.object({
+  defaultTheme: z.enum(['dark', 'light', 'system']),
+  allowToggle: z.boolean(),
+  activePreset: z
+    .enum(['green', 'blue', 'purple', 'orange', 'custom'])
+    .optional(),
+  dark: ColorPaletteSchema,
+  light: ColorPaletteSchema,
+})
+
+/**
+ * Site configuration schema
+ */
+export const SiteConfigSchema = z.object({
+  branding: z.string().max(100),
+  version: z.string().max(50),
+  navLinks: z
+    .array(
+      z.object({
+        label: z.string(),
+        href: z.string(),
+        external: z.boolean().optional(),
+      })
+    )
+    .optional(),
+  footerText: z.string().max(500).optional(),
+  seo: z
+    .object({
+      title: z.string().optional(),
+      description: z.string().optional(),
+      keywords: z.array(z.string()).optional(),
+      ogImage: z.string().optional(),
+    })
+    .optional(),
+})
+
+/**
+ * Hero stat schema
+ */
+export const HeroStatSchema = z.object({
+  id: z.string(),
+  value: z.string().max(50),
+  label: z.string().max(100),
+  icon: z.enum([
+    'terminal',
+    'shield',
+    'cloud',
+    'server',
+    'code',
+    'award',
+    'users',
+    'briefcase',
+    'star',
+    'trophy',
+  ]),
+  order: z.number().int().min(0),
+})
+
+/**
+ * Section titles schema
+ */
+export const SectionTitlesSchema = z.object({
+  heroPath: z.string().max(100),
+  experience: z.string().max(100),
+  skills: z.string().max(100),
+  certifications: z.string().max(100),
+  languages: z.string().max(100).optional(),
+  education: z.string().max(100).optional(),
+  achievements: z.string().max(100).optional(),
+  contact: z.string().max(100),
+})
+
+/**
+ * Featured highlight schema
+ */
+export const FeaturedHighlightSchema = z.object({
+  id: z.string(),
+  title: z.string().max(100),
+  subtitle: z.string().max(200),
+  icon: z.enum(['award', 'shield', 'star', 'trophy']),
+  section: z.enum(['certifications', 'achievements', 'experience']),
+  enabled: z.boolean(),
+})
+
+// ============================================================================
 // Main CV Data Schema
 // ============================================================================
 
@@ -541,6 +647,17 @@ export const CVDataSchema = z.object({
   achievements: z.array(AchievementSchema).default([]),
 
   languages: z.array(LanguageSchema).default([]),
+
+  // Site configuration fields (optional - CMS-editable)
+  themeConfig: ThemeConfigSchema.optional(),
+
+  siteConfig: SiteConfigSchema.optional(),
+
+  heroStats: z.array(HeroStatSchema).optional(),
+
+  sectionTitles: SectionTitlesSchema.optional(),
+
+  featuredHighlights: z.array(FeaturedHighlightSchema).optional(),
 
   metadata: z
     .object({

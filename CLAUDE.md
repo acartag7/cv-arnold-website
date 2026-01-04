@@ -88,6 +88,51 @@ describe('ComponentName', () => {
 - ✅ No skipped/commented tests without justification
 - ✅ CI pipeline green (tests + build)
 
+## 🔴 CRITICAL: CMS Fields MUST Have Zod Schemas
+
+**PRODUCTION INCIDENT (2026-01-04):** CMS config fields (themeConfig, sectionTitles, siteConfig) were being silently stripped because Zod's `.strict()` mode rejects unknown fields.
+
+### The Rule
+
+**Every field stored in KV via CMS MUST have a corresponding Zod schema in `src/schemas/cv.schema.ts`.**
+
+If you add a new field to:
+
+- Admin CMS UI
+- TypeScript types (`src/types/cv.ts`)
+- KV storage
+
+You MUST also add it to:
+
+- Zod schema (`src/schemas/cv.schema.ts`)
+
+### Why This Matters
+
+```typescript
+// Zod by default STRIPS unknown fields during validation!
+const data = CVDataSchema.parse(kvData)
+// If kvData.themeConfig exists but ThemeConfigSchema doesn't,
+// data.themeConfig will be UNDEFINED - silently lost!
+```
+
+### Schema Mapping
+
+| CMS Section         | TypeScript Type       | Zod Schema                |
+| ------------------- | --------------------- | ------------------------- |
+| Theme               | `ThemeConfig`         | `ThemeConfigSchema`       |
+| Site Config         | `SiteConfig`          | `SiteConfigSchema`        |
+| Section Titles      | `SectionTitles`       | `SectionTitlesSchema`     |
+| Hero Stats          | `HeroStat[]`          | `HeroStatSchema`          |
+| Featured Highlights | `FeaturedHighlight[]` | `FeaturedHighlightSchema` |
+
+### Checklist When Adding CMS Fields
+
+1. ✅ Add TypeScript interface to `src/types/cv.ts`
+2. ✅ Add Zod schema to `src/schemas/cv.schema.ts`
+3. ✅ Add field to `CVDataSchema` (as optional: `.optional()`)
+4. ✅ Add tests for the new schema
+5. ✅ Test round-trip: CMS save → KV → public site displays correctly
+
 ## 🚨 MANDATORY SESSION START CHECKLIST
 
 **⚠️ DO THIS FIRST - Before responding to ANY user request:**

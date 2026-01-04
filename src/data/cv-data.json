@@ -1,96 +1,6 @@
 {
   "version": "1.1.0",
   "lastUpdated": "2025-10-18T17:00:00.000Z",
-  "siteConfig": {
-    "branding": "~/arnold.dev",
-    "version": "v2024.12",
-    "footerText": "© {{year}} Arnold Cartagena · Built with Next.js",
-    "seo": {
-      "title": "Arnold Cartagena - Platform Engineering Lead",
-      "description": "Senior Platform Engineer specializing in Kubernetes, cloud automation, and scalable CI/CD solutions",
-      "keywords": [
-        "platform engineering",
-        "kubernetes",
-        "devops",
-        "cloud architecture",
-        "tech lead"
-      ]
-    }
-  },
-  "heroStats": [
-    {
-      "id": "years-experience",
-      "value": "8+",
-      "label": "Years Experience",
-      "icon": "terminal",
-      "order": 1
-    },
-    {
-      "id": "certifications",
-      "value": "9",
-      "label": "Certifications",
-      "icon": "shield",
-      "order": 2
-    },
-    {
-      "id": "cloud-platforms",
-      "value": "3",
-      "label": "Cloud Platforms",
-      "icon": "cloud",
-      "order": 3
-    },
-    {
-      "id": "k8s-clusters",
-      "value": "50+",
-      "label": "K8s Clusters",
-      "icon": "server",
-      "order": 4
-    }
-  ],
-  "sectionTitles": {
-    "heroPath": "~/platform-engineer",
-    "experience": "experience.log",
-    "skills": "skills.json",
-    "certifications": "certifications.yaml",
-    "contact": "./send_message.sh"
-  },
-  "featuredHighlights": [
-    {
-      "id": "kubestronaut",
-      "title": "KUBESTRONAUT",
-      "subtitle": "status: ALL_KUBERNETES_CERTS_COMPLETE",
-      "icon": "award",
-      "section": "certifications",
-      "enabled": true
-    }
-  ],
-  "themeConfig": {
-    "defaultTheme": "system",
-    "allowToggle": true,
-    "activePreset": "green",
-    "dark": {
-      "bg": "#0A0A0F",
-      "surface": "#12121A",
-      "surfaceHover": "#1A1A24",
-      "border": "#1E1E2E",
-      "text": "#FFFFFF",
-      "textMuted": "#B4B4BC",
-      "textDim": "#6B7280",
-      "accent": "#00FF94",
-      "accentDim": "rgba(0, 255, 148, 0.15)"
-    },
-    "light": {
-      "bg": "#F8FAFB",
-      "surface": "#FFFFFF",
-      "surfaceHover": "#F1F5F9",
-      "border": "#E2E8F0",
-      "text": "#0F172A",
-      "textMuted": "#64748B",
-      "textDim": "#CBD5E1",
-      "accent": "#059669",
-      "accentDim": "rgba(5, 150, 105, 0.1)"
-    }
-  },
   "personalInfo": {
     "fullName": "Arnold Cartagena",
     "title": "Senior Platform Engineer",
@@ -126,7 +36,7 @@
         "country": "Switzerland",
         "remote": false
       },
-      "description": "Leading all integration and migration projects for external partners, internal stakeholders, and third-party vendors. Currently transitioning the on-premises Kafka platform to Confluent Cloud, overseeing all aspects of the migration. Directed all application migrations from VMware to OpenShift and EKS, optimizing for platform scalability. Architected and implemented cloud-native monitoring solutions utilizing Grafana, Prometheus, ELK, and Splunk. Designed and implemented Infrastructure as Code frameworks, ensuring consistent, repeatable, and secure infrastructure deployments. Automated CI/CD pipelines, processes, and developer tooling, recently added AI-driven automations for admin tasks. Integrated DevSecOps tooling with automated security scans, quality gates, and testing strategies.",
+      "description": "Leading all integration and migration projects for external partners, internal stakeholders, and third-party vendors. \nCurrently transitioning the on-premises Kafka platform to Confluent Cloud, overseeing all aspects of the migration. \nDirected all application migrations from VMware to OpenShift and EKS, optimizing for platform scalability. \nArchitected and implemented cloud-native monitoring solutions utilizing Grafana, Prometheus, ELK, and Splunk. \nDesigned and implemented Infrastructure as Code frameworks, ensuring consistent, repeatable, and secure infrastructure deployments. \nAutomated CI/CD pipelines, processes, and developer tooling, recently added AI-driven automations for admin tasks. \nIntegrated DevSecOps tooling with automated security scans, quality gates, and testing strategies.",
       "achievements": [
         "Ensuring seamless operations and business continuity across all projects",
         "Delivering comprehensive observability and robust incident response capabilities",
@@ -145,9 +55,10 @@
         "Terraform",
         "GitLab CI",
         "DevSecOps",
-        "AI Automation"
+        "AI Automation",
+        "Elasticsearch"
       ],
-      "order": 1,
+      "order": 0,
       "featured": true
     },
     {
@@ -185,7 +96,7 @@
         "Fluentd",
         "ELK"
       ],
-      "order": 2,
+      "order": 1,
       "featured": true
     },
     {
@@ -219,38 +130,7 @@
         "Terraform",
         "Cypress"
       ],
-      "order": 3
-    },
-    {
-      "id": "knowmadmood",
-      "company": "knowmadmood",
-      "companyUrl": "https://www.knowmadmood.com",
-      "position": "DevOps Engineer",
-      "type": "full_time",
-      "startDate": "2021-06-01",
-      "endDate": "2021-09-01",
-      "location": {
-        "city": "Remote",
-        "country": "Spain",
-        "remote": true
-      },
-      "description": "Developed and supported Terraform pipelines in Jenkins for AWS and GCP deployments. Designed CI/CD pipelines with GitHub, for Java apps deployed with Helm to Kubernetes clusters (GKE/EKS). Diagnosed and resolved infrastructure issues on GCP and AWS. Leveraged automation to increase efficiency and consistency in application deployments.",
-      "achievements": [
-        "Contributed to the design and troubleshooting of infrastructure-as-code solutions"
-      ],
-      "technologies": [
-        "Terraform",
-        "Jenkins",
-        "AWS",
-        "GCP",
-        "GitHub",
-        "Java",
-        "Helm",
-        "Kubernetes",
-        "GKE",
-        "EKS"
-      ],
-      "order": 4
+      "order": 2
     },
     {
       "id": "orange-spain-senior",
@@ -282,7 +162,7 @@
         "TV Platform",
         "Infrastructure"
       ],
-      "order": 5
+      "order": 3
     },
     {
       "id": "orange-spain-support",
@@ -314,7 +194,7 @@
         "CDN",
         "Middleware"
       ],
-      "order": 6
+      "order": 4
     },
     {
       "id": "roche",
@@ -343,7 +223,7 @@
         "Application Deployment",
         "Global Infrastructure"
       ],
-      "order": 7
+      "order": 5
     }
   ],
   "skills": [
@@ -386,12 +266,16 @@
         {
           "name": "Terraform",
           "level": "expert",
-          "yearsOfExperience": 5,
           "featured": true
         },
         {
           "name": "Ansible",
           "level": "advanced",
+          "yearsOfExperience": 4
+        },
+        {
+          "name": "Crossplane",
+          "level": "intermediate",
           "yearsOfExperience": 4
         }
       ],
@@ -418,6 +302,11 @@
           "name": "Azure",
           "level": "advanced",
           "yearsOfExperience": 2
+        },
+        {
+          "name": "Cloudflare",
+          "level": "intermediate",
+          "yearsOfExperience": 2
         }
       ],
       "order": 3,
@@ -435,7 +324,7 @@
           "featured": true
         },
         {
-          "name": "API Platforms",
+          "name": "API Gateways",
           "level": "advanced",
           "yearsOfExperience": 2
         },
@@ -449,6 +338,23 @@
       "icon": "architecture"
     }
   ],
+  "education": [
+    {
+      "id": "open-university",
+      "institution": "The Open University",
+      "institutionUrl": "https://www.open.ac.uk",
+      "degree": "Bachelor of Science",
+      "field": "Cybersecurity",
+      "startDate": "2019-01-01",
+      "endDate": null,
+      "location": {
+        "city": "Milton Keynes",
+        "country": "United Kingdom"
+      },
+      "description": "Comprehensive cybersecurity program covering network security, cryptography, ethical hacking, and security architecture",
+      "order": 1
+    }
+  ],
   "certifications": [
     {
       "id": "cka",
@@ -456,8 +362,8 @@
       "issuer": "The Linux Foundation",
       "issuerUrl": "https://www.cncf.io/training/certification/",
       "issueDate": "2022-01-01",
-      "expirationDate": "2025-01-01",
-      "status": "active",
+      "expirationDate": "2025-05-01",
+      "status": "expired",
       "credentialId": "LF-123456",
       "order": 1
     },
@@ -595,23 +501,6 @@
       "featured": true
     }
   ],
-  "education": [
-    {
-      "id": "open-university",
-      "institution": "The Open University",
-      "institutionUrl": "https://www.open.ac.uk",
-      "degree": "Bachelor of Science",
-      "field": "Cybersecurity",
-      "startDate": "2019-01-01",
-      "endDate": null,
-      "location": {
-        "city": "Milton Keynes",
-        "country": "United Kingdom"
-      },
-      "description": "Comprehensive cybersecurity program covering network security, cryptography, ethical hacking, and security architecture",
-      "order": 1
-    }
-  ],
   "languages": [
     {
       "name": "Spanish",
@@ -627,12 +516,12 @@
     {
       "name": "Portuguese",
       "code": "pt",
-      "proficiency": "b2"
+      "proficiency": "c1"
     },
     {
       "name": "German",
       "code": "de",
-      "proficiency": "a2"
+      "proficiency": "b1"
     }
   ],
   "metadata": {

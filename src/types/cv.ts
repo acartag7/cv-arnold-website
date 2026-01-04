@@ -423,6 +423,15 @@ export interface SectionTitles {
   /** Certifications section title (e.g., "certifications.yaml") */
   certifications: string
 
+  /** Languages section title (e.g., "languages.config") */
+  languages?: string
+
+  /** Education section title (e.g., "education.log") */
+  education?: string
+
+  /** Achievements section title (e.g., "achievements.yaml") */
+  achievements?: string
+
   /** Contact section title (e.g., "./send_message.sh") */
   contact: string
 }

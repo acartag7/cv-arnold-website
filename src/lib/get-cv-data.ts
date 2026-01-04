@@ -97,6 +97,7 @@ async function fetchFromKVBinding(
 
     // Validate KV binding shape at runtime (catches configuration errors)
     const potentialBinding = (env as Record<string, unknown>).CV_DATA
+
     if (!isCVDataKVBinding(potentialBinding)) {
       logger.warn('CV_DATA KV binding not available or invalid', {
         hasBinding: potentialBinding != null,
