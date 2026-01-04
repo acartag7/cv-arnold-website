@@ -270,7 +270,7 @@ ${validKVResponse}`
       const result = await getCVData()
 
       expect(mockGetCloudflareContext).toHaveBeenCalledWith({ async: true })
-      expect(mockGet).toHaveBeenCalledWith('cv_data', 'json')
+      expect(mockGet).toHaveBeenCalledWith('cv:data:v1', 'json')
       expect(result.personalInfo.fullName).toBe('KV Test User')
       // Wrangler CLI should NOT be called
       expect(mockExecFileSync).not.toHaveBeenCalled()
@@ -290,7 +290,7 @@ ${validKVResponse}`
 
       const result = await getCVData()
 
-      expect(mockGet).toHaveBeenCalledWith('cv_data', 'json')
+      expect(mockGet).toHaveBeenCalledWith('cv:data:v1', 'json')
       // Should fall back to local file
       expect(result.personalInfo.fullName).toBe('Arnold Cartagena')
     })
@@ -430,7 +430,8 @@ ${validKVResponse}`
 
   describe('__testing exports', () => {
     it('should export DEFAULT_CONFIG with correct values', () => {
-      expect(__testing.DEFAULT_CONFIG.kvKey).toBe('cv_data')
+      // Unified key format: matches KVStorageAdapter
+      expect(__testing.DEFAULT_CONFIG.kvKey).toBe('cv:data:v1')
       expect(__testing.DEFAULT_CONFIG.fallbackPath).toBe(
         './src/data/cv-data.json'
       )
