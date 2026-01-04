@@ -6,11 +6,18 @@
  * with the API worker directly without going over the public internet.
  *
  * Security Features:
- * - Service Binding (no secrets, no network hop, no Access validation needed)
+ * - Service Binding (direct worker-to-worker, no network hop)
  * - Path validation (prevents SSRF/traversal attacks)
  * - Request timeout (25s to stay under Worker limits)
  * - Body size limit (10MB to prevent memory exhaustion)
  * - Structured logging with request correlation
+ * - Cloudflare Access headers forwarded (preserves authentication context)
+ *
+ * Authentication Flow:
+ * 1. User authenticates via Cloudflare Access (on /admin/* or /api/proxy/*)
+ * 2. Cloudflare Access sets Cf-Access-* headers on the request
+ * 3. This proxy forwards those headers to the API worker via Service Binding
+ * 4. API worker validates the headers and authorizes the request
  *
  * @module app/api/proxy/[...path]/route
  */
@@ -29,6 +36,11 @@ const ALLOWED_REQUEST_HEADERS = [
   'accept',
   'accept-language',
   'x-request-id',
+  // Cloudflare Access headers - required for authenticated API calls
+  // These are set by Cloudflare Access after successful authentication
+  // and must be forwarded to the API worker via Service Binding
+  'cf-access-authenticated-user-email',
+  'cf-access-jwt-assertion',
 ]
 
 // Allowed content types for request bodies (defense in depth)

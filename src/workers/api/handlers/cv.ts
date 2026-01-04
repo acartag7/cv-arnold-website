@@ -78,6 +78,12 @@ export interface CVHandlerEnv {
 }
 
 /**
+ * KV key used for CV data storage
+ * This constant should match what KVStorageAdapter generates
+ */
+const CV_DATA_KEY = 'cv:data:v1'
+
+/**
  * Create a KV storage adapter from environment bindings
  */
 function createAdapter(env: CVHandlerEnv): KVStorageAdapter {
@@ -105,14 +111,21 @@ export async function handleGetCV(
   env: CVHandlerEnv
 ): Promise<Response> {
   try {
+    console.log(`[CV] GET: Fetching data from KV key "${CV_DATA_KEY}"`)
     const adapter = createAdapter(env)
     const data = await adapter.getData()
 
     if (!data) {
+      console.warn(`[CV] GET: No data found at key "${CV_DATA_KEY}"`)
       return notFound(
-        'CV data not found. Please initialize with POST /api/v1/cv'
+        `CV data not found. KV key "${CV_DATA_KEY}" is empty. ` +
+          'Seed with: npx wrangler kv key put "cv:data:v1" --path=src/data/cv-data.json --remote'
       )
     }
+
+    console.log(
+      `[CV] GET: Successfully retrieved CV data from "${CV_DATA_KEY}"`
+    )
 
     // Get metadata for cache headers
     const metadata = await adapter.getMetadata()
@@ -127,7 +140,7 @@ export async function handleGetCV(
 
     return jsonResponse(data, HttpStatus.OK, { version: 'v1' }, headers)
   } catch (error) {
-    console.error('Error retrieving CV data:', error)
+    console.error(`[CV] GET: Error retrieving from "${CV_DATA_KEY}":`, error)
     return internalError('Failed to retrieve CV data')
   }
 }
@@ -146,18 +159,25 @@ export async function handlePostCV(
   request: Request,
   env: CVHandlerEnv
 ): Promise<Response> {
+  const userEmail = request.headers.get('Cf-Access-Authenticated-User-Email')
+  console.log(
+    `[CV] POST: Received update request from "${userEmail || 'unknown'}"`
+  )
+
   try {
     // Parse request body
     let body: unknown
     try {
       body = await request.json()
     } catch {
+      console.warn('[CV] POST: Invalid JSON in request body')
       return badRequest('Invalid JSON in request body')
     }
 
     // Validate against schema
     const validation = validateCVData(body)
     if (!validation.success) {
+      console.warn('[CV] POST: Validation failed', validation.error?.details)
       return validationError(
         'CV data validation failed',
         validation.error?.details
@@ -165,9 +185,14 @@ export async function handlePostCV(
     }
 
     // Store in KV - cast validated data to CVData type
+    console.log(`[CV] POST: Storing data to KV key "${CV_DATA_KEY}"`)
     const adapter = createAdapter(env)
     const cvData = validation.data as CVData
     await adapter.updateData(cvData)
+
+    console.log(
+      `[CV] POST: Successfully stored CV data by "${userEmail || 'unknown'}"`
+    )
 
     return jsonResponse(
       cvData,
@@ -176,7 +201,7 @@ export async function handlePostCV(
       { 'Cache-Control': 'no-cache' }
     )
   } catch (error) {
-    console.error('Error storing CV data:', error)
+    console.error(`[CV] POST: Error storing to "${CV_DATA_KEY}":`, error)
     return internalError('Failed to store CV data')
   }
 }

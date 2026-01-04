@@ -445,6 +445,72 @@ describe('API Proxy Route', () => {
     })
   })
 
+  describe('Cloudflare Access Header Forwarding', () => {
+    it('should forward Cf-Access-Authenticated-User-Email header', async () => {
+      const { POST } = await import('../[...path]/route')
+
+      mockAPIFetch.mockResolvedValueOnce(
+        new Response(JSON.stringify({ success: true }), {
+          status: 200,
+          statusText: 'OK',
+          headers: new Headers({ 'content-type': 'application/json' }),
+        })
+      )
+
+      const request = createMockRequest('api/v1/cv', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'cf-access-authenticated-user-email': 'admin@example.com',
+        },
+        body: JSON.stringify({ test: 'data' }),
+      })
+
+      await POST(request, {
+        params: Promise.resolve({ path: ['api', 'v1', 'cv'] }),
+      })
+
+      const call = mockAPIFetch.mock.calls[0]
+      expect(call).toBeDefined()
+      const callArg = call![0] as Request
+      expect(callArg.headers.get('cf-access-authenticated-user-email')).toBe(
+        'admin@example.com'
+      )
+    })
+
+    it('should forward Cf-Access-Jwt-Assertion header', async () => {
+      const { POST } = await import('../[...path]/route')
+
+      mockAPIFetch.mockResolvedValueOnce(
+        new Response(JSON.stringify({ success: true }), {
+          status: 200,
+          statusText: 'OK',
+          headers: new Headers({ 'content-type': 'application/json' }),
+        })
+      )
+
+      const request = createMockRequest('api/v1/cv', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'cf-access-jwt-assertion': 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...',
+        },
+        body: JSON.stringify({ test: 'data' }),
+      })
+
+      await POST(request, {
+        params: Promise.resolve({ path: ['api', 'v1', 'cv'] }),
+      })
+
+      const call = mockAPIFetch.mock.calls[0]
+      expect(call).toBeDefined()
+      const callArg = call![0] as Request
+      expect(callArg.headers.get('cf-access-jwt-assertion')).toBe(
+        'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...'
+      )
+    })
+  })
+
   describe('Error Handling', () => {
     it('should return 502 on service binding errors', async () => {
       const { GET } = await import('../[...path]/route')
