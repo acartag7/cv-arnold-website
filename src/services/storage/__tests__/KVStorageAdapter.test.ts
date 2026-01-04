@@ -56,15 +56,26 @@ describe('KVStorageAdapter', () => {
     kvStore = new Map()
 
     // Mock KV namespace
+    // IMPORTANT: The adapter now uses BINARY-FIRST approach (always reads as arrayBuffer)
     mockNamespace = {
       get: vi.fn(async (key: string, type?: string) => {
         const value = kvStore.get(key)
         if (!value) return null
 
         if (type === 'json') {
-          return JSON.parse(value as string)
+          // Still need this for metadata reads
+          if (typeof value === 'string') {
+            return JSON.parse(value)
+          }
+          return null
         }
         if (type === 'arrayBuffer') {
+          // Convert string data to ArrayBuffer for binary-first reads
+          if (typeof value === 'string') {
+            const encoder = new TextEncoder()
+            return encoder.encode(value).buffer
+          }
+          // Already an ArrayBuffer (compressed)
           return value as ArrayBuffer
         }
         return value as string
@@ -112,7 +123,11 @@ describe('KVStorageAdapter', () => {
 
       // Assert
       expect(result).toEqual(mockCVData)
-      expect(mockNamespace.get).toHaveBeenCalledWith('cv:data:v1', 'json')
+      // Binary-first approach: always reads as arrayBuffer
+      expect(mockNamespace.get).toHaveBeenCalledWith(
+        'cv:data:v1',
+        'arrayBuffer'
+      )
     })
 
     it('should return null when no data exists', async () => {
@@ -209,9 +224,10 @@ describe('KVStorageAdapter', () => {
 
       // Assert
       expect(result).toEqual(mockCVData.personalInfo)
+      // Binary-first approach: always reads as arrayBuffer
       expect(mockNamespace.get).toHaveBeenCalledWith(
         'cv:section:personalInfo:v1',
-        'json'
+        'arrayBuffer'
       )
     })
 
@@ -404,6 +420,48 @@ describe('KVStorageAdapter', () => {
       // Assert
       const storedValue = kvStore.get('cv:data:v1')
       expect(typeof storedValue).toBe('string')
+    })
+
+    it('should read compressed data correctly (round-trip)', async () => {
+      // Arrange: Create large data that will be compressed
+      const largeData: CVData = {
+        ...mockCVData,
+        personalInfo: {
+          ...mockCVData.personalInfo,
+          summary: 'A'.repeat(500), // Large enough to trigger compression
+        },
+      }
+
+      // Act: Write data (will be compressed)
+      await adapter.updateData(largeData)
+
+      // Verify it was compressed (stored as ArrayBuffer)
+      const storedValue = kvStore.get('cv:data:v1')
+      expect(storedValue).toBeInstanceOf(ArrayBuffer)
+
+      // Act: Read data back (should decompress correctly)
+      const result = await adapter.getData()
+
+      // Assert: Data should match original
+      expect(result).toEqual(largeData)
+    })
+
+    it('should handle gzip magic number detection correctly', async () => {
+      // Arrange: Create compressed data with gzip magic number
+      const largeData: CVData = {
+        ...mockCVData,
+        personalInfo: {
+          ...mockCVData.personalInfo,
+          summary: 'B'.repeat(500),
+        },
+      }
+
+      // Write and read
+      await adapter.updateData(largeData)
+      const result = await adapter.getData()
+
+      // The data should be read correctly despite being compressed
+      expect(result?.personalInfo?.summary).toBe('B'.repeat(500))
     })
   })
 

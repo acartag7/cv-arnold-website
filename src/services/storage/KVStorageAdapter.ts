@@ -69,43 +69,51 @@ export class KVStorageAdapter implements ICVRepository {
 
   /**
    * Retrieve complete CV data from KV
+   *
+   * Uses BINARY-FIRST approach to handle both compressed and uncompressed data:
+   * 1. Read as ArrayBuffer (works for both formats)
+   * 2. Check gzip magic number (0x1f 0x8b) to detect compression
+   * 3. Decompress if gzip, otherwise decode as UTF-8 text
+   * 4. Parse JSON and unwrap StoredData format if present
    */
   async getData(): Promise<CVData | null> {
     try {
       const key = KV_KEYS.DATA(this.keyPrefix, this.version)
       logger.debug('KV get data', { key })
 
-      // Try to get as JSON first (uncompressed or wrapped)
-      const stored = await this.namespace.get<StoredData<CVData> | CVData>(
-        key,
-        'json'
-      )
+      // BINARY-FIRST: Read as ArrayBuffer to handle both compressed and uncompressed
+      const buffer = await this.namespace.get(key, 'arrayBuffer')
 
-      if (!stored) {
+      if (!buffer || buffer.byteLength === 0) {
         logger.debug('No CV data found in KV', { key })
         return null
       }
 
-      // Check if data is wrapped with compression metadata
-      if (this.isStoredData(stored)) {
-        if (stored.compressed) {
-          // Data is compressed, need to get as arrayBuffer and decompress
-          const compressed = await this.namespace.get(key, 'arrayBuffer')
-          if (!compressed) return null
+      // Detect format by checking gzip magic number (0x1f 0x8b)
+      let jsonString: string
+      if (this.isGzipData(buffer)) {
+        logger.debug('Decompressing gzip data from KV', { key })
+        jsonString = await this.decompressData(buffer)
+        logger.debug('CV data decompressed', {
+          key,
+          compressedSize: buffer.byteLength,
+          decompressedSize: jsonString.length,
+        })
+      } else {
+        // Uncompressed: decode as UTF-8 text
+        jsonString = new TextDecoder().decode(buffer)
+      }
 
-          const decompressed = await this.decompressData(compressed)
-          const parsed = JSON.parse(decompressed) as StoredData<CVData>
-          logger.debug('CV data retrieved and decompressed from KV', {
-            key,
-            originalSize: compressed.byteLength,
-            decompressedSize: decompressed.length,
-          })
-          return parsed.data
-        }
+      // Parse JSON
+      const stored = JSON.parse(jsonString) as StoredData<CVData> | CVData
+
+      // Handle StoredData wrapper format (from KVStorageAdapter writes)
+      if (this.isStoredData(stored)) {
+        logger.debug('CV data retrieved from KV (StoredData format)', { key })
         return stored.data
       }
 
-      // Legacy: data stored directly without wrapper
+      // Legacy: raw CVData format (from wrangler CLI seeding)
       logger.debug('CV data retrieved from KV (legacy format)', { key })
       return stored as CVData
     } catch (error) {
@@ -209,6 +217,8 @@ export class KVStorageAdapter implements ICVRepository {
 
   /**
    * Get specific section of CV data
+   *
+   * Uses BINARY-FIRST approach (same as getData) to handle compression.
    */
   async getSection<K extends keyof CVData>(
     section: K
@@ -222,35 +232,39 @@ export class KVStorageAdapter implements ICVRepository {
       )
       logger.debug('KV get section', { key, section })
 
-      // Try to get as JSON first (uncompressed or wrapped)
-      const stored = await this.namespace.get<
-        StoredData<CVData[K]> | CVData[K]
-      >(key, 'json')
+      // BINARY-FIRST: Read as ArrayBuffer to handle both compressed and uncompressed
+      const buffer = await this.namespace.get(key, 'arrayBuffer')
 
-      if (!stored) {
+      if (!buffer || buffer.byteLength === 0) {
         logger.debug('No section data found in KV', { key, section })
         return null
       }
 
-      // Check if data is wrapped with compression metadata
-      if (this.isStoredData(stored)) {
-        if (stored.compressed) {
-          // Data is compressed, need to get as arrayBuffer and decompress
-          const compressed = await this.namespace.get(key, 'arrayBuffer')
-          if (!compressed) return null
+      // Detect format by checking gzip magic number
+      let jsonString: string
+      if (this.isGzipData(buffer)) {
+        logger.debug('Decompressing gzip section data from KV', {
+          key,
+          section,
+        })
+        jsonString = await this.decompressData(buffer)
+      } else {
+        jsonString = new TextDecoder().decode(buffer)
+      }
 
-          const decompressed = await this.decompressData(compressed)
-          const parsed = JSON.parse(decompressed) as StoredData<CVData[K]>
-          logger.debug('Section data retrieved and decompressed from KV', {
-            key,
-            section,
-          })
-          return parsed.data
-        }
+      // Parse JSON
+      const stored = JSON.parse(jsonString) as StoredData<CVData[K]> | CVData[K]
+
+      // Handle StoredData wrapper format
+      if (this.isStoredData(stored)) {
+        logger.debug('Section data retrieved from KV (StoredData format)', {
+          key,
+          section,
+        })
         return stored.data
       }
 
-      // Legacy: data stored directly without wrapper
+      // Legacy: raw section data format
       logger.debug('Section data retrieved from KV (legacy format)', {
         key,
         section,
@@ -451,6 +465,15 @@ export class KVStorageAdapter implements ICVRepository {
     return (
       this.enableCompression && serialized.length > this.compressionThreshold
     )
+  }
+
+  /**
+   * Detect if an ArrayBuffer contains gzip-compressed data
+   * by checking for the gzip magic number (0x1f 0x8b)
+   */
+  private isGzipData(buffer: ArrayBuffer): boolean {
+    const bytes = new Uint8Array(buffer)
+    return bytes.length >= 2 && bytes[0] === 0x1f && bytes[1] === 0x8b
   }
 
   /**

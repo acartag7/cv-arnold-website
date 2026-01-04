@@ -259,8 +259,11 @@ ${validKVResponse}`
       vi.stubEnv('NODE_ENV', 'production')
       vi.stubEnv('CI', '')
 
-      // Mock KV binding with valid data
-      const mockGet = vi.fn().mockResolvedValue(validCVData)
+      // Mock KV binding with valid data (returns ArrayBuffer for binary-first approach)
+      const encoder = new TextEncoder()
+      const mockGet = vi
+        .fn()
+        .mockResolvedValue(encoder.encode(JSON.stringify(validCVData)).buffer)
       mockGetCloudflareContext.mockResolvedValue({
         env: { CV_DATA: { get: mockGet } },
         ctx: {},
@@ -270,7 +273,8 @@ ${validKVResponse}`
       const result = await getCVData()
 
       expect(mockGetCloudflareContext).toHaveBeenCalledWith({ async: true })
-      expect(mockGet).toHaveBeenCalledWith('cv:data:v1', 'json')
+      // Binary-first approach: always reads as arrayBuffer
+      expect(mockGet).toHaveBeenCalledWith('cv:data:v1', 'arrayBuffer')
       expect(result.personalInfo.fullName).toBe('KV Test User')
       // Wrangler CLI should NOT be called
       expect(mockExecFileSync).not.toHaveBeenCalled()
@@ -290,7 +294,8 @@ ${validKVResponse}`
 
       const result = await getCVData()
 
-      expect(mockGet).toHaveBeenCalledWith('cv:data:v1', 'json')
+      // Binary-first approach: always reads as arrayBuffer
+      expect(mockGet).toHaveBeenCalledWith('cv:data:v1', 'arrayBuffer')
       // Should fall back to local file
       expect(result.personalInfo.fullName).toBe('Arnold Cartagena')
     })

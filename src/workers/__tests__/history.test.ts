@@ -44,10 +44,22 @@ interface MockKVStore {
 }
 
 // Mock KV namespace
+// IMPORTANT: Supports binary-first approach (arrayBuffer reads)
 function createMockKV(): MockKVStore {
   const store = new Map<string, string>()
   return {
-    get: vi.fn(async (key: string) => store.get(key) ?? null),
+    get: vi.fn(async (key: string, type?: string) => {
+      const value = store.get(key)
+      if (!value) return null
+
+      if (type === 'arrayBuffer') {
+        // Convert string to ArrayBuffer for binary-first reads
+        const encoder = new TextEncoder()
+        return encoder.encode(value).buffer
+      }
+      // Default: return string
+      return value
+    }),
     put: vi.fn(async (key: string, value: string) => {
       store.set(key, value)
     }),
@@ -206,7 +218,8 @@ describe('History Handlers', () => {
 
   describe('handleCreateSnapshot', () => {
     it('should create snapshot of current CV data', async () => {
-      env.CV_DATA._setData('cv:data', validCVData)
+      // Use unified key format cv:data:v1
+      env.CV_DATA._setData('cv:data:v1', validCVData)
 
       const request = createRequest(
         'POST',
@@ -224,7 +237,8 @@ describe('History Handlers', () => {
     })
 
     it('should create snapshot with default description', async () => {
-      env.CV_DATA._setData('cv:data', validCVData)
+      // Use unified key format cv:data:v1
+      env.CV_DATA._setData('cv:data:v1', validCVData)
 
       const request = createRequest('POST')
       const response = await handleCreateSnapshot(request, env)
@@ -244,7 +258,8 @@ describe('History Handlers', () => {
     })
 
     it('should update history index', async () => {
-      env.CV_DATA._setData('cv:data', validCVData)
+      // Use unified key format cv:data:v1
+      env.CV_DATA._setData('cv:data:v1', validCVData)
       env.CV_DATA._setData('cv:history:index', [])
 
       const request = createRequest('POST', { description: 'First' })
@@ -257,7 +272,8 @@ describe('History Handlers', () => {
     })
 
     it('should enforce retention limit', async () => {
-      env.CV_DATA._setData('cv:data', validCVData)
+      // Use unified key format cv:data:v1
+      env.CV_DATA._setData('cv:data:v1', validCVData)
 
       // Create 50 existing snapshots (at the limit)
       const existingSnapshots = Array.from({ length: 50 }, (_, i) => ({

@@ -14,17 +14,33 @@ import {
 } from '../api/router'
 
 // Mock the KV namespace
+// IMPORTANT: Supports binary-first approach (arrayBuffer reads)
 function createMockKV() {
-  const store = new Map<string, string>()
+  const store = new Map<string, string | ArrayBuffer>()
   return {
     get: vi.fn(async (key: string, type?: string) => {
       const value = store.get(key)
       if (!value) return null
-      if (type === 'json') return JSON.parse(value)
-      return value
+
+      if (type === 'json') {
+        // For metadata reads
+        if (typeof value === 'string') {
+          return JSON.parse(value)
+        }
+        return null
+      }
+      if (type === 'arrayBuffer') {
+        // Convert string to ArrayBuffer for binary-first reads
+        if (typeof value === 'string') {
+          const encoder = new TextEncoder()
+          return encoder.encode(value).buffer
+        }
+        return value as ArrayBuffer
+      }
+      return value as string
     }),
-    put: vi.fn(async (key: string, value: string) => {
-      store.set(key, typeof value === 'string' ? value : JSON.stringify(value))
+    put: vi.fn(async (key: string, value: string | ArrayBuffer) => {
+      store.set(key, typeof value === 'string' ? value : value)
     }),
     delete: vi.fn(async (key: string) => {
       store.delete(key)
