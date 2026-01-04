@@ -2,7 +2,9 @@
 
 ## Overview
 
-Build a comprehensive admin interface at `/admin` for CV content management with Cloudflare Access authentication, direct save workflow, side-by-side live preview, version history, and AI-powered content enhancement.
+Build a comprehensive admin interface at `/admin` for CV content management with
+Cloudflare Access authentication, direct save workflow, side-by-side live preview,
+version history, and AI-powered content enhancement.
 
 ## Key Decisions
 
@@ -21,7 +23,7 @@ Build a comprehensive admin interface at `/admin` for CV content management with
 
 ## Architecture
 
-```
+```text
 /admin (protected by Cloudflare Access)
 ├── /admin                    → Dashboard (overview, quick stats, recent history)
 ├── /admin/personal-info      → Personal info editor
@@ -42,7 +44,7 @@ Build a comprehensive admin interface at `/admin` for CV content management with
 
 ### Data Flow
 
-```
+```text
 Admin UI
     ↓ (edit)
 Save Button Clicked
@@ -60,7 +62,7 @@ Static Site rebuilds (async)
 
 ### Version History Flow
 
-```
+```text
 Save triggered
     ↓
 Get current data from KV
@@ -74,7 +76,7 @@ Update history index in KV (list of versions)
 
 ### Authentication Flow
 
-```
+```text
 User visits /admin
     ↓
 Cloudflare Access intercepts (edge)
@@ -399,51 +401,25 @@ Admin UI loads
 
 ## Phase 6: AI-Powered Features
 
-**Integration:** OpenRouter API with free models
+> **📚 Detailed Implementation:** See
+> [task-23-ai-implementation.md](./task-23-ai-implementation.md) for comprehensive
+> AI features documentation including provider abstraction, system prompts,
+> UI components, and implementation code.
 
-### 6.1 Content Enhancement
+**Integration:** OpenRouter API with cascading free model fallback
 
-- "Improve with AI" button on text fields
-- Tone selector: Professional / Concise / Engaging
-- Before/after comparison
-- Accept/reject suggestions
+### Key Features
 
-**Supported Fields:**
-
-- Personal summary
-- Experience descriptions
-- Achievement descriptions
-- Education descriptions
-
-### 6.2 Smart Suggestions
-
-- Suggest achievements based on job description
-- Suggest skills based on experience
-- Suggest keywords for SEO
-- Grammar and clarity check
-
-### 6.3 CV vs Job Description Analysis
-
-- Paste job description input
-- AI analyzes match score
-- Shows strengths and gaps
-- Suggests improvements
-- Interview preparation tips
-
-### 6.4 Free Model Configuration
-
-**Available Models (OpenRouter free tier):**
-
-- `meta-llama/llama-3.2-3b-instruct:free`
-- `google/gemma-2-9b-it:free`
-- `mistralai/mistral-7b-instruct:free`
-
-**Rate Limiting:**
-
-- Track daily usage in KV
-- Show remaining quota
-- Graceful degradation when quota exceeded
-- Optional: BYOK (Bring Your Own Key) for power users
+- **Provider Abstraction** - Swap between OpenRouter, Workers AI, or custom providers
+- **PDF Import** - Upload CV PDF → AI extracts structured data → User confirms → Save
+- **Inline Enhancement** - Enhance, Grammar, Shorter, Expand buttons on textareas
+- **Achievement Generator** - Context-aware suggestions from job descriptions
+- **Skills Suggester** - Analyze experiences to recommend missing skills
+- **Job Match Analyzer** - Compare CV against job descriptions with match score
+- **Multi-Job Comparison** - Compare fit across multiple job postings
+- **Interview Prep** - AI-generated preparation tips
+- **ATS Estimator** - Compatibility score for Applicant Tracking Systems
+- **Free Tier Management** - Cascading fallback (free → other free → paid if available)
 
 ---
 
@@ -544,71 +520,82 @@ Using shadcn/ui components:
 
 ## Subtask Breakdown for TaskMaster
 
-### Phase 0: Data Migration
+### Subtasks 1-4: Data Migration
 
-1. Cloudflare infrastructure setup (user + instructions)
-2. Seed KV with existing cv-data.json
-3. Update frontend to fetch from API
-4. Remove hardcoded data and verify
+- Cloudflare infrastructure setup (user + instructions)
+- Seed KV with existing cv-data.json
+- Update frontend to fetch from API
+- Remove hardcoded data and verify
 
-### Phase 1: Foundation
+### Subtasks 5-9: Foundation
 
-5. Admin route setup and responsive layout
-6. Admin dashboard with quick actions
-7. Admin data service with React Query
-8. History service (R2 snapshots)
-9. Error handling and toast notifications
+- Admin route setup and responsive layout
+- Admin dashboard with quick actions
+- Admin data service with React Query
+- History service (R2 snapshots)
+- Error handling and toast notifications
 
-### Phase 2: Core Sections
+### Subtasks 10-13: Core Sections
 
-10. Personal Info editor with AI enhancement
-11. Experience CRUD with AI suggestions
-12. Skills CRUD (categories + items)
-13. Certifications CRUD with badge preview
+- Personal Info editor with AI enhancement
+- Experience CRUD with AI suggestions
+- Skills CRUD (categories + items)
+- Certifications CRUD with badge preview
 
-### Phase 3: New Sections
+### Subtasks 14-16: New Sections
 
-14. Education section (NEW)
-15. Languages section (NEW)
-16. Achievements CRUD
+- Education section (NEW)
+- Languages section (NEW)
+- Achievements CRUD
 
-### Phase 4: Site Configuration
+### Subtasks 17-20: Site Configuration
 
-17. Hero Stats editor
-18. Section Titles editor
-19. Theme selector with live preview
-20. Site Config editor (branding, SEO)
+- Hero Stats editor
+- Section Titles editor
+- Theme selector with live preview
+- Site Config editor (branding, SEO)
 
-### Phase 5: Advanced
+### Subtasks 21-24: Advanced
 
-21. Profile photo upload (R2)
-22. Export/Import with diff preview
-23. Live preview panel (Notion-style)
-24. Version history browser with restore
+- Profile photo upload (R2)
+- Export/Import with diff preview
+- Live preview panel (Notion-style)
+- Version history browser with restore
 
-### Phase 6: AI Features
+### Subtasks 25-35: AI Features
 
-25. AI content enhancement integration
-26. Smart suggestions (skills, achievements)
-27. CV vs Job Description analyzer
+> See [task-23-ai-implementation.md](./task-23-ai-implementation.md) for detailed
+> implementation.
 
-**Total: 27 subtasks across 6 phases**
+- AI Provider Abstraction & OpenRouter Integration
+- Inline Text Enhancement (Enhance, Grammar, Shorter, Expand)
+- Achievement Generator (context-aware)
+- Skills Suggester (from experience analysis)
+- PDF Import (Setup Wizard + Admin Dashboard)
+- CV vs Job Description Analyzer
+- Multi-Job Comparison
+- Interview Preparation Tips
+- ATS Score Estimator
+- Resume Translation
+- Dashboard AI Hub
+
+Total: 35 subtasks across 6 phases
 
 ---
 
 ## PR Strategy
 
-| Phase   | Subtasks | PR Count | Notes                     |
-| ------- | -------- | -------- | ------------------------- |
-| Phase 0 | 1-4      | 1 PR     | Foundation, must be first |
-| Phase 1 | 5-9      | 1 PR     | Admin shell + services    |
-| Phase 2 | 10-13    | 4 PRs    | 1 per section editor      |
-| Phase 3 | 14-16    | 3 PRs    | 1 per section editor      |
-| Phase 4 | 17-20    | 2 PRs    | Group related config      |
-| Phase 5 | 21-24    | 2 PRs    | Group by complexity       |
-| Phase 6 | 25-27    | 1 PR     | AI features together      |
+| Phase   | Subtasks | PR Count | Notes                              |
+| ------- | -------- | -------- | ---------------------------------- |
+| Phase 0 | 1-4      | 1 PR     | Foundation, must be first          |
+| Phase 1 | 5-9      | 1 PR     | Admin shell + services             |
+| Phase 2 | 10-13    | 4 PRs    | 1 per section editor               |
+| Phase 3 | 14-16    | 3 PRs    | 1 per section editor               |
+| Phase 4 | 17-20    | 2 PRs    | Group related config               |
+| Phase 5 | 21-24    | 2 PRs    | Group by complexity                |
+| Phase 6 | 25-35    | 3 PRs    | Provider+inline, analysis, PDF+hub |
 
-**Total: ~14 PRs**
+Total: ~16 PRs
 
 ---
 
