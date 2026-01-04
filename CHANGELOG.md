@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.5](https://github.com/acartag7/cv-arnold-website/compare/v0.1.4...v0.1.5) (2026-01-04)
+
+
+### 🐛 Bug Fixes
+
+* **cms:** add missing Zod schemas for config fields + full CV display ([#59](https://github.com/acartag7/cv-arnold-website/issues/59)) ([2509a9f](https://github.com/acartag7/cv-arnold-website/commit/2509a9f6e52efc8d0dddbcc75b048baab6a6eea1))
+
 ## [0.1.4](https://github.com/acartag7/cv-arnold-website/compare/v0.1.3...v0.1.4) (2026-01-04)
 
 

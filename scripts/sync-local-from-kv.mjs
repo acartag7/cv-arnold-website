@@ -9,17 +9,16 @@
  */
 
 import { execSync } from 'child_process'
-import { createWriteStream } from 'fs'
-import { writeFile, readFile } from 'fs/promises'
-import { createGunzip } from 'zlib'
-import { pipeline } from 'stream/promises'
+import { writeFile } from 'fs/promises'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
-const KV_NAMESPACE_ID = 'c9df8a4271984ad8bb0a02c30ff3568d'
+// KV namespace ID - can be overridden via environment variable
+const KV_NAMESPACE_ID =
+  process.env.CLOUDFLARE_KV_NAMESPACE_ID || 'c9df8a4271984ad8bb0a02c30ff3568d'
 const KV_KEY = 'cv:data:v1'
 const LOCAL_FILE = join(__dirname, '../src/data/cv-data.json')
 
@@ -27,9 +26,10 @@ async function main() {
   console.log('🔄 Fetching CV data from Cloudflare KV...')
 
   try {
-    // Fetch raw binary data from KV
+    // Use pnpm exec to run wrangler from node_modules
+    // This works in CI where wrangler is installed as a dev dependency
     const result = execSync(
-      `npx wrangler kv key get "${KV_KEY}" --namespace-id=${KV_NAMESPACE_ID} --remote`,
+      `pnpm exec wrangler kv key get "${KV_KEY}" --namespace-id=${KV_NAMESPACE_ID} --remote`,
       { maxBuffer: 10 * 1024 * 1024 } // 10MB buffer, returns Buffer
     )
 
