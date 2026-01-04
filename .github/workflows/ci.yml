@@ -10,6 +10,8 @@ jobs:
   ci:
     name: Code Quality & Build
     runs-on: ubuntu-latest
+    # Skip CI for release-please automated commits (changelog updates)
+    if: "!contains(github.event.head_commit.message, 'chore(main): release')"
 
     steps:
       - name: Checkout code

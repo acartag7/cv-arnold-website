@@ -29,6 +29,10 @@ on:
     paths:
       - 'src/workers/**'
       - 'src/index.ts'
+      - 'src/schemas/**'
+      - 'src/services/**'
+      - 'src/types/**'
+      - 'src/lib/**'
       - 'wrangler.toml'
       - '.github/workflows/deploy-api.yml'
 
