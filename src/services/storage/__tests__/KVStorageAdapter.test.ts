@@ -463,6 +463,69 @@ describe('KVStorageAdapter', () => {
       // The data should be read correctly despite being compressed
       expect(result?.personalInfo?.summary).toBe('B'.repeat(500))
     })
+
+    it('should respect default 10KB compression threshold', async () => {
+      // Arrange: Create adapter with default compression settings (10KB = 10240 bytes)
+      const defaultAdapter = new KVStorageAdapter({
+        namespace: mockNamespace,
+        keyPrefix: 'cv',
+        version: 'v1',
+        enableCompression: true,
+        // Use default compressionThreshold (10240 bytes)
+      })
+
+      // Create data just under 10KB (should NOT be compressed)
+      // Note: The actual serialized size includes StoredData wrapper + CV structure
+      const smallData: CVData = {
+        ...mockCVData,
+        personalInfo: {
+          ...mockCVData.personalInfo,
+          summary: 'X'.repeat(5000), // ~5KB, well under threshold
+        },
+      }
+
+      // Act
+      await defaultAdapter.updateData(smallData)
+
+      // Assert: Data should be stored as string (not compressed)
+      const storedValue = kvStore.get('cv:data:v1')
+      expect(typeof storedValue).toBe('string')
+
+      // Also verify it can be read back correctly
+      const result = await defaultAdapter.getData()
+      expect(result?.personalInfo?.summary).toBe('X'.repeat(5000))
+    })
+
+    it('should compress data above 10KB threshold', async () => {
+      // Arrange: Create adapter with default compression settings (10KB = 10240 bytes)
+      const defaultAdapter = new KVStorageAdapter({
+        namespace: mockNamespace,
+        keyPrefix: 'cv',
+        version: 'v1',
+        enableCompression: true,
+        // Use default compressionThreshold (10240 bytes)
+      })
+
+      // Create data well over 10KB (should be compressed)
+      const largeData: CVData = {
+        ...mockCVData,
+        personalInfo: {
+          ...mockCVData.personalInfo,
+          summary: 'Y'.repeat(15000), // ~15KB, over threshold
+        },
+      }
+
+      // Act
+      await defaultAdapter.updateData(largeData)
+
+      // Assert: Data should be stored as ArrayBuffer (compressed)
+      const storedValue = kvStore.get('cv:data:v1')
+      expect(storedValue).toBeInstanceOf(ArrayBuffer)
+
+      // Also verify it can be read back correctly
+      const result = await defaultAdapter.getData()
+      expect(result?.personalInfo?.summary).toBe('Y'.repeat(15000))
+    })
   })
 
   describe('getMetadata', () => {

@@ -16,7 +16,7 @@
 import type { CVData } from '@/types/cv'
 import type { ICVRepository } from './ICVRepository'
 import type { KVStorageConfig } from './KVConfig'
-import { KV_KEYS } from './KVConfig'
+import { KV_KEYS, isGzipData } from './KVConfig'
 import { CVStorageError } from '@/lib/errors'
 import { createLogger } from '@/lib/logger'
 import { withRetry, isNetworkError } from '@/lib/retry'
@@ -91,7 +91,7 @@ export class KVStorageAdapter implements ICVRepository {
 
       // Detect format by checking gzip magic number (0x1f 0x8b)
       let jsonString: string
-      if (this.isGzipData(buffer)) {
+      if (isGzipData(buffer)) {
         logger.debug('Decompressing gzip data from KV', { key })
         jsonString = await this.decompressData(buffer)
         logger.debug('CV data decompressed', {
@@ -242,7 +242,7 @@ export class KVStorageAdapter implements ICVRepository {
 
       // Detect format by checking gzip magic number
       let jsonString: string
-      if (this.isGzipData(buffer)) {
+      if (isGzipData(buffer)) {
         logger.debug('Decompressing gzip section data from KV', {
           key,
           section,
@@ -465,15 +465,6 @@ export class KVStorageAdapter implements ICVRepository {
     return (
       this.enableCompression && serialized.length > this.compressionThreshold
     )
-  }
-
-  /**
-   * Detect if an ArrayBuffer contains gzip-compressed data
-   * by checking for the gzip magic number (0x1f 0x8b)
-   */
-  private isGzipData(buffer: ArrayBuffer): boolean {
-    const bytes = new Uint8Array(buffer)
-    return bytes.length >= 2 && bytes[0] === 0x1f && bytes[1] === 0x8b
   }
 
   /**

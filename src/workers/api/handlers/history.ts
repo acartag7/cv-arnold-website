@@ -20,7 +20,7 @@
 
 import type { KVNamespace } from '@/services/storage/KVConfig'
 import type { CVData } from '@/types/cv'
-import { KV_KEYS } from '@/services/storage/KVConfig'
+import { KV_KEYS, isGzipData } from '@/services/storage/KVConfig'
 import {
   jsonResponse,
   notFound,
@@ -33,15 +33,6 @@ import {
  * Maximum number of snapshots to retain
  */
 const MAX_SNAPSHOTS = 50
-
-/**
- * Detect if an ArrayBuffer contains gzip-compressed data
- * by checking for the gzip magic number (0x1f 0x8b)
- */
-function isGzipData(buffer: ArrayBuffer): boolean {
-  const bytes = new Uint8Array(buffer)
-  return bytes.length >= 2 && bytes[0] === 0x1f && bytes[1] === 0x8b
-}
 
 /**
  * Decompress gzip data using the Web Streams API

@@ -14,6 +14,7 @@
 
 import type { CVData } from '@/types/cv'
 import { isCVData } from '@/types/cv'
+import { isGzipData } from '@/services/storage/KVConfig'
 import { createLogger } from './logger'
 
 const logger = createLogger('get-cv-data')
@@ -49,19 +50,6 @@ function isStoredData<T>(data: unknown): data is StoredData<T> {
     'compressed' in data &&
     'timestamp' in data
   )
-}
-
-/**
- * Detect if an ArrayBuffer contains gzip-compressed data
- * by checking for the gzip magic number (0x1f 0x8b)
- *
- * Gzip files always start with these two bytes:
- * - 0x1f (31 decimal) - ID1
- * - 0x8b (139 decimal) - ID2
- */
-function isGzipData(buffer: ArrayBuffer): boolean {
-  const bytes = new Uint8Array(buffer)
-  return bytes.length >= 2 && bytes[0] === 0x1f && bytes[1] === 0x8b
 }
 
 /**

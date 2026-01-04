@@ -454,4 +454,204 @@ ${validKVResponse}`
       expect(typeof __testing.fetchFromFile).toBe('function')
     })
   })
+
+  describe('isGzipData helper', () => {
+    it('should return true for valid gzip magic number (0x1f 0x8b)', () => {
+      // Gzip magic number: 0x1f (31) and 0x8b (139)
+      const gzipBuffer = new Uint8Array([0x1f, 0x8b, 0x08, 0x00]).buffer
+      expect(__testing.isGzipData(gzipBuffer)).toBe(true)
+    })
+
+    it('should return false for empty buffer', () => {
+      const emptyBuffer = new ArrayBuffer(0)
+      expect(__testing.isGzipData(emptyBuffer)).toBe(false)
+    })
+
+    it('should return false for single byte buffer', () => {
+      const singleByte = new Uint8Array([0x1f]).buffer
+      expect(__testing.isGzipData(singleByte)).toBe(false)
+    })
+
+    it('should return false for non-gzip data (JSON)', () => {
+      // JSON starts with '{' (0x7b) or '[' (0x5b)
+      const jsonBuffer = new TextEncoder().encode('{"key": "value"}').buffer
+      expect(__testing.isGzipData(jsonBuffer)).toBe(false)
+    })
+
+    it('should return false for wrong magic number first byte', () => {
+      const wrongFirst = new Uint8Array([0x1e, 0x8b, 0x08]).buffer
+      expect(__testing.isGzipData(wrongFirst)).toBe(false)
+    })
+
+    it('should return false for wrong magic number second byte', () => {
+      const wrongSecond = new Uint8Array([0x1f, 0x8a, 0x08]).buffer
+      expect(__testing.isGzipData(wrongSecond)).toBe(false)
+    })
+  })
+
+  describe('isStoredData helper', () => {
+    it('should return true for valid StoredData format', () => {
+      const storedData = {
+        data: validCVData,
+        compressed: false,
+        timestamp: '2025-01-15T00:00:00Z',
+      }
+      expect(__testing.isStoredData(storedData)).toBe(true)
+    })
+
+    it('should return true for compressed StoredData', () => {
+      const storedData = {
+        data: validCVData,
+        compressed: true,
+        timestamp: '2025-01-15T00:00:00Z',
+      }
+      expect(__testing.isStoredData(storedData)).toBe(true)
+    })
+
+    it('should return false for null', () => {
+      expect(__testing.isStoredData(null)).toBe(false)
+    })
+
+    it('should return false for undefined', () => {
+      expect(__testing.isStoredData(undefined)).toBe(false)
+    })
+
+    it('should return false for raw CVData (missing wrapper properties)', () => {
+      expect(__testing.isStoredData(validCVData)).toBe(false)
+    })
+
+    it('should return false for object missing data property', () => {
+      const missingData = {
+        compressed: false,
+        timestamp: '2025-01-15T00:00:00Z',
+      }
+      expect(__testing.isStoredData(missingData)).toBe(false)
+    })
+
+    it('should return false for object missing compressed property', () => {
+      const missingCompressed = {
+        data: validCVData,
+        timestamp: '2025-01-15T00:00:00Z',
+      }
+      expect(__testing.isStoredData(missingCompressed)).toBe(false)
+    })
+
+    it('should return false for object missing timestamp property', () => {
+      const missingTimestamp = {
+        data: validCVData,
+        compressed: false,
+      }
+      expect(__testing.isStoredData(missingTimestamp)).toBe(false)
+    })
+
+    it('should return false for primitive values', () => {
+      expect(__testing.isStoredData('string')).toBe(false)
+      expect(__testing.isStoredData(123)).toBe(false)
+      expect(__testing.isStoredData(true)).toBe(false)
+    })
+  })
+
+  describe('decompressData helper', () => {
+    it('should decompress valid gzip data', async () => {
+      // Create a gzip-compressed string using CompressionStream
+      const originalText = '{"test": "value", "number": 42}'
+      const encoder = new TextEncoder()
+      const originalBytes = encoder.encode(originalText)
+
+      // Compress using CompressionStream (Web Streams API)
+      const compressedStream = new Blob([originalBytes])
+        .stream()
+        .pipeThrough(new CompressionStream('gzip'))
+      const compressedResponse = new Response(compressedStream)
+      const compressedBuffer = await compressedResponse.arrayBuffer()
+
+      // Verify it's actually compressed (has gzip magic number)
+      expect(__testing.isGzipData(compressedBuffer)).toBe(true)
+
+      // Decompress using our helper
+      const decompressed = await __testing.decompressData(compressedBuffer)
+      expect(decompressed).toBe(originalText)
+    })
+
+    it('should handle JSON with unicode characters', async () => {
+      const originalText = '{"name": "日本語", "emoji": "🎉"}'
+      const encoder = new TextEncoder()
+      const originalBytes = encoder.encode(originalText)
+
+      const compressedStream = new Blob([originalBytes])
+        .stream()
+        .pipeThrough(new CompressionStream('gzip'))
+      const compressedResponse = new Response(compressedStream)
+      const compressedBuffer = await compressedResponse.arrayBuffer()
+
+      const decompressed = await __testing.decompressData(compressedBuffer)
+      expect(decompressed).toBe(originalText)
+    })
+
+    it('should handle large data (simulating CV data)', async () => {
+      // Create a large JSON string similar to CV data
+      const largeData = JSON.stringify({
+        version: '1.0.0',
+        data: Array(100)
+          .fill(null)
+          .map((_, i) => ({
+            id: i,
+            title: `Experience ${i}`,
+            description: 'Lorem ipsum '.repeat(50),
+          })),
+      })
+
+      const encoder = new TextEncoder()
+      const originalBytes = encoder.encode(largeData)
+
+      const compressedStream = new Blob([originalBytes])
+        .stream()
+        .pipeThrough(new CompressionStream('gzip'))
+      const compressedResponse = new Response(compressedStream)
+      const compressedBuffer = await compressedResponse.arrayBuffer()
+
+      // Verify compression actually reduced size
+      expect(compressedBuffer.byteLength).toBeLessThan(originalBytes.length)
+
+      const decompressed = await __testing.decompressData(compressedBuffer)
+      expect(decompressed).toBe(largeData)
+    })
+  })
+
+  describe('fetchFromKVBinding with compressed data', () => {
+    it('should decompress and return gzip-compressed CV data', async () => {
+      vi.stubEnv('NODE_ENV', 'production')
+      vi.stubEnv('CI', '')
+
+      // Create gzip-compressed CV data
+      const wrappedData = {
+        data: validCVData,
+        compressed: true,
+        timestamp: new Date().toISOString(),
+      }
+      const jsonString = JSON.stringify(wrappedData)
+      const encoder = new TextEncoder()
+      const originalBytes = encoder.encode(jsonString)
+
+      // Compress using CompressionStream
+      const compressedStream = new Blob([originalBytes])
+        .stream()
+        .pipeThrough(new CompressionStream('gzip'))
+      const compressedResponse = new Response(compressedStream)
+      const compressedBuffer = await compressedResponse.arrayBuffer()
+
+      // Mock KV binding returning compressed data
+      const mockGet = vi.fn().mockResolvedValue(compressedBuffer)
+      mockGetCloudflareContext.mockResolvedValue({
+        env: { CV_DATA: { get: mockGet } },
+        ctx: {},
+        cf: {},
+      } as never)
+
+      const result = await getCVData()
+
+      expect(mockGet).toHaveBeenCalledWith('cv:data:v1', 'arrayBuffer')
+      expect(result.personalInfo.fullName).toBe('KV Test User')
+    })
+  })
 })

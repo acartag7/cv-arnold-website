@@ -88,3 +88,36 @@ export const KV_KEYS = {
   /** Metadata key pattern: cv:metadata */
   METADATA: (prefix: string) => `${prefix}:metadata`,
 } as const
+
+/**
+ * Gzip compression constants
+ *
+ * Gzip files always start with a 2-byte magic number:
+ * - 0x1f (31 decimal) - ID1
+ * - 0x8b (139 decimal) - ID2
+ *
+ * These bytes identify a file as gzip format per RFC 1952.
+ * Used for binary-first KV reads to detect compressed data.
+ */
+export const GZIP_MAGIC = {
+  /** First byte of gzip magic number (ID1) */
+  BYTE_1: 0x1f,
+  /** Second byte of gzip magic number (ID2) */
+  BYTE_2: 0x8b,
+} as const
+
+/**
+ * Check if an ArrayBuffer contains gzip-compressed data
+ * by checking for the gzip magic number (0x1f 0x8b)
+ *
+ * @param buffer - ArrayBuffer to check
+ * @returns true if buffer starts with gzip magic number
+ */
+export function isGzipData(buffer: ArrayBuffer): boolean {
+  const bytes = new Uint8Array(buffer)
+  return (
+    bytes.length >= 2 &&
+    bytes[0] === GZIP_MAGIC.BYTE_1 &&
+    bytes[1] === GZIP_MAGIC.BYTE_2
+  )
+}
