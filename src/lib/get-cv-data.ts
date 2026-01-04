@@ -14,6 +14,11 @@
 
 import type { CVData } from '@/types/cv'
 import { isCVData } from '@/types/cv'
+import {
+  isGzipData,
+  decompressData,
+  isStoredData,
+} from '@/services/storage/KVConfig'
 import { createLogger } from './logger'
 
 const logger = createLogger('get-cv-data')
@@ -21,9 +26,11 @@ const logger = createLogger('get-cv-data')
 /**
  * KV binding interface for CV_DATA
  * Matches the subset of KVNamespace we use
+ * Supports both JSON and ArrayBuffer reads for compression handling
  */
 interface CVDataKVBinding {
   get(key: string, options: 'json'): Promise<unknown>
+  get(key: string, options: 'arrayBuffer'): Promise<ArrayBuffer | null>
 }
 
 /**
@@ -69,6 +76,12 @@ function isCVDataKVBinding(value: unknown): value is CVDataKVBinding {
  * This uses OpenNext's getCloudflareContext to access the KV binding
  * directly at request time, enabling real-time data updates.
  *
+ * Uses BINARY-FIRST approach to handle both compressed and uncompressed data:
+ * 1. Read as ArrayBuffer (works for both formats)
+ * 2. Check gzip magic number (0x1f 0x8b) to detect compression
+ * 3. Decompress if gzip, otherwise decode as UTF-8 text
+ * 4. Parse JSON and unwrap StoredData format if present
+ *
  * @param kvKey - The key to fetch from KV
  * @returns CV data or null if fetch fails
  */
@@ -92,12 +105,47 @@ async function fetchFromKVBinding(
       return null
     }
 
-    // Fetch from KV binding directly
-    const data = await potentialBinding.get(kvKey, 'json')
+    // BINARY-FIRST: Read as ArrayBuffer to handle both compressed and uncompressed
+    const buffer = await potentialBinding.get(kvKey, 'arrayBuffer')
 
-    if (!data) {
+    if (!buffer || buffer.byteLength === 0) {
       logger.warn('No data found in KV for key', { kvKey })
       return null
+    }
+
+    // Detect format by checking gzip magic number (0x1f 0x8b)
+    let jsonString: string
+    if (isGzipData(buffer)) {
+      logger.debug('Decompressing gzip data from KV binding', { kvKey })
+      jsonString = await decompressData(buffer)
+      logger.debug('KV data decompressed', {
+        kvKey,
+        compressedSize: buffer.byteLength,
+        decompressedSize: jsonString.length,
+      })
+    } else {
+      // Uncompressed: decode as UTF-8 text
+      jsonString = new TextDecoder().decode(buffer)
+    }
+
+    // Parse JSON
+    const rawData = JSON.parse(jsonString)
+
+    // Handle both formats:
+    // 1. Raw CVData (from wrangler CLI seeding)
+    // 2. Wrapped StoredData format (from KVStorageAdapter API writes)
+    let data: unknown
+    if (isStoredData(rawData)) {
+      // Data is wrapped in StoredData format from KVStorageAdapter
+      data = rawData.data
+      logger.debug('KV data unwrapped from StoredData format', {
+        kvKey,
+        timestamp: rawData.timestamp,
+      })
+    } else {
+      // Raw CVData format (legacy or from wrangler CLI)
+      data = rawData
+      logger.debug('KV data in raw format', { kvKey })
     }
 
     if (!isCVData(data)) {
@@ -174,7 +222,19 @@ async function fetchFromWranglerCLI(
     }
 
     const jsonContent = lines.slice(jsonStart).join('\n')
-    const data = JSON.parse(jsonContent)
+    const rawData = JSON.parse(jsonContent)
+
+    // Handle both formats (same as fetchFromKVBinding)
+    let data: unknown
+    if (isStoredData(rawData)) {
+      if (rawData.compressed) {
+        logger.warn('Wrangler CLI data is compressed - cannot decode')
+        return null
+      }
+      data = rawData.data
+    } else {
+      data = rawData
+    }
 
     if (!isCVData(data)) {
       logger.warn('Wrangler CLI data failed validation')
@@ -293,5 +353,8 @@ export const __testing = {
   fetchFromKVBinding,
   fetchFromWranglerCLI,
   fetchFromFile,
+  isStoredData,
+  isGzipData,
+  decompressData,
   DEFAULT_CONFIG,
 }

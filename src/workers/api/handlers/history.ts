@@ -21,6 +21,12 @@
 import type { KVNamespace } from '@/services/storage/KVConfig'
 import type { CVData } from '@/types/cv'
 import {
+  KV_KEYS,
+  isGzipData,
+  decompressData,
+  isStoredData,
+} from '@/services/storage/KVConfig'
+import {
   jsonResponse,
   notFound,
   badRequest,
@@ -32,6 +38,36 @@ import {
  * Maximum number of snapshots to retain
  */
 const MAX_SNAPSHOTS = 50
+
+/**
+ * Read CV data from KV with compression support
+ * Uses binary-first approach to handle both compressed and uncompressed data
+ */
+async function readCVDataFromKV(kv: KVNamespace): Promise<CVData | null> {
+  const key = KV_KEYS.DATA('cv', 'v1')
+  const buffer = await kv.get(key, 'arrayBuffer')
+
+  if (!buffer || buffer.byteLength === 0) {
+    return null
+  }
+
+  // Detect and decompress if needed
+  let jsonString: string
+  if (isGzipData(buffer)) {
+    jsonString = await decompressData(buffer)
+  } else {
+    jsonString = new TextDecoder().decode(buffer)
+  }
+
+  const rawData = JSON.parse(jsonString)
+
+  // Unwrap StoredData format if present
+  if (isStoredData<CVData>(rawData)) {
+    return rawData.data
+  }
+
+  return rawData as CVData
+}
 
 /**
  * Snapshot metadata stored in the index
@@ -225,13 +261,11 @@ export async function handleCreateSnapshot(
       // Body is optional, default description used
     }
 
-    // Get current CV data
-    const cvRaw = await env.CV_DATA.get('cv:data')
-    if (!cvRaw) {
+    // Get current CV data using helper with compression support
+    const cvData = await readCVDataFromKV(env.CV_DATA)
+    if (!cvData) {
       return notFound('No CV data found to snapshot')
     }
-
-    const cvData = JSON.parse(cvRaw) as CVData
 
     // Get user email from Cloudflare Access headers
     const createdBy = request.headers.get('Cf-Access-Authenticated-User-Email')
@@ -239,7 +273,9 @@ export async function handleCreateSnapshot(
     // Create snapshot
     const id = generateSnapshotId()
     const timestamp = new Date().toISOString()
-    const size = cvRaw.length
+    // Calculate size from serialized data (for metadata tracking)
+    const cvDataSerialized = JSON.stringify(cvData)
+    const size = cvDataSerialized.length
 
     const snapshot: Snapshot = {
       id,

@@ -91,6 +91,11 @@ function createAdapter(env: CVHandlerEnv): KVStorageAdapter {
     namespace: env.CV_DATA,
     keyPrefix: 'cv',
     version: 'v1',
+    // Compression enabled - all read paths now use binary-first approach:
+    // - KVStorageAdapter.getData/getSection: reads ArrayBuffer, detects gzip, decompresses
+    // - get-cv-data.ts: public site SSR with decompression support
+    // - history.ts: snapshot creation with compression support
+    // Compression threshold: 10KB (default) - only large payloads get compressed
     enableCompression: true,
     compressionThreshold: 10240, // 10KB
   })
