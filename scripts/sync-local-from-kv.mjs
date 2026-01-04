@@ -27,9 +27,10 @@ async function main() {
   console.log('🔄 Fetching CV data from Cloudflare KV...')
 
   try {
-    // Fetch raw binary data from KV
+    // Use pnpm exec to run wrangler from node_modules
+    // This works in CI where wrangler is installed as a dev dependency
     const result = execSync(
-      `npx wrangler kv key get "${KV_KEY}" --namespace-id=${KV_NAMESPACE_ID} --remote`,
+      `pnpm exec wrangler kv key get "${KV_KEY}" --namespace-id=${KV_NAMESPACE_ID} --remote`,
       { maxBuffer: 10 * 1024 * 1024 } // 10MB buffer, returns Buffer
     )
 
