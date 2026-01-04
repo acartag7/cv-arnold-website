@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.3](https://github.com/acartag7/cv-arnold-website/compare/v0.1.2...v0.1.3) (2026-01-04)
+
+
+### 🐛 Bug Fixes
+
+* **proxy:** forward Cloudflare Access auth headers and improve logging ([#54](https://github.com/acartag7/cv-arnold-website/issues/54)) ([7c8e9ed](https://github.com/acartag7/cv-arnold-website/commit/7c8e9ed1ca6f2d6d2bd46b5cea307179fc7bcac0))
+
+
+### ♻️ Refactoring
+
+* **kv:** unify key format to cv:data:v1 across all components ([#55](https://github.com/acartag7/cv-arnold-website/issues/55)) ([391d671](https://github.com/acartag7/cv-arnold-website/commit/391d671718b04f16bbf4336b11241c77bc504736))
+
 ## [0.1.2](https://github.com/acartag7/cv-arnold-website/compare/v0.1.1...v0.1.2) (2026-01-04)
 
 
