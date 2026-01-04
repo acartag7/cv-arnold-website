@@ -513,18 +513,29 @@ export const LanguageSchema = z.object({
 // ============================================================================
 
 /**
+ * CSS color value schema
+ * Accepts: hex (#RGB, #RRGGBB, #RRGGBBAA), rgb/rgba, hsl/hsla, CSS variables
+ */
+const cssColorSchema = z
+  .string()
+  .regex(
+    /^(#[0-9a-fA-F]{3,8}|rgba?\([^)]+\)|hsla?\([^)]+\)|var\(--[a-zA-Z0-9-]+\)|[a-zA-Z]+)$/,
+    'Invalid CSS color format'
+  )
+
+/**
  * Color palette definition (dark or light mode)
  */
 export const ColorPaletteSchema = z.object({
-  bg: z.string(),
-  surface: z.string(),
-  surfaceHover: z.string(),
-  border: z.string(),
-  text: z.string(),
-  textMuted: z.string(),
-  textDim: z.string(),
-  accent: z.string(),
-  accentDim: z.string(),
+  bg: cssColorSchema,
+  surface: cssColorSchema,
+  surfaceHover: cssColorSchema,
+  border: cssColorSchema,
+  text: cssColorSchema,
+  textMuted: cssColorSchema,
+  textDim: cssColorSchema,
+  accent: cssColorSchema,
+  accentDim: cssColorSchema,
 })
 
 /**
