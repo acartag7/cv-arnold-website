@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.4](https://github.com/acartag7/cv-arnold-website/compare/v0.1.3...v0.1.4) (2026-01-04)
+
+
+### 🐛 Bug Fixes
+
+* **storage:** implement binary-first read for KV compression support ([#57](https://github.com/acartag7/cv-arnold-website/issues/57)) ([b864a7a](https://github.com/acartag7/cv-arnold-website/commit/b864a7aa87e67bc2aa447a98c8d6822e7bfab0cd))
+
 ## [0.1.3](https://github.com/acartag7/cv-arnold-website/compare/v0.1.2...v0.1.3) (2026-01-04)
 
 
