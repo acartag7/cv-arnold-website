@@ -15,6 +15,7 @@
     "pages:build": "opennextjs-cloudflare build",
     "pages:preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "pages:deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "sync:kv": "node scripts/sync-local-from-kv.mjs",
     "validate:cv": "tsx scripts/validate-cv-data.ts",
     "test:schemas": "tsx scripts/test-date-validation.ts",
     "test": "vitest run",

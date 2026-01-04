@@ -20,6 +20,9 @@ import {
   Briefcase,
   Star,
   Trophy,
+  GraduationCap,
+  Globe,
+  Medal,
 } from 'lucide-react'
 import { CVData, HeroStat } from '@/types'
 import { useState, useEffect, useMemo } from 'react'
@@ -100,6 +103,9 @@ export function CVPageClient({ data }: CVPageClientProps) {
     experience,
     skills,
     certifications,
+    languages,
+    education,
+    achievements,
     siteConfig,
     heroStats,
     sectionTitles,
@@ -199,6 +205,9 @@ export function CVPageClient({ data }: CVPageClientProps) {
     experience: sectionTitles?.experience || 'experience.log',
     skills: sectionTitles?.skills || 'skills.json',
     certifications: sectionTitles?.certifications || 'certifications.yaml',
+    languages: sectionTitles?.languages || 'languages.config',
+    education: sectionTitles?.education || 'education.log',
+    achievements: sectionTitles?.achievements || 'achievements.yaml',
     contact: sectionTitles?.contact || './send_message.sh',
   }
 
@@ -502,7 +511,7 @@ export function CVPageClient({ data }: CVPageClientProps) {
           </motion.div>
 
           <div className="space-y-6">
-            {experience.slice(0, 4).map((exp, index) => (
+            {experience.map((exp, index) => (
               <motion.div
                 key={exp.id}
                 className="p-6 rounded-lg hover:border-opacity-50 transition-all duration-300"
@@ -538,10 +547,10 @@ export function CVPageClient({ data }: CVPageClientProps) {
                   </div>
                 </div>
                 <p className="text-sm mb-4" style={{ color: colors.textMuted }}>
-                  {exp.description.split('.').slice(0, 2).join('.')}.
+                  {exp.description}
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {exp.technologies.slice(0, 6).map(tech => (
+                  {exp.technologies.map(tech => (
                     <span
                       key={tech}
                       className="text-xs px-2 py-1 rounded"
@@ -697,6 +706,290 @@ export function CVPageClient({ data }: CVPageClientProps) {
           </div>
         </div>
       </section>
+
+      {/* ==================== LANGUAGES ==================== */}
+      {languages && languages.length > 0 && (
+        <section
+          id="languages"
+          className="py-24 px-6 lg:px-12 transition-colors duration-300"
+          style={{ background: colors.surface }}
+        >
+          <div className="max-w-7xl mx-auto">
+            <motion.div
+              className="flex items-center gap-3 mb-12"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+            >
+              <Globe size={20} style={{ color: colors.accent }} />
+              <h2 className="text-2xl font-bold">{titles.languages}</h2>
+            </motion.div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {languages.map((lang, index) => {
+                // CEFR level to percentage mapping
+                const levelMap: Record<string, number> = {
+                  native: 100,
+                  c2: 95,
+                  c1: 85,
+                  b2: 70,
+                  b1: 55,
+                  a2: 40,
+                  a1: 25,
+                }
+                const percentage = levelMap[lang.proficiency] || 50
+                const levelLabel = lang.native
+                  ? 'Native'
+                  : lang.proficiency.toUpperCase()
+
+                return (
+                  <motion.div
+                    key={lang.code}
+                    className="p-4 rounded-lg transition-colors duration-300"
+                    style={{
+                      background: colors.bg,
+                      border: `1px solid ${colors.border}`,
+                    }}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.1 }}
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="font-semibold">{lang.name}</span>
+                      <span
+                        className="text-xs px-2 py-1 rounded"
+                        style={{
+                          background: lang.native
+                            ? colors.accent
+                            : colors.accentDim,
+                          color: lang.native
+                            ? theme === 'dark'
+                              ? colors.bg
+                              : '#FFFFFF'
+                            : colors.accent,
+                        }}
+                      >
+                        {levelLabel}
+                      </span>
+                    </div>
+                    <div
+                      className="h-2 rounded-full overflow-hidden"
+                      style={{ background: colors.border }}
+                    >
+                      <motion.div
+                        className="h-full rounded-full"
+                        style={{ background: colors.accent }}
+                        initial={{ width: 0 }}
+                        whileInView={{ width: `${percentage}%` }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.8, delay: index * 0.1 }}
+                      />
+                    </div>
+                  </motion.div>
+                )
+              })}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ==================== EDUCATION ==================== */}
+      {education && education.length > 0 && (
+        <section id="education" className="py-24 px-6 lg:px-12">
+          <div className="max-w-7xl mx-auto">
+            <motion.div
+              className="flex items-center gap-3 mb-12"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+            >
+              <GraduationCap size={20} style={{ color: colors.accent }} />
+              <h2 className="text-2xl font-bold">{titles.education}</h2>
+            </motion.div>
+
+            <div className="space-y-6">
+              {education.map((edu, index) => (
+                <motion.div
+                  key={edu.id}
+                  className="p-6 rounded-lg hover:border-opacity-50 transition-all duration-300"
+                  style={{
+                    background: colors.surface,
+                    border: `1px solid ${colors.border}`,
+                  }}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
+                    <div>
+                      <h3 className="text-lg font-semibold mb-1">
+                        {edu.degree} in {edu.field}
+                      </h3>
+                      <p className="text-sm" style={{ color: colors.accent }}>
+                        {edu.institution}
+                      </p>
+                      {edu.location && (
+                        <p
+                          className="text-xs mt-1"
+                          style={{ color: colors.textMuted }}
+                        >
+                          📍 {edu.location.city}, {edu.location.country}
+                        </p>
+                      )}
+                    </div>
+                    <div
+                      className="text-xs px-3 py-1 rounded"
+                      style={{
+                        background: colors.accentDim,
+                        color: colors.accent,
+                      }}
+                    >
+                      {new Date(edu.startDate).getFullYear()} -{' '}
+                      {edu.endDate
+                        ? new Date(edu.endDate).getFullYear()
+                        : 'Present'}
+                    </div>
+                  </div>
+                  {edu.description && (
+                    <p
+                      className="text-sm mb-4"
+                      style={{ color: colors.textMuted }}
+                    >
+                      {edu.description}
+                    </p>
+                  )}
+                  {edu.grade && (
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="text-xs"
+                        style={{ color: colors.textMuted }}
+                      >
+                        Grade:
+                      </span>
+                      <span
+                        className="text-xs px-2 py-1 rounded"
+                        style={{ background: colors.bg, color: colors.text }}
+                      >
+                        {edu.grade}
+                      </span>
+                    </div>
+                  )}
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ==================== ACHIEVEMENTS ==================== */}
+      {achievements && achievements.length > 0 && (
+        <section
+          id="achievements"
+          className="py-24 px-6 lg:px-12 transition-colors duration-300"
+          style={{ background: colors.surface }}
+        >
+          <div className="max-w-7xl mx-auto">
+            <motion.div
+              className="flex items-center gap-3 mb-12"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+            >
+              <Medal size={20} style={{ color: colors.accent }} />
+              <h2 className="text-2xl font-bold">{titles.achievements}</h2>
+            </motion.div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {achievements.map((achievement, index) => {
+                // Category icon mapping
+                const categoryIcons: Record<string, typeof Trophy> = {
+                  award: Trophy,
+                  publication: Code,
+                  speaking: Users,
+                  project: Terminal,
+                  contribution: GitBranch,
+                }
+                const CategoryIcon =
+                  categoryIcons[achievement.category] || Award
+
+                return (
+                  <motion.div
+                    key={achievement.id}
+                    className="p-4 rounded-lg transition-colors duration-300"
+                    style={{
+                      background: colors.bg,
+                      border: `1px solid ${achievement.featured ? colors.accent : colors.border}`,
+                    }}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.05 }}
+                  >
+                    <div className="flex items-start gap-3 mb-3">
+                      <CategoryIcon
+                        size={16}
+                        className="mt-1 flex-shrink-0"
+                        style={{ color: colors.accent }}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-sm font-semibold mb-1">
+                          {achievement.title}
+                        </h4>
+                        {achievement.issuer && (
+                          <p
+                            className="text-xs"
+                            style={{ color: colors.textMuted }}
+                          >
+                            {achievement.issuer}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    {achievement.description && (
+                      <p
+                        className="text-xs mb-3"
+                        style={{ color: colors.textMuted }}
+                      >
+                        {achievement.description}
+                      </p>
+                    )}
+                    <div className="flex items-center justify-between">
+                      <span
+                        className="text-xs px-2 py-1 rounded capitalize"
+                        style={{
+                          background: colors.accentDim,
+                          color: colors.accent,
+                        }}
+                      >
+                        {achievement.category}
+                      </span>
+                      <span
+                        className="text-xs"
+                        style={{ color: colors.textDim }}
+                      >
+                        {new Date(achievement.date).getFullYear()}
+                      </span>
+                    </div>
+                    {achievement.url && (
+                      <a
+                        href={achievement.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block mt-3 text-xs hover:underline"
+                        style={{ color: colors.accent }}
+                      >
+                        View details →
+                      </a>
+                    )}
+                  </motion.div>
+                )
+              })}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ==================== CONTACT ==================== */}
       <section

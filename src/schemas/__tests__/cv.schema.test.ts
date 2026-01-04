@@ -21,6 +21,13 @@ import {
   LanguageSchema,
   CVDataSchema,
   DateRangeSchema,
+  // Configuration Schemas
+  ColorPaletteSchema,
+  ThemeConfigSchema,
+  SiteConfigSchema,
+  HeroStatSchema,
+  SectionTitlesSchema,
+  FeaturedHighlightSchema,
   // Helper functions
   validateCVData,
   parseCVData,
@@ -602,5 +609,533 @@ describe('validateCVDataPartial', () => {
     const result = validateCVDataPartial(invalidPartial)
     expect(result.success).toBe(false)
     expect(result.error).toBeDefined()
+  })
+})
+
+// ============================================================================
+// Configuration Schema Tests
+// ============================================================================
+
+describe('CSS Color Validation', () => {
+  const TestSchema = z.object({ color: ColorPaletteSchema.shape.bg })
+
+  it.each([
+    ['#fff', true],
+    ['#ffffff', true],
+    ['#FFFFFF', true],
+    ['#ffffffaa', true],
+    ['rgb(255, 255, 255)', true],
+    ['rgba(255, 255, 255, 0.5)', true],
+    ['hsl(0, 0%, 100%)', true],
+    ['hsla(0, 0%, 100%, 0.5)', true],
+    ['var(--my-color)', true],
+    ['white', true],
+    ['transparent', true],
+    ['not-a-color', false],
+    ['#gg0000', false],
+    ['rgb()', false],
+  ])('should validate CSS color "%s" as %s', (color, isValid) => {
+    if (isValid) {
+      expect(() => TestSchema.parse({ color })).not.toThrow()
+    } else {
+      expect(() => TestSchema.parse({ color })).toThrow(/Invalid CSS color/)
+    }
+  })
+})
+
+describe('ColorPaletteSchema', () => {
+  const validPalette = {
+    bg: '#1a1a2e',
+    surface: '#16213e',
+    surfaceHover: '#1f3a5f',
+    border: '#0f3460',
+    text: '#e4e4e7',
+    textMuted: '#a1a1aa',
+    textDim: '#71717a',
+    accent: '#00ff88',
+    accentDim: '#00cc6a',
+  }
+
+  it('should accept valid color palette', () => {
+    expect(ColorPaletteSchema.parse(validPalette)).toBeDefined()
+  })
+
+  it('should reject palette with missing fields', () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { bg, ...incomplete } = validPalette
+    expect(() => ColorPaletteSchema.parse(incomplete)).toThrow()
+  })
+
+  it('should reject palette with invalid color values', () => {
+    expect(() =>
+      ColorPaletteSchema.parse({ ...validPalette, bg: 'not-a-color' })
+    ).toThrow(/Invalid CSS color/)
+  })
+
+  it('should accept CSS variables in palette', () => {
+    expect(
+      ColorPaletteSchema.parse({
+        ...validPalette,
+        bg: 'var(--background)',
+        accent: 'var(--accent-color)',
+      })
+    ).toBeDefined()
+  })
+})
+
+describe('ThemeConfigSchema', () => {
+  const validPalette = {
+    bg: '#1a1a2e',
+    surface: '#16213e',
+    surfaceHover: '#1f3a5f',
+    border: '#0f3460',
+    text: '#e4e4e7',
+    textMuted: '#a1a1aa',
+    textDim: '#71717a',
+    accent: '#00ff88',
+    accentDim: '#00cc6a',
+  }
+
+  const validThemeConfig = {
+    defaultTheme: 'dark' as const,
+    allowToggle: true,
+    dark: validPalette,
+    light: { ...validPalette, bg: '#ffffff', text: '#1a1a2e' },
+  }
+
+  it('should accept valid theme config', () => {
+    expect(ThemeConfigSchema.parse(validThemeConfig)).toBeDefined()
+  })
+
+  it('should accept theme config with activePreset', () => {
+    expect(
+      ThemeConfigSchema.parse({ ...validThemeConfig, activePreset: 'green' })
+    ).toBeDefined()
+    expect(
+      ThemeConfigSchema.parse({ ...validThemeConfig, activePreset: 'custom' })
+    ).toBeDefined()
+  })
+
+  it.each([['dark'], ['light'], ['system']])(
+    'should accept defaultTheme "%s"',
+    theme => {
+      expect(
+        ThemeConfigSchema.parse({
+          ...validThemeConfig,
+          defaultTheme: theme,
+        })
+      ).toBeDefined()
+    }
+  )
+
+  it('should reject invalid defaultTheme', () => {
+    expect(() =>
+      ThemeConfigSchema.parse({ ...validThemeConfig, defaultTheme: 'auto' })
+    ).toThrow()
+  })
+
+  it('should reject invalid activePreset', () => {
+    expect(() =>
+      ThemeConfigSchema.parse({ ...validThemeConfig, activePreset: 'red' })
+    ).toThrow()
+  })
+
+  it('should reject theme config without required palettes', () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { dark, ...incomplete } = validThemeConfig
+    expect(() => ThemeConfigSchema.parse(incomplete)).toThrow()
+  })
+})
+
+describe('SiteConfigSchema', () => {
+  const validSiteConfig = {
+    branding: 'My CV',
+    version: '1.0.0',
+  }
+
+  it('should accept minimal valid site config', () => {
+    expect(SiteConfigSchema.parse(validSiteConfig)).toBeDefined()
+  })
+
+  it('should accept site config with all optional fields', () => {
+    const fullConfig = {
+      ...validSiteConfig,
+      navLinks: [
+        { label: 'Home', href: '/' },
+        { label: 'GitHub', href: 'https://github.com', external: true },
+      ],
+      footerText: '© 2024 My Name',
+      seo: {
+        title: 'My CV',
+        description: 'Professional CV',
+        keywords: ['developer', 'engineer'],
+        ogImage: 'https://example.com/og.png',
+      },
+    }
+    expect(SiteConfigSchema.parse(fullConfig)).toBeDefined()
+  })
+
+  it('should reject branding exceeding 100 characters', () => {
+    expect(() =>
+      SiteConfigSchema.parse({
+        ...validSiteConfig,
+        branding: 'x'.repeat(101),
+      })
+    ).toThrow(/100/)
+  })
+
+  it('should reject version exceeding 50 characters', () => {
+    expect(() =>
+      SiteConfigSchema.parse({
+        ...validSiteConfig,
+        version: 'x'.repeat(51),
+      })
+    ).toThrow(/50/)
+  })
+
+  it('should reject footerText exceeding 500 characters', () => {
+    expect(() =>
+      SiteConfigSchema.parse({
+        ...validSiteConfig,
+        footerText: 'x'.repeat(501),
+      })
+    ).toThrow(/500/)
+  })
+})
+
+describe('HeroStatSchema', () => {
+  const validHeroStat = {
+    id: 'stat-1',
+    value: '10+',
+    label: 'Years Experience',
+    icon: 'terminal' as const,
+    order: 0,
+  }
+
+  it('should accept valid hero stat', () => {
+    expect(HeroStatSchema.parse(validHeroStat)).toBeDefined()
+  })
+
+  it.each([
+    'terminal',
+    'shield',
+    'cloud',
+    'server',
+    'code',
+    'award',
+    'users',
+    'briefcase',
+    'star',
+    'trophy',
+  ])('should accept icon "%s"', icon => {
+    expect(HeroStatSchema.parse({ ...validHeroStat, icon })).toBeDefined()
+  })
+
+  it('should reject invalid icon', () => {
+    expect(() =>
+      HeroStatSchema.parse({ ...validHeroStat, icon: 'rocket' })
+    ).toThrow()
+  })
+
+  it('should reject value exceeding 50 characters', () => {
+    expect(() =>
+      HeroStatSchema.parse({ ...validHeroStat, value: 'x'.repeat(51) })
+    ).toThrow(/50/)
+  })
+
+  it('should reject label exceeding 100 characters', () => {
+    expect(() =>
+      HeroStatSchema.parse({ ...validHeroStat, label: 'x'.repeat(101) })
+    ).toThrow(/100/)
+  })
+
+  it('should reject negative order', () => {
+    expect(() =>
+      HeroStatSchema.parse({ ...validHeroStat, order: -1 })
+    ).toThrow()
+  })
+
+  it('should reject non-integer order', () => {
+    expect(() =>
+      HeroStatSchema.parse({ ...validHeroStat, order: 1.5 })
+    ).toThrow()
+  })
+})
+
+describe('SectionTitlesSchema', () => {
+  const validSectionTitles = {
+    heroPath: 'My Journey',
+    experience: 'Experience',
+    skills: 'Skills',
+    certifications: 'Certifications',
+    contact: 'Contact',
+  }
+
+  it('should accept minimal valid section titles', () => {
+    expect(SectionTitlesSchema.parse(validSectionTitles)).toBeDefined()
+  })
+
+  it('should accept section titles with all optional fields', () => {
+    const fullTitles = {
+      ...validSectionTitles,
+      languages: 'Languages',
+      education: 'Education',
+      achievements: 'Achievements',
+    }
+    expect(SectionTitlesSchema.parse(fullTitles)).toBeDefined()
+  })
+
+  it('should reject title exceeding 100 characters', () => {
+    expect(() =>
+      SectionTitlesSchema.parse({
+        ...validSectionTitles,
+        heroPath: 'x'.repeat(101),
+      })
+    ).toThrow(/100/)
+  })
+
+  it('should reject missing required fields', () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { heroPath, ...incomplete } = validSectionTitles
+    expect(() => SectionTitlesSchema.parse(incomplete)).toThrow()
+  })
+})
+
+describe('FeaturedHighlightSchema', () => {
+  const validHighlight = {
+    id: 'highlight-1',
+    title: 'AWS Solutions Architect',
+    subtitle: 'Professional certification',
+    icon: 'award' as const,
+    section: 'certifications' as const,
+    enabled: true,
+  }
+
+  it('should accept valid featured highlight', () => {
+    expect(FeaturedHighlightSchema.parse(validHighlight)).toBeDefined()
+  })
+
+  it.each(['award', 'shield', 'star', 'trophy'])(
+    'should accept icon "%s"',
+    icon => {
+      expect(
+        FeaturedHighlightSchema.parse({ ...validHighlight, icon })
+      ).toBeDefined()
+    }
+  )
+
+  it.each(['certifications', 'achievements', 'experience'])(
+    'should accept section "%s"',
+    section => {
+      expect(
+        FeaturedHighlightSchema.parse({ ...validHighlight, section })
+      ).toBeDefined()
+    }
+  )
+
+  it('should reject invalid icon', () => {
+    expect(() =>
+      FeaturedHighlightSchema.parse({ ...validHighlight, icon: 'medal' })
+    ).toThrow()
+  })
+
+  it('should reject invalid section', () => {
+    expect(() =>
+      FeaturedHighlightSchema.parse({ ...validHighlight, section: 'projects' })
+    ).toThrow()
+  })
+
+  it('should reject title exceeding 100 characters', () => {
+    expect(() =>
+      FeaturedHighlightSchema.parse({
+        ...validHighlight,
+        title: 'x'.repeat(101),
+      })
+    ).toThrow(/100/)
+  })
+
+  it('should reject subtitle exceeding 200 characters', () => {
+    expect(() =>
+      FeaturedHighlightSchema.parse({
+        ...validHighlight,
+        subtitle: 'x'.repeat(201),
+      })
+    ).toThrow(/200/)
+  })
+
+  it('should require enabled to be boolean', () => {
+    expect(() =>
+      FeaturedHighlightSchema.parse({ ...validHighlight, enabled: 'true' })
+    ).toThrow()
+  })
+})
+
+describe('CVDataSchema with configuration fields', () => {
+  const minimalValidCV = {
+    version: '1.0.0',
+    lastUpdated: '2024-01-15',
+    personalInfo: {
+      fullName: 'John Doe',
+      title: 'Developer',
+      email: 'john@example.com',
+      location: {
+        city: 'SF',
+        country: 'USA',
+        countryCode: 'us',
+      },
+      social: {},
+      summary: 'A passionate developer.',
+      availability: { status: 'available' as const },
+    },
+  }
+
+  const validPalette = {
+    bg: '#1a1a2e',
+    surface: '#16213e',
+    surfaceHover: '#1f3a5f',
+    border: '#0f3460',
+    text: '#e4e4e7',
+    textMuted: '#a1a1aa',
+    textDim: '#71717a',
+    accent: '#00ff88',
+    accentDim: '#00cc6a',
+  }
+
+  it('should accept CV with themeConfig', () => {
+    const cvWithTheme = {
+      ...minimalValidCV,
+      themeConfig: {
+        defaultTheme: 'dark' as const,
+        allowToggle: true,
+        dark: validPalette,
+        light: validPalette,
+      },
+    }
+    const result = CVDataSchema.parse(cvWithTheme)
+    expect(result.themeConfig).toBeDefined()
+    expect(result.themeConfig?.defaultTheme).toBe('dark')
+  })
+
+  it('should accept CV with siteConfig', () => {
+    const cvWithSite = {
+      ...minimalValidCV,
+      siteConfig: {
+        branding: 'My CV',
+        version: '1.0.0',
+      },
+    }
+    const result = CVDataSchema.parse(cvWithSite)
+    expect(result.siteConfig).toBeDefined()
+    expect(result.siteConfig?.branding).toBe('My CV')
+  })
+
+  it('should accept CV with heroStats array', () => {
+    const cvWithStats = {
+      ...minimalValidCV,
+      heroStats: [
+        {
+          id: 'stat-1',
+          value: '10+',
+          label: 'Years',
+          icon: 'terminal' as const,
+          order: 0,
+        },
+      ],
+    }
+    const result = CVDataSchema.parse(cvWithStats)
+    expect(result.heroStats).toHaveLength(1)
+  })
+
+  it('should accept CV with sectionTitles', () => {
+    const cvWithTitles = {
+      ...minimalValidCV,
+      sectionTitles: {
+        heroPath: 'Journey',
+        experience: 'Work',
+        skills: 'Tech Stack',
+        certifications: 'Certs',
+        contact: 'Get in Touch',
+      },
+    }
+    const result = CVDataSchema.parse(cvWithTitles)
+    expect(result.sectionTitles).toBeDefined()
+  })
+
+  it('should accept CV with featuredHighlights array', () => {
+    const cvWithHighlights = {
+      ...minimalValidCV,
+      featuredHighlights: [
+        {
+          id: 'hl-1',
+          title: 'Featured',
+          subtitle: 'Subtitle',
+          icon: 'star' as const,
+          section: 'achievements' as const,
+          enabled: true,
+        },
+      ],
+    }
+    const result = CVDataSchema.parse(cvWithHighlights)
+    expect(result.featuredHighlights).toHaveLength(1)
+  })
+
+  it('should preserve all config fields (regression test for Zod stripping)', () => {
+    const fullCV = {
+      ...minimalValidCV,
+      themeConfig: {
+        defaultTheme: 'dark' as const,
+        allowToggle: true,
+        activePreset: 'green' as const,
+        dark: validPalette,
+        light: validPalette,
+      },
+      siteConfig: {
+        branding: 'My CV',
+        version: '1.0.0',
+        footerText: '© 2024',
+      },
+      heroStats: [
+        {
+          id: 's1',
+          value: '10+',
+          label: 'Years',
+          icon: 'terminal' as const,
+          order: 0,
+        },
+      ],
+      sectionTitles: {
+        heroPath: 'Journey',
+        experience: 'Work',
+        skills: 'Skills',
+        certifications: 'Certs',
+        languages: 'Languages',
+        education: 'Education',
+        achievements: 'Achievements',
+        contact: 'Contact',
+      },
+      featuredHighlights: [
+        {
+          id: 'h1',
+          title: 'AWS Pro',
+          subtitle: 'Certification',
+          icon: 'award' as const,
+          section: 'certifications' as const,
+          enabled: true,
+        },
+      ],
+    }
+
+    const result = CVDataSchema.parse(fullCV)
+
+    // All config fields should be preserved
+    expect(result.themeConfig).toBeDefined()
+    expect(result.themeConfig?.activePreset).toBe('green')
+    expect(result.siteConfig).toBeDefined()
+    expect(result.siteConfig?.footerText).toBe('© 2024')
+    expect(result.heroStats).toHaveLength(1)
+    expect(result.sectionTitles?.languages).toBe('Languages')
+    expect(result.sectionTitles?.education).toBe('Education')
+    expect(result.sectionTitles?.achievements).toBe('Achievements')
+    expect(result.featuredHighlights).toHaveLength(1)
   })
 })

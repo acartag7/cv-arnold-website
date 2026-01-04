@@ -10,6 +10,8 @@ jobs:
   ci:
     name: Code Quality & Build
     runs-on: ubuntu-latest
+    # Skip CI for release-please automated commits (changelog updates)
+    if: "!contains(github.event.head_commit.message, 'chore(main): release')"
 
     steps:
       - name: Checkout code
@@ -41,6 +43,12 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Sync CV data from KV
+        continue-on-error: true
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: pnpm run sync:kv || echo "⚠️ KV sync failed, using existing local data"
 
       - name: Run ESLint
         run: pnpm run lint
