@@ -41,7 +41,9 @@ interface CVDataConfig {
 const DEFAULT_CONFIG: CVDataConfig = {
   kvNamespaceId:
     process.env.KV_CV_DATA_ID || 'c9df8a4271984ad8bb0a02c30ff3568d',
-  kvKey: 'cv_data',
+  // Unified key format: matches KVStorageAdapter (cv:data:v1)
+  // Previously was 'cv_data' (legacy format)
+  kvKey: 'cv:data:v1',
   fallbackPath: './src/data/cv-data.json',
 }
 

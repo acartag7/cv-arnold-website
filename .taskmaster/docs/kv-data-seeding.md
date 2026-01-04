@@ -11,50 +11,35 @@ This document explains how to seed/populate the Cloudflare KV namespaces with CV
 
 ## Key Structure
 
-**IMPORTANT: There are TWO key formats in use!**
+All components use the **unified key format**:
 
-### Current Key Usage
+| Key                    | Purpose                                     |
+| ---------------------- | ------------------------------------------- |
+| `cv:data:v1`           | Main CV data (full JSON document)           |
+| `cv:metadata`          | Metadata (lastUpdated, version info)        |
+| `cv:section:{name}:v1` | Individual sections (optional, for caching) |
 
-| Component       | Key          | Format | Notes                                             |
-| --------------- | ------------ | ------ | ------------------------------------------------- |
-| Public Site SSR | `cv_data`    | Legacy | Used by `getCVData()` in `src/lib/get-cv-data.ts` |
-| API Worker      | `cv:data:v1` | New    | Used by `KVStorageAdapter`                        |
+### Components Using This Format
 
-Both keys should contain the same data for consistency.
+- **Public Site SSR**: `getCVData()` in `src/lib/get-cv-data.ts`
+- **API Worker**: `KVStorageAdapter` in `src/services/storage/`
 
-### KVStorageAdapter Key Format (New)
-
-```text
-cv:data:v1      - Main CV data (full JSON document)
-cv:metadata     - Metadata (lastUpdated, version info)
-cv:section:{name}:v1 - Individual sections (optional caching)
-```
-
-### Legacy SSR Key Format
-
-```text
-cv_data         - Main CV data (used by public site SSR fallback)
-```
+> **Note**: Previously, the public site used a legacy `cv_data` key format.
+> This was unified in January 2026. If you see old `cv_data` keys in KV,
+> they can be safely deleted.
 
 ## Seeding Production KV
 
 ### Option 1: Direct KV Write via Wrangler (Recommended for Initial Setup)
 
 ```bash
-# Upload CV data to BOTH keys for consistency
-# New format (API Worker)
+# Upload CV data to production KV
 npx wrangler kv key put "cv:data:v1" \
   --namespace-id=c9df8a4271984ad8bb0a02c30ff3568d \
   --path=src/data/cv-data.json \
   --remote
 
-# Legacy format (Public Site SSR)
-npx wrangler kv key put "cv_data" \
-  --namespace-id=c9df8a4271984ad8bb0a02c30ff3568d \
-  --path=src/data/cv-data.json \
-  --remote
-
-# Verify both keys were created
+# Verify the key was created
 npx wrangler kv key list \
   --namespace-id=c9df8a4271984ad8bb0a02c30ff3568d \
   --remote
@@ -111,11 +96,18 @@ See `src/data/cv-data.json` for a complete example.
 
 ### 404 "CV data not found"
 
-This error means the KV namespace is empty. Solution:
+This error means the KV namespace is empty. The error message now includes
+the key name and seeding hint:
+
+```text
+CV data not found. KV key "cv:data:v1" is empty.
+Seed with: npx wrangler kv key put "cv:data:v1" --path=src/data/cv-data.json --remote
+```
+
+**Solution:**
 
 1. Verify the KV namespace ID is correct
-2. Verify the key format is `cv:data:v1`
-3. Run the seeding command above
+2. Run the seeding command from the error message
 
 ### Verifying Data
 
@@ -127,15 +119,21 @@ npx wrangler kv key list --namespace-id=<NAMESPACE_ID> --remote
 npx wrangler kv key get "cv:data:v1" --namespace-id=<NAMESPACE_ID> --remote
 ```
 
-### Understanding the Legacy Key
+### Cleaning Up Legacy Keys
 
-If you see a key named `cv_data` (without colons), this is the legacy format.
-The new adapter uses `cv:data:v1`. Both may coexist, but the adapter reads
-from `cv:data:v1`.
+If you see a key named `cv_data` (without colons), this is the legacy format
+that is no longer used. You can safely delete it:
+
+```bash
+npx wrangler kv key delete "cv_data" \
+  --namespace-id=c9df8a4271984ad8bb0a02c30ff3568d \
+  --remote
+```
 
 ## Related Files
 
-- `src/services/storage/KVStorageAdapter.ts` - KV adapter implementation
+- `src/lib/get-cv-data.ts` - Public site SSR data fetching
+- `src/services/storage/KVStorageAdapter.ts` - API worker KV adapter
 - `src/services/storage/KVConfig.ts` - Key format constants
 - `src/data/cv-data.json` - Source CV data
 - `src/workers/api/handlers/cv.ts` - API handlers that read from KV
