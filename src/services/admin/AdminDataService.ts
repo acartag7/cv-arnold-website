@@ -4,6 +4,9 @@
  * Client-side service for managing CV data through the API.
  * Used by the admin interface to fetch and update CV data.
  *
+ * All requests go through /api/proxy/* which adds Cloudflare Access
+ * service token headers before forwarding to the actual API.
+ *
  * @module services/admin/AdminDataService
  */
 
@@ -13,9 +16,10 @@ import { createLogger } from '@/lib/logger'
 const logger = createLogger('AdminDataService')
 
 /**
- * API base URL - uses environment variable or defaults to relative path
+ * Proxy base URL - all admin API calls go through the server-side proxy
+ * which adds Cloudflare Access service token authentication
  */
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || ''
+const PROXY_BASE_URL = '/api/proxy'
 
 /**
  * Custom error class for API errors
@@ -77,13 +81,17 @@ export interface PreviewResult {
 }
 
 /**
- * Make an authenticated API request
+ * Make an authenticated API request through the proxy
+ *
+ * The proxy route (/api/proxy/*) runs server-side and adds Cloudflare Access
+ * service token headers before forwarding to the API. This keeps the service
+ * token secret (never exposed to the browser).
  */
 async function apiRequest<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
-  const url = `${API_BASE_URL}${endpoint}`
+  const url = `${PROXY_BASE_URL}${endpoint}`
 
   const response = await fetch(url, {
     ...options,
@@ -161,7 +169,7 @@ export const AdminDataService = {
    * Export CV data as JSON or YAML
    */
   async exportData(format: 'json' | 'yaml' = 'json'): Promise<Blob> {
-    const url = `${API_BASE_URL}/api/v1/cv/export?format=${format}`
+    const url = `${PROXY_BASE_URL}/api/v1/cv/export?format=${format}`
     const response = await fetch(url)
 
     if (!response.ok) {
@@ -183,7 +191,7 @@ export const AdminDataService = {
 
     logger.info('Importing CV data', { filename: file.name, contentType })
 
-    const response = await fetch(`${API_BASE_URL}/api/v1/cv/import`, {
+    const response = await fetch(`${PROXY_BASE_URL}/api/v1/cv/import`, {
       method: 'POST',
       headers: {
         'Content-Type': contentType,
@@ -214,7 +222,7 @@ export const AdminDataService = {
     logger.info('Previewing import', { filename: file.name })
 
     const response = await fetch(
-      `${API_BASE_URL}/api/v1/cv/import?preview=true`,
+      `${PROXY_BASE_URL}/api/v1/cv/import?preview=true`,
       {
         method: 'POST',
         headers: {

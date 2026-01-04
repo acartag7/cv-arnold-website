@@ -1,9 +1,15 @@
 /**
  * Tests for AdminDataService client-side API wrapper
+ *
+ * Note: AdminDataService routes all requests through /api/proxy/* which
+ * adds Cloudflare Access service token headers server-side.
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { AdminDataService, AdminAPIError } from '../AdminDataService'
+
+// Proxy base URL - all admin API calls go through this server-side proxy
+const PROXY_BASE = '/api/proxy'
 
 // Mock CV data for testing
 const mockCVData = {
@@ -48,7 +54,10 @@ describe('AdminDataService', () => {
 
       const result = await AdminDataService.getData()
 
-      expect(mockFetch).toHaveBeenCalledWith('/api/v1/cv', expect.any(Object))
+      expect(mockFetch).toHaveBeenCalledWith(
+        `${PROXY_BASE}/api/v1/cv`,
+        expect.any(Object)
+      )
       expect(result).toEqual(mockCVData)
     })
 
@@ -100,7 +109,7 @@ describe('AdminDataService', () => {
       const result = await AdminDataService.getSection('experience')
 
       expect(mockFetch).toHaveBeenCalledWith(
-        '/api/v1/cv/sections/experience',
+        `${PROXY_BASE}/api/v1/cv/sections/experience`,
         expect.any(Object)
       )
       expect(result).toEqual(mockExperience)
@@ -116,7 +125,7 @@ describe('AdminDataService', () => {
 
       await AdminDataService.updateData(mockCVData)
 
-      expect(mockFetch).toHaveBeenCalledWith('/api/v1/cv', {
+      expect(mockFetch).toHaveBeenCalledWith(`${PROXY_BASE}/api/v1/cv`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(mockCVData),
@@ -149,7 +158,9 @@ describe('AdminDataService', () => {
 
       const result = await AdminDataService.exportData('json')
 
-      expect(mockFetch).toHaveBeenCalledWith('/api/v1/cv/export?format=json')
+      expect(mockFetch).toHaveBeenCalledWith(
+        `${PROXY_BASE}/api/v1/cv/export?format=json`
+      )
       expect(result).toEqual(mockBlob)
     })
 
@@ -164,7 +175,9 @@ describe('AdminDataService', () => {
 
       const result = await AdminDataService.exportData('yaml')
 
-      expect(mockFetch).toHaveBeenCalledWith('/api/v1/cv/export?format=yaml')
+      expect(mockFetch).toHaveBeenCalledWith(
+        `${PROXY_BASE}/api/v1/cv/export?format=yaml`
+      )
       expect(result).toEqual(mockBlob)
     })
   })
@@ -184,7 +197,7 @@ describe('AdminDataService', () => {
 
       const result = await AdminDataService.importData(file)
 
-      expect(mockFetch).toHaveBeenCalledWith('/api/v1/cv/import', {
+      expect(mockFetch).toHaveBeenCalledWith(`${PROXY_BASE}/api/v1/cv/import`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: expect.any(String),
@@ -235,11 +248,14 @@ describe('AdminDataService', () => {
 
       const result = await AdminDataService.previewImport(file)
 
-      expect(mockFetch).toHaveBeenCalledWith('/api/v1/cv/import?preview=true', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: expect.any(String),
-      })
+      expect(mockFetch).toHaveBeenCalledWith(
+        `${PROXY_BASE}/api/v1/cv/import?preview=true`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: expect.any(String),
+        }
+      )
       expect(result.preview).toBe(true)
     })
   })

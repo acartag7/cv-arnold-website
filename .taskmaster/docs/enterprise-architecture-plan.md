@@ -33,9 +33,15 @@ Refactoring CV Arnold Website from messy infrastructure to enterprise-grade with
 
 ### Security
 
-- **Public site** (`/`): No authentication required, uses SSR
+- **Public site** (`/`): No authentication required, uses SSR (reads from KV directly)
 - **Admin** (`/admin/*`): Protected by Cloudflare Access (GitHub OAuth)
-- **API** (`api.*/*`): Protected by Cloudflare Access (same session)
+- **API Proxy** (`/api/proxy/*`): Protected by Cloudflare Access (same policy as admin)
+- **API** (`api.*/*`): Protected by Cloudflare Access (service token + email policy)
+
+**Backend for Frontend (BFF) Pattern:**
+The admin panel communicates with the API via a server-side proxy (`/api/proxy/*`).
+This proxy adds Cloudflare Access service token headers before forwarding requests.
+See `.taskmaster/docs/api-proxy-security-review.md` for full security analysis.
 
 ### KV Namespaces
 

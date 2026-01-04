@@ -163,12 +163,27 @@ resource "cloudflare_zero_trust_access_application" "admin" {
     uri  = "${local.prod_frontend}/admin*"
   }
 
+  # Production API proxy route (used by admin panel)
+  destinations {
+    type = "public"
+    uri  = "${local.prod_frontend}/api/proxy/*"
+  }
+
   # Dev admin route
   dynamic "destinations" {
     for_each = var.enable_dev_environment ? [1] : []
     content {
       type = "public"
       uri  = "${local.dev_frontend}/admin*"
+    }
+  }
+
+  # Dev API proxy route
+  dynamic "destinations" {
+    for_each = var.enable_dev_environment ? [1] : []
+    content {
+      type = "public"
+      uri  = "${local.dev_frontend}/api/proxy/*"
     }
   }
 }
@@ -188,6 +203,13 @@ resource "cloudflare_zero_trust_access_policy" "admin_allow" {
 # =============================================================================
 # Cloudflare Access - API Protection
 # =============================================================================
+# The API is protected by Cloudflare Access for direct browser access.
+# However, the frontend communicates with the API via Service Bindings
+# (worker-to-worker calls), which bypass Access entirely.
+#
+# This means:
+# - Direct API access (api.arnoldcartagena.com) requires GitHub OAuth
+# - Frontend proxy (/api/proxy/*) uses Service Binding (no tokens needed)
 
 resource "cloudflare_zero_trust_access_application" "api" {
   account_id       = var.cloudflare_account_id
@@ -195,13 +217,11 @@ resource "cloudflare_zero_trust_access_application" "api" {
   type             = "self_hosted"
   session_duration = "24h"
 
-  # Production API - all routes protected
   destinations {
     type = "public"
     uri  = "${local.prod_api}/*"
   }
 
-  # Dev API
   dynamic "destinations" {
     for_each = var.enable_dev_environment ? [1] : []
     content {
@@ -211,10 +231,11 @@ resource "cloudflare_zero_trust_access_application" "api" {
   }
 }
 
-resource "cloudflare_zero_trust_access_policy" "api_allow" {
+# Policy 1: Allow authenticated users (email-based)
+resource "cloudflare_zero_trust_access_policy" "api_allow_users" {
   account_id     = var.cloudflare_account_id
   application_id = cloudflare_zero_trust_access_application.api.id
-  name           = "Allow API Access"
+  name           = "Allow API Users"
   precedence     = 1
   decision       = "allow"
 
