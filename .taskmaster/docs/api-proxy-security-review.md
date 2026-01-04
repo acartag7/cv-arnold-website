@@ -1,7 +1,7 @@
 # API Proxy Security Review
 
-**Date:** 2026-01-03
-**Pattern:** Backend for Frontend (BFF) / API Proxy
+**Date:** 2026-01-04
+**Pattern:** Backend for Frontend (BFF) with Service Bindings
 **Status:** ✅ Reviewed and Secured
 
 ---
@@ -32,29 +32,23 @@
 │   ┌─────────────────────────────────────────────────────────────────┐  │
 │   │  Proxy Route (Server-side, runs in Worker)                      │  │
 │   │                                                                 │  │
-│   │  • Reads CF_ACCESS_CLIENT_ID from environment (secret)          │  │
-│   │  • Reads CF_ACCESS_CLIENT_SECRET from environment (secret)      │  │
-│   │  • Adds headers to outgoing request                             │  │
+│   │  Uses Cloudflare Service Binding to call API Worker             │  │
+│   │  • Direct worker-to-worker call (no HTTP, no internet)          │  │
+│   │  • No secrets or tokens needed                                  │  │
+│   │  • Bypasses Access (internal call)                              │  │
 │   └─────────────────────────────────────────────────────────────────┘  │
 │        │                                                                │
-└────────┼────────────────────────────────────────────────────────────────┘
-         │
-         │ 3. HTTPS request with service token headers
-         │    CF-Access-Client-Id: xxxxx.access
-         │    CF-Access-Client-Secret: xxxxx
-         │
-         ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│                        SECURITY BOUNDARY                                 │
-│                   (Cloudflare Access - Service Token)                    │
-├─────────────────────────────────────────────────────────────────────────┤
-│                                                                         │
+│        │ 3. Service Binding: env.API.fetch(request)                    │
+│        │    Direct function call, same server thread                   │
+│        │                                                                │
+│        ▼                                                                │
 │   ┌─────────────────────────────────────────────────────────────────┐  │
-│   │  api.arnoldcartagena.com/*  (Protected by Access)               │  │
+│   │  API Worker (cv-arnold-api)                                     │  │
 │   │                                                                 │  │
-│   │  Validates:                                                     │  │
-│   │  • Service token (CF-Access-Client-Id + CF-Access-Client-Secret)│  │
-│   │  • OR user email (if direct browser access with Access cookie)  │  │
+│   │  Called via Service Binding:                                    │  │
+│   │  • No network hop                                               │  │
+│   │  • No Access validation needed (trusted internal call)          │  │
+│   │  • ~0ms latency overhead                                        │  │
 │   └─────────────────────────────────────────────────────────────────┘  │
 │        │                                                                │
 │        ▼                                                                │
@@ -71,21 +65,22 @@
 
 ### 1. Authentication Layers
 
-| Layer                             | Protection        | Validates                       |
-| --------------------------------- | ----------------- | ------------------------------- |
-| Admin Panel (`/admin/*`)          | Cloudflare Access | GitHub OAuth (your emails only) |
-| Proxy Route (`/api/proxy/*`)      | Cloudflare Access | GitHub OAuth (your emails only) |
-| API (`api.arnoldcartagena.com/*`) | Cloudflare Access | Service token OR email          |
+| Layer                        | Protection        | Validates                       |
+| ---------------------------- | ----------------- | ------------------------------- |
+| Admin Panel (`/admin/*`)     | Cloudflare Access | GitHub OAuth (your emails only) |
+| Proxy Route (`/api/proxy/*`) | Cloudflare Access | GitHub OAuth (your emails only) |
+| API (direct access)          | Cloudflare Access | GitHub OAuth (optional)         |
+| API (via Service Binding)    | None needed       | Internal call, trusted          |
 
-### 2. Service Token Security
+### 2. Service Binding Security
 
-| Aspect    | Implementation                                | Risk Mitigation                          |
-| --------- | --------------------------------------------- | ---------------------------------------- |
-| Storage   | Cloudflare Worker secrets (encrypted at rest) | Never in git, never in logs              |
-| Injection | GitHub Actions at deploy time                 | Secrets not in wrangler.toml             |
-| Exposure  | Server-side only (never sent to browser)      | Proxy runs in Worker, not client JS      |
-| Rotation  | 1-year expiry, managed via Terraform          | Annual rotation reminder                 |
-| Scope     | Only valid for CV API Access app              | Cannot access other Cloudflare resources |
+| Aspect             | Implementation                           | Benefit                   |
+| ------------------ | ---------------------------------------- | ------------------------- |
+| No secrets         | Service binding uses internal call       | Nothing to leak or rotate |
+| No network         | Worker-to-worker, same thread            | No MITM possible          |
+| No Access bypass   | Binding is internal, Access not involved | Simpler security model    |
+| Deployment control | API must be deployed first               | Controlled dependency     |
+| Same account only  | Both workers in same CF account          | Implicit trust boundary   |
 
 ### 3. Request Flow Security
 
@@ -94,13 +89,45 @@
    → Cloudflare Access returns 403 (no valid session)
 
 ❌ BLOCKED: curl https://api.arnoldcartagena.com/api/v1/cv
-   → Cloudflare Access returns 403 (no service token or session)
+   → Cloudflare Access returns 403 (no session, optional protection)
 
-✅ ALLOWED: Browser with valid Access session → /api/proxy/* → API
+✅ ALLOWED: Browser with valid Access session → /api/proxy/* → Service Binding → API
    → User authenticated via GitHub OAuth
-   → Proxy adds service token
-   → API validates service token
+   → Proxy uses service binding (internal call)
+   → API processes request directly
 ```
+
+---
+
+## Proxy Route Security Features
+
+### Path Validation (SSRF Prevention)
+
+```typescript
+// Only allows paths starting with 'api/'
+// Filters out '..' and '.' segments
+function validatePath(pathSegments: string[]): {
+  valid: boolean
+  sanitized?: string
+  error?: string
+}
+```
+
+### Request Limits
+
+| Limit     | Value | Purpose                           |
+| --------- | ----- | --------------------------------- |
+| Body size | 10MB  | Prevent memory exhaustion         |
+| Timeout   | 25s   | Stay under Cloudflare's 30s limit |
+
+### Header Allowlist
+
+Only these headers are forwarded:
+
+- `content-type`
+- `accept`
+- `accept-language`
+- `x-request-id`
 
 ---
 
@@ -108,74 +135,85 @@
 
 ### Threats Mitigated
 
-| Threat                           | Mitigation                                             |
-| -------------------------------- | ------------------------------------------------------ |
-| Unauthorized API access          | Cloudflare Access on both proxy and API                |
-| Service token theft from browser | Token never sent to client (server-side only)          |
-| Service token in git             | Stored in Cloudflare secrets + GitHub secrets          |
-| Man-in-the-middle                | HTTPS enforced, TLS 1.2+ required                      |
-| Cross-origin attacks             | Same-origin proxy, CORS not applicable                 |
-| Session hijacking                | Cloudflare Access manages sessions with secure cookies |
+| Threat                  | Mitigation                                 |
+| ----------------------- | ------------------------------------------ |
+| Unauthorized API access | Cloudflare Access on proxy route           |
+| Secret theft            | No secrets (service binding)               |
+| Token rotation burden   | No tokens to rotate                        |
+| Man-in-the-middle       | Internal call, no network hop              |
+| Cross-origin attacks    | Same-origin proxy, CORS not applicable     |
+| Session hijacking       | Cloudflare Access manages sessions         |
+| Path traversal          | Path validation filters dangerous segments |
+| Request smuggling       | Header allowlist prevents injection        |
 
 ### Residual Risks (Accepted)
 
-| Risk                                  | Likelihood | Impact | Mitigation                                |
-| ------------------------------------- | ---------- | ------ | ----------------------------------------- |
-| Cloudflare breach                     | Very Low   | High   | Trust Cloudflare's security posture       |
-| GitHub Actions compromise             | Low        | High   | Enable branch protection, require reviews |
-| Service token expiry during operation | Low        | Low    | 1-year expiry, monitor renewal            |
+| Risk                             | Likelihood | Impact | Mitigation                          |
+| -------------------------------- | ---------- | ------ | ----------------------------------- |
+| Cloudflare breach                | Very Low   | High   | Trust Cloudflare's security posture |
+| Worker deployment race condition | Low        | Low    | Deploy API before frontend          |
 
 ---
 
-## Comparison: Why This Pattern?
+## Comparison: Service Binding vs Service Token
 
-### Option 1: Public API + API-level Auth (Rejected)
+| Aspect                 | Service Token (Previous)   | Service Binding (Current) |
+| ---------------------- | -------------------------- | ------------------------- |
+| Secrets to manage      | 2 (ID + Secret)            | 0                         |
+| Rotation needed        | Annually                   | Never                     |
+| Network hops           | 2 (proxy → internet → API) | 0 (direct call)           |
+| Latency                | ~10-50ms added             | ~0ms added                |
+| Access policies needed | 2 apps, 3 policies         | 1 app, 1 policy           |
+| Attack surface         | Token could leak           | No external surface       |
+| Complexity             | Medium                     | Low                       |
 
-```text
-❌ Browser → API (with API key in request)
+---
+
+## Configuration
+
+### wrangler.pages.toml
+
+```toml
+# Service binding to API worker
+[[services]]
+binding = "API"
+service = "cv-arnold-api"
+
+# Dev environment
+[[env.dev.services]]
+binding = "API"
+service = "cv-arnold-api-dev"
 ```
 
-- API key would be visible in browser DevTools
-- Anyone could extract and reuse the key
+### Proxy Route Usage
 
-### Option 2: Same-origin API Routes (Considered)
+```typescript
+import { getCloudflareContext } from '@opennextjs/cloudflare'
 
-```text
-✓ Browser → /api/cv (Next.js API route with direct KV access)
+const { env } = getCloudflareContext()
+const response = await env.API.fetch(request)
 ```
-
-- Would require moving all API logic into frontend
-- Loses separation between frontend and API workers
-- More complex deployment
-
-### Option 3: BFF Proxy Pattern (Chosen) ✅
-
-```text
-✓ Browser → /api/proxy/* → API (with service token)
-```
-
-- Clean separation of concerns
-- Service token never exposed to client
-- Both endpoints protected by Access
-- Industry standard pattern (Netflix, Spotify, etc.)
 
 ---
 
 ## Verification Checklist
 
 - [x] Proxy route protected by Cloudflare Access
-- [x] API protected by Cloudflare Access
-- [x] Service token stored as secret (not in code)
-- [x] Service token added server-side only
-- [x] HTTPS enforced on all endpoints
-- [x] Access policies restrict to allowed emails only
+- [x] Service binding configured in wrangler.pages.toml
+- [x] Path validation prevents SSRF/traversal
+- [x] Body size limit (10MB) enforced
+- [x] Timeout (25s) prevents hanging requests
+- [x] Header allowlist prevents injection
+- [x] No secrets in code or environment
 - [ ] Verify proxy returns 403 without valid Access session (manual test)
-- [ ] Verify API returns 403 without service token (manual test)
+- [ ] Verify service binding works after deployment (manual test)
 
 ---
 
 ## References
 
-- [Cloudflare Access Service Tokens](https://developers.cloudflare.com/cloudflare-one/identity/service-tokens/)
+- [Cloudflare Service Bindings](https://developers.cloudflare.com/workers/runtime-apis/bindings/service-bindings/)
+- [Service Bindings GA Blog](https://blog.cloudflare.com/service-bindings-ga/)
+- [OpenNext Cloudflare Context](https://opennext.js.org/cloudflare)
 - [Backend for Frontend Pattern](https://samnewman.io/patterns/architectural/bff/)
 - [OWASP API Security](https://owasp.org/www-project-api-security/)

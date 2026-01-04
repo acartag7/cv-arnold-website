@@ -96,12 +96,6 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           wranglerVersion: '4.54.0'
           command: deploy --config wrangler.pages.toml
-          secrets: |
-            CF_ACCESS_CLIENT_ID
-            CF_ACCESS_CLIENT_SECRET
-        env:
-          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
-          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
 
       - name: Deploy to Dev
         if: env.DEPLOY_ENV == 'dev' && github.event_name != 'pull_request'
@@ -112,12 +106,6 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           wranglerVersion: '4.54.0'
           command: deploy --config wrangler.pages.toml --env dev
-          secrets: |
-            CF_ACCESS_CLIENT_ID
-            CF_ACCESS_CLIENT_SECRET
-        env:
-          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
-          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
 
       - name: Deploy Preview (PR)
         if: github.event_name == 'pull_request'
@@ -128,12 +116,6 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           wranglerVersion: '4.54.0'
           command: deploy --config wrangler.pages.toml
-          secrets: |
-            CF_ACCESS_CLIENT_ID
-            CF_ACCESS_CLIENT_SECRET
-        env:
-          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
-          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
 
       - name: Comment preview URL on PR
         if: github.event_name == 'pull_request'

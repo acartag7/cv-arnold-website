@@ -40,7 +40,16 @@ id = "c9df8a4271984ad8bb0a02c30ff3568d"
 
 [vars]
 API_URL = "https://api.arnoldcartagena.com"
-# CF_ACCESS_CLIENT_ID and CF_ACCESS_CLIENT_SECRET are set as secrets in Cloudflare dashboard
+
+# =============================================================================
+# Service Bindings (Worker-to-Worker communication)
+# =============================================================================
+# Direct binding to API worker - no HTTP, no Access tokens needed
+# The API worker must be deployed before the frontend worker
+
+[[services]]
+binding = "API"
+service = "cv-arnold-api"
 
 # =============================================================================
 # Observability
@@ -58,6 +67,11 @@ name = "cv-arnold-website-dev"
 
 [env.dev.vars]
 API_URL = "https://api-dev.arnoldcartagena.com"
+
+# Dev service binding
+[[env.dev.services]]
+binding = "API"
+service = "cv-arnold-api-dev"
 
 [env.dev.assets]
 binding = "ASSETS"
