@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/acartag7/cv-arnold-website/compare/v0.1.1...v0.1.2) (2026-01-04)
+
+
+### ✨ Features
+
+* **security:** implement BFF proxy pattern for API authentication ([#50](https://github.com/acartag7/cv-arnold-website/issues/50)) ([7280c35](https://github.com/acartag7/cv-arnold-website/commit/7280c35c28895602d144212a31279c340e960b9d))
+
 ## [0.1.1](https://github.com/acartag7/cv-arnold-website/compare/v0.1.0...v0.1.1) (2026-01-03)
 
 
