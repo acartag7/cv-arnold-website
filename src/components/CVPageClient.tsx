@@ -168,9 +168,25 @@ export function CVPageClient({ data }: CVPageClientProps) {
   // Build theme colors from CMS config with fallback to defaults
   const colors = useMemo(() => {
     const defaults = DEFAULT_PALETTES[theme]
+    const presets = themeConfig?.presets
 
-    // Try to get colors from active preset first
-    const presetColors = themeConfig?.presets?.[activePreset]?.[theme]
+    // Validate preset exists before lookup (type safety)
+    const presetColors =
+      presets && activePreset in presets
+        ? presets[activePreset]?.[theme]
+        : undefined
+
+    // Warn in development if preset not found
+    if (
+      process.env.NODE_ENV === 'development' &&
+      activePreset &&
+      presets &&
+      !(activePreset in presets)
+    ) {
+      console.warn(
+        `[ThemePreset] Preset "${activePreset}" not found, using defaults`
+      )
+    }
 
     // Fall back to themeConfig.dark/light for backwards compatibility
     const cmsColors = presetColors || themeConfig?.[theme]
