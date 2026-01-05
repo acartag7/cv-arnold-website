@@ -133,6 +133,37 @@
       "order": 2
     },
     {
+      "id": "knowmadmood",
+      "company": "knowmadmood",
+      "companyUrl": "https://www.knowmadmood.com",
+      "position": "DevOps Engineer",
+      "type": "full_time",
+      "startDate": "2021-06-01",
+      "endDate": "2021-09-01",
+      "location": {
+        "city": "Remote",
+        "country": "Spain",
+        "remote": true
+      },
+      "description": "Developed and supported Terraform pipelines in Jenkins for AWS and GCP deployments. Designed CI/CD pipelines with GitHub, for Java apps deployed with Helm to Kubernetes clusters (GKE/EKS). Diagnosed and resolved infrastructure issues on GCP and AWS. Leveraged automation to increase efficiency and consistency in application deployments.",
+      "achievements": [
+        "Contributed to the design and troubleshooting of infrastructure-as-code solutions"
+      ],
+      "technologies": [
+        "Terraform",
+        "Jenkins",
+        "AWS",
+        "GCP",
+        "GitHub",
+        "Java",
+        "Helm",
+        "Kubernetes",
+        "GKE",
+        "EKS"
+      ],
+      "order": 3
+    },
+    {
       "id": "orange-spain-senior",
       "company": "Orange Spain",
       "companyUrl": "https://www.orange.es",
@@ -162,7 +193,7 @@
         "TV Platform",
         "Infrastructure"
       ],
-      "order": 3
+      "order": 4
     },
     {
       "id": "orange-spain-support",
@@ -194,7 +225,7 @@
         "CDN",
         "Middleware"
       ],
-      "order": 4
+      "order": 5
     },
     {
       "id": "roche",
@@ -223,10 +254,37 @@
         "Application Deployment",
         "Global Infrastructure"
       ],
-      "order": 5
+      "order": 6
     }
   ],
   "skills": [
+    {
+      "id": "cloud-platforms",
+      "name": "Cloud Platforms",
+      "description": "Multi-cloud expertise across AWS, GCP, and Azure",
+      "skills": [
+        {
+          "name": "AWS",
+          "level": "expert",
+          "yearsOfExperience": 6,
+          "featured": true
+        },
+        {
+          "name": "GCP",
+          "level": "advanced",
+          "yearsOfExperience": 4,
+          "featured": true
+        },
+        {
+          "name": "Azure",
+          "level": "intermediate",
+          "yearsOfExperience": 2,
+          "featured": false
+        }
+      ],
+      "order": 1,
+      "icon": "cloud"
+    },
     {
       "id": "container-orchestration",
       "name": "Container Orchestration",
@@ -235,107 +293,222 @@
         {
           "name": "Kubernetes",
           "level": "expert",
-          "yearsOfExperience": 6,
+          "yearsOfExperience": 5,
           "featured": true
         },
         {
           "name": "OpenShift",
           "level": "advanced",
-          "yearsOfExperience": 2,
+          "yearsOfExperience": 3,
           "featured": true
         },
         {
           "name": "EKS",
-          "level": "advanced",
-          "yearsOfExperience": 4
+          "level": "expert",
+          "yearsOfExperience": 4,
+          "featured": true
         },
         {
           "name": "GKE",
           "level": "advanced",
-          "yearsOfExperience": 3
+          "yearsOfExperience": 3,
+          "featured": true
+        },
+        {
+          "name": "TKG",
+          "level": "advanced",
+          "yearsOfExperience": 2,
+          "featured": false
         }
       ],
-      "order": 1,
+      "order": 2,
       "icon": "container"
     },
     {
       "id": "infrastructure-as-code",
       "name": "Infrastructure as Code",
-      "description": "IaC frameworks and automation",
+      "description": "IaC frameworks and automation tools",
       "skills": [
         {
           "name": "Terraform",
-          "level": "expert",
-          "featured": true
-        },
-        {
-          "name": "Ansible",
-          "level": "advanced",
-          "yearsOfExperience": 4
-        },
-        {
-          "name": "Crossplane",
-          "level": "intermediate",
-          "yearsOfExperience": 4
-        }
-      ],
-      "order": 2,
-      "icon": "code"
-    },
-    {
-      "id": "cloud-platforms",
-      "name": "Cloud Platforms",
-      "description": "Multi-cloud expertise",
-      "skills": [
-        {
-          "name": "AWS",
           "level": "expert",
           "yearsOfExperience": 5,
           "featured": true
         },
         {
-          "name": "GCP",
+          "name": "Ansible",
           "level": "advanced",
-          "yearsOfExperience": 4
-        },
-        {
-          "name": "Azure",
-          "level": "advanced",
-          "yearsOfExperience": 2
-        },
-        {
-          "name": "Cloudflare",
-          "level": "intermediate",
-          "yearsOfExperience": 2
-        }
-      ],
-      "order": 3,
-      "icon": "cloud"
-    },
-    {
-      "id": "platform-engineering",
-      "name": "Platform Engineering",
-      "description": "Building and scaling platforms",
-      "skills": [
-        {
-          "name": "Kafka",
-          "level": "expert",
-          "yearsOfExperience": 2,
+          "yearsOfExperience": 4,
           "featured": true
         },
         {
-          "name": "API Gateways",
+          "name": "Crossplane",
+          "level": "intermediate",
+          "yearsOfExperience": 1,
+          "featured": false
+        },
+        {
+          "name": "Pulumi",
+          "level": "intermediate",
+          "yearsOfExperience": 1,
+          "featured": false
+        }
+      ],
+      "order": 3,
+      "icon": "code"
+    },
+    {
+      "id": "cicd-automation",
+      "name": "CI/CD & Automation",
+      "description": "Continuous integration, delivery, and GitOps workflows",
+      "skills": [
+        {
+          "name": "GitLab CI",
+          "level": "expert",
+          "yearsOfExperience": 5,
+          "featured": true
+        },
+        {
+          "name": "Jenkins",
           "level": "advanced",
-          "yearsOfExperience": 2
+          "yearsOfExperience": 4,
+          "featured": true
+        },
+        {
+          "name": "GitHub Actions",
+          "level": "advanced",
+          "yearsOfExperience": 3,
+          "featured": true
+        },
+        {
+          "name": "ArgoCD",
+          "level": "expert",
+          "yearsOfExperience": 3,
+          "featured": true
         },
         {
           "name": "GitOps",
-          "level": "advanced",
-          "yearsOfExperience": 3
+          "level": "expert",
+          "yearsOfExperience": 4,
+          "featured": true
         }
       ],
       "order": 4,
-      "icon": "architecture"
+      "icon": "workflow"
+    },
+    {
+      "id": "monitoring-observability",
+      "name": "Monitoring & Observability",
+      "description": "Comprehensive monitoring, logging, and alerting solutions",
+      "skills": [
+        {
+          "name": "Grafana",
+          "level": "expert",
+          "yearsOfExperience": 5,
+          "featured": true
+        },
+        {
+          "name": "Prometheus",
+          "level": "expert",
+          "yearsOfExperience": 5,
+          "featured": true
+        },
+        {
+          "name": "ELK Stack",
+          "level": "advanced",
+          "yearsOfExperience": 4,
+          "featured": false
+        },
+        {
+          "name": "Splunk",
+          "level": "intermediate",
+          "yearsOfExperience": 2,
+          "featured": false
+        },
+        {
+          "name": "Fluentd",
+          "level": "advanced",
+          "yearsOfExperience": 3,
+          "featured": false
+        }
+      ],
+      "order": 5,
+      "icon": "chart"
+    },
+    {
+      "id": "event-streaming",
+      "name": "Event Streaming",
+      "description": "Real-time data streaming and messaging platforms",
+      "skills": [
+        {
+          "name": "Kafka",
+          "level": "advanced",
+          "yearsOfExperience": 3,
+          "featured": true
+        },
+        {
+          "name": "Confluent Cloud",
+          "level": "advanced",
+          "yearsOfExperience": 2,
+          "featured": false
+        }
+      ],
+      "order": 6,
+      "icon": "stream"
+    },
+    {
+      "id": "programming-scripting",
+      "name": "Programming & Scripting",
+      "description": "Automation and development languages",
+      "skills": [
+        {
+          "name": "Shell Scripting",
+          "level": "expert",
+          "yearsOfExperience": 8,
+          "featured": true
+        },
+        {
+          "name": "Python",
+          "level": "advanced",
+          "yearsOfExperience": 5,
+          "featured": true
+        },
+        {
+          "name": "Java",
+          "level": "intermediate",
+          "yearsOfExperience": 3,
+          "featured": false
+        }
+      ],
+      "order": 7,
+      "icon": "terminal"
+    },
+    {
+      "id": "security-devsecops",
+      "name": "Security & DevSecOps",
+      "description": "Security practices and vulnerability management",
+      "skills": [
+        {
+          "name": "Vault",
+          "level": "advanced",
+          "yearsOfExperience": 3,
+          "featured": true
+        },
+        {
+          "name": "Security Scanning",
+          "level": "advanced",
+          "yearsOfExperience": 4,
+          "featured": false
+        },
+        {
+          "name": "Vulnerability Assessment",
+          "level": "advanced",
+          "yearsOfExperience": 3,
+          "featured": false
+        }
+      ],
+      "order": 8,
+      "icon": "shield"
     }
   ],
   "education": [
@@ -524,6 +697,152 @@
       "proficiency": "b1"
     }
   ],
+  "siteConfig": {
+    "branding": "~/arnold.dev",
+    "version": "v2025.01",
+    "footerText": "© {{year}} Arnold Cartagena · Built with Next.js",
+    "seo": {
+      "title": "Arnold Cartagena - Platform Engineering Lead",
+      "description": "Senior Platform Engineer specializing in Kubernetes, cloud automation, and scalable CI/CD solutions",
+      "keywords": [
+        "platform engineering",
+        "kubernetes",
+        "devops",
+        "cloud architecture",
+        "tech lead"
+      ]
+    }
+  },
+  "heroStats": [
+    {
+      "id": "years-experience",
+      "value": "8+",
+      "label": "Years Experience",
+      "icon": "terminal",
+      "order": 1
+    },
+    {
+      "id": "certifications",
+      "value": "9",
+      "label": "Certifications",
+      "icon": "shield",
+      "order": 2
+    },
+    {
+      "id": "cloud-platforms",
+      "value": "3",
+      "label": "Cloud Platforms",
+      "icon": "cloud",
+      "order": 3
+    },
+    {
+      "id": "k8s-clusters",
+      "value": "50+",
+      "label": "K8s Clusters",
+      "icon": "server",
+      "order": 4
+    }
+  ],
+  "sectionTitles": {
+    "heroPath": "~/platform-engineer",
+    "experience": "experience.log",
+    "skills": "skills.json",
+    "certifications": "certifications.yaml",
+    "contact": "./send_message.sh"
+  },
+  "featuredHighlights": [
+    {
+      "id": "kubestronaut",
+      "title": "KUBESTRONAUT",
+      "subtitle": "status: ALL_KUBERNETES_CERTS_COMPLETE",
+      "icon": "award",
+      "section": "certifications",
+      "enabled": true
+    }
+  ],
+  "themeConfig": {
+    "defaultTheme": "system",
+    "allowToggle": true,
+    "activePreset": "terminal",
+    "presets": {
+      "terminal": {
+        "id": "terminal",
+        "name": "Terminal",
+        "description": "Green terminal/dashboard aesthetic",
+        "dark": {
+          "bg": "#0A0A0F",
+          "surface": "#12121A",
+          "surfaceHover": "#1A1A24",
+          "border": "#1E1E2E",
+          "text": "#FFFFFF",
+          "textMuted": "#B4B4BC",
+          "textDim": "#6B7280",
+          "accent": "#00FF94",
+          "accentDim": "rgba(0, 255, 148, 0.15)"
+        },
+        "light": {
+          "bg": "#F8FAFB",
+          "surface": "#FFFFFF",
+          "surfaceHover": "#F1F5F9",
+          "border": "#E2E8F0",
+          "text": "#0F172A",
+          "textMuted": "#64748B",
+          "textDim": "#CBD5E1",
+          "accent": "#059669",
+          "accentDim": "rgba(5, 150, 105, 0.1)"
+        }
+      },
+      "clean": {
+        "id": "clean",
+        "name": "Clean Professional",
+        "description": "Blue professional look",
+        "dark": {
+          "bg": "#0f172a",
+          "surface": "#1e293b",
+          "surfaceHover": "#334155",
+          "border": "#334155",
+          "text": "#f8fafc",
+          "textMuted": "#94a3b8",
+          "textDim": "#64748b",
+          "accent": "#60a5fa",
+          "accentDim": "rgba(96, 165, 250, 0.15)"
+        },
+        "light": {
+          "bg": "#ffffff",
+          "surface": "#f8fafc",
+          "surfaceHover": "#f1f5f9",
+          "border": "#e2e8f0",
+          "text": "#0f172a",
+          "textMuted": "#64748b",
+          "textDim": "#cbd5e1",
+          "accent": "#3b82f6",
+          "accentDim": "rgba(59, 130, 246, 0.1)"
+        }
+      }
+    },
+    "dark": {
+      "bg": "#0A0A0F",
+      "surface": "#12121A",
+      "surfaceHover": "#1A1A24",
+      "border": "#1E1E2E",
+      "text": "#FFFFFF",
+      "textMuted": "#B4B4BC",
+      "textDim": "#6B7280",
+      "accent": "#00FF94",
+      "accentDim": "rgba(0, 255, 148, 0.15)"
+    },
+    "light": {
+      "bg": "#F8FAFB",
+      "surface": "#FFFFFF",
+      "surfaceHover": "#F1F5F9",
+      "border": "#E2E8F0",
+      "text": "#0F172A",
+      "textMuted": "#64748B",
+      "textDim": "#CBD5E1",
+      "accent": "#059669",
+      "accentDim": "rgba(5, 150, 105, 0.1)"
+    }
+  },
   "metadata": {
     "keywords": [
       "Platform Engineering",

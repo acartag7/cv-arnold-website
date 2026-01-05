@@ -1,5 +1,6 @@
 // UI component exports
 export { ThemeSwitcher } from './ThemeSwitcher'
+export { ThemePresetSelector } from './ThemePresetSelector'
 
 // Button Components - Comprehensive Button System
 export {

@@ -23,6 +23,8 @@ import {
   Award,
   Users,
   Briefcase,
+  Star,
+  Trophy,
 } from 'lucide-react'
 import type { HeroStat } from '@/types/cv'
 import { generateId } from '@/lib/format-utils'
@@ -48,6 +50,8 @@ const iconOptions: {
   { value: 'award', label: 'Award', icon: Award },
   { value: 'users', label: 'Users', icon: Users },
   { value: 'briefcase', label: 'Briefcase', icon: Briefcase },
+  { value: 'star', label: 'Star', icon: Star },
+  { value: 'trophy', label: 'Trophy', icon: Trophy },
 ]
 
 const formSchema = z.object({
@@ -62,6 +66,8 @@ const formSchema = z.object({
     'award',
     'users',
     'briefcase',
+    'star',
+    'trophy',
   ]),
 })
 

@@ -539,16 +539,34 @@ export const ColorPaletteSchema = z.object({
 })
 
 /**
+ * Theme preset schema (for switchable theme styles)
+ */
+export const ThemePresetSchema = z.object({
+  id: z.string().min(1, 'Preset ID is required'),
+  name: z
+    .string()
+    .min(1, 'Preset name is required')
+    .max(50, 'Preset name must not exceed 50 characters'),
+  description: z
+    .string()
+    .max(200, 'Preset description must not exceed 200 characters')
+    .optional(),
+  dark: ColorPaletteSchema,
+  light: ColorPaletteSchema,
+})
+
+/**
  * Theme configuration schema
+ * Supports both legacy (dark/light only) and new preset-based themes
  */
 export const ThemeConfigSchema = z.object({
   defaultTheme: z.enum(['dark', 'light', 'system']),
   allowToggle: z.boolean(),
-  activePreset: z
-    .enum(['green', 'blue', 'purple', 'orange', 'custom'])
-    .optional(),
-  dark: ColorPaletteSchema,
-  light: ColorPaletteSchema,
+  activePreset: z.string().optional(),
+  presets: z.record(z.string(), ThemePresetSchema).optional(),
+  // Backwards compatibility: direct dark/light palettes
+  dark: ColorPaletteSchema.optional(),
+  light: ColorPaletteSchema.optional(),
 })
 
 /**
@@ -760,6 +778,13 @@ export type Education = z.infer<typeof EducationSchema>
 export type Certification = z.infer<typeof CertificationSchema>
 export type Achievement = z.infer<typeof AchievementSchema>
 export type Language = z.infer<typeof LanguageSchema>
+export type ThemePreset = z.infer<typeof ThemePresetSchema>
+export type ThemeConfig = z.infer<typeof ThemeConfigSchema>
+export type ColorPalette = z.infer<typeof ColorPaletteSchema>
+export type SiteConfig = z.infer<typeof SiteConfigSchema>
+export type HeroStat = z.infer<typeof HeroStatSchema>
+export type SectionTitles = z.infer<typeof SectionTitlesSchema>
+export type FeaturedHighlight = z.infer<typeof FeaturedHighlightSchema>
 export type CVData = z.infer<typeof CVDataSchema>
 export type CVDataPartial = z.infer<typeof CVDataPartialSchema>
 export type CVDataInput = z.infer<typeof CVDataInputSchema>

@@ -171,10 +171,24 @@ export function ThemeEditor() {
   // Load data into form
   useEffect(() => {
     if (data?.themeConfig) {
+      // Cast activePreset to expected type, with fallback to 'green'
+      const validPresets = [
+        'green',
+        'blue',
+        'purple',
+        'orange',
+        'custom',
+      ] as const
+      const currentPreset = data.themeConfig.activePreset
+      const activePreset = validPresets.includes(
+        currentPreset as (typeof validPresets)[number]
+      )
+        ? (currentPreset as (typeof validPresets)[number])
+        : 'green'
       reset({
         defaultTheme: data.themeConfig.defaultTheme,
         allowToggle: data.themeConfig.allowToggle,
-        activePreset: data.themeConfig.activePreset || 'green',
+        activePreset,
       })
     }
   }, [data, reset])
@@ -219,13 +233,18 @@ export function ThemeEditor() {
   // Get current preview colors
   const getPreviewColors = (): ColorPalette => {
     if (activePreset === 'custom' && data?.themeConfig) {
-      return previewMode === 'dark'
-        ? data.themeConfig.dark
-        : data.themeConfig.light
+      const colors =
+        previewMode === 'dark' ? data.themeConfig.dark : data.themeConfig.light
+      // Fall back to green preset if custom colors are not defined
+      return colors || presetPalettes.green[previewMode]
     }
     const preset =
       presetPalettes[activePreset as Exclude<PalettePreset, 'custom'>]
-    return previewMode === 'dark' ? preset.dark : preset.light
+    return preset
+      ? previewMode === 'dark'
+        ? preset.dark
+        : preset.light
+      : presetPalettes.green[previewMode]
   }
 
   // Loading state
