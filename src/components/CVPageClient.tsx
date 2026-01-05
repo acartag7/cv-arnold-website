@@ -30,7 +30,7 @@ import {
   Lock,
 } from 'lucide-react'
 import { CVData, HeroStat } from '@/types'
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { DEFAULT_PALETTES } from '@/styles/themes'
 import { ThemePresetSelector } from '@/components/ui/ThemePresetSelector'
 
@@ -207,8 +207,9 @@ export function CVPageClient({ data }: CVPageClientProps) {
     }
   }, [themeConfig?.defaultTheme])
 
-  // Load preset from localStorage on mount
+  // Load preset from localStorage on mount (SSR-safe)
   useEffect(() => {
+    if (typeof window === 'undefined') return
     const saved = localStorage.getItem('theme-preset')
     if (saved && themeConfig?.presets?.[saved]) {
       setActivePreset(saved)
@@ -216,6 +217,16 @@ export function CVPageClient({ data }: CVPageClientProps) {
       setActivePreset(themeConfig.activePreset)
     }
   }, [themeConfig])
+
+  // Handle bottom of page edge case for contact section (memoized for cleanup)
+  const handleScroll = useCallback(() => {
+    const scrollBottom = window.scrollY + window.innerHeight
+    const docHeight = document.documentElement.scrollHeight
+    // If within 100px of bottom, activate contact section
+    if (docHeight - scrollBottom < 100) {
+      setActiveSection('contact')
+    }
+  }, [])
 
   // Track active section for navigation highlighting
   useEffect(() => {
@@ -240,32 +251,24 @@ export function CVPageClient({ data }: CVPageClientProps) {
       if (element) observer.observe(element)
     })
 
-    // Handle bottom of page edge case for contact section
-    const handleScroll = () => {
-      const scrollBottom = window.scrollY + window.innerHeight
-      const docHeight = document.documentElement.scrollHeight
-      // If within 100px of bottom, activate contact section
-      if (docHeight - scrollBottom < 100) {
-        setActiveSection('contact')
-      }
-    }
-
     window.addEventListener('scroll', handleScroll, { passive: true })
 
     return () => {
       observer.disconnect()
       window.removeEventListener('scroll', handleScroll)
     }
-  }, [])
+  }, [handleScroll])
 
   const toggleTheme = () => setTheme(theme === 'dark' ? 'light' : 'dark')
   const showThemeToggle = themeConfig?.allowToggle !== false
 
-  // Handle preset change and persist to localStorage
-  const handlePresetChange = (presetId: string) => {
+  // Handle preset change and persist to localStorage (SSR-safe)
+  const handlePresetChange = useCallback((presetId: string) => {
     setActivePreset(presetId)
-    localStorage.setItem('theme-preset', presetId)
-  }
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('theme-preset', presetId)
+    }
+  }, [])
 
   // Get stats from data or use defaults
   const stats = useMemo(() => {
