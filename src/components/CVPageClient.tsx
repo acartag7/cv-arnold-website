@@ -23,10 +23,16 @@ import {
   GraduationCap,
   Globe,
   Medal,
+  Container,
+  Workflow,
+  BarChart3,
+  Radio,
+  Lock,
 } from 'lucide-react'
 import { CVData, HeroStat } from '@/types'
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { DEFAULT_PALETTES } from '@/styles/themes'
+import { ThemePresetSelector } from '@/components/ui/ThemePresetSelector'
 
 /**
  * CV Website - Client Component
@@ -53,6 +59,34 @@ const iconMap = {
   star: Star,
   trophy: Trophy,
 } as const
+
+// Icon mapping for skill categories
+const skillIconMap = {
+  cloud: Cloud,
+  container: Container,
+  code: Code,
+  workflow: Workflow,
+  chart: BarChart3,
+  stream: Radio,
+  terminal: Terminal,
+  shield: Lock,
+} as const
+
+// Map skill level to number of filled indicators (1-4 scale)
+const skillLevelToNumber = (level: string): number => {
+  switch (level) {
+    case 'expert':
+      return 4
+    case 'advanced':
+      return 3
+    case 'intermediate':
+      return 2
+    case 'beginner':
+      return 1
+    default:
+      return 2
+  }
+}
 
 const TypewriterText = ({
   text,
@@ -97,6 +131,15 @@ const TypewriterText = ({
   )
 }
 
+// Navigation items with their section IDs
+const NAV_ITEMS = [
+  { label: 'About', sectionId: 'hero' },
+  { label: 'Experience', sectionId: 'experience' },
+  { label: 'Skills', sectionId: 'skills' },
+  { label: 'Certifications', sectionId: 'certifications' },
+  { label: 'Contact', sectionId: 'contact' },
+] as const
+
 export function CVPageClient({ data }: CVPageClientProps) {
   const {
     personalInfo,
@@ -116,10 +159,37 @@ export function CVPageClient({ data }: CVPageClientProps) {
   // Theme state with CMS-configurable default
   const [theme, setTheme] = useState<'dark' | 'light'>('dark')
 
+  // Active section state for navigation highlighting
+  const [activeSection, setActiveSection] = useState<string>('hero')
+
+  // Active preset state for theme presets
+  const [activePreset, setActivePreset] = useState<string>('terminal')
+
   // Build theme colors from CMS config with fallback to defaults
   const colors = useMemo(() => {
-    const cmsColors = themeConfig?.[theme]
     const defaults = DEFAULT_PALETTES[theme]
+    const presets = themeConfig?.presets
+
+    // Validate preset exists before lookup (type safety)
+    const presetColors =
+      presets && activePreset in presets
+        ? presets[activePreset]?.[theme]
+        : undefined
+
+    // Warn in development if preset not found
+    if (
+      process.env.NODE_ENV === 'development' &&
+      activePreset &&
+      presets &&
+      !(activePreset in presets)
+    ) {
+      console.warn(
+        `[ThemePreset] Preset "${activePreset}" not found, using defaults`
+      )
+    }
+
+    // Fall back to themeConfig.dark/light for backwards compatibility
+    const cmsColors = presetColors || themeConfig?.[theme]
 
     return {
       bg: cmsColors?.bg || defaults.bg,
@@ -133,7 +203,7 @@ export function CVPageClient({ data }: CVPageClientProps) {
       accentDim: cmsColors?.accentDim || defaults.accentDim,
       scanlines: defaults.scanlines, // Fixed per theme
     }
-  }, [theme, themeConfig])
+  }, [theme, themeConfig, activePreset])
 
   // Detect system preference on mount
   useEffect(() => {
@@ -153,8 +223,68 @@ export function CVPageClient({ data }: CVPageClientProps) {
     }
   }, [themeConfig?.defaultTheme])
 
+  // Load preset from localStorage on mount (SSR-safe)
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const saved = localStorage.getItem('theme-preset')
+    if (saved && themeConfig?.presets?.[saved]) {
+      setActivePreset(saved)
+    } else if (themeConfig?.activePreset) {
+      setActivePreset(themeConfig.activePreset)
+    }
+  }, [themeConfig])
+
+  // Handle bottom of page edge case for contact section (memoized for cleanup)
+  const handleScroll = useCallback(() => {
+    const scrollBottom = window.scrollY + window.innerHeight
+    const docHeight = document.documentElement.scrollHeight
+    // If within 100px of bottom, activate contact section
+    if (docHeight - scrollBottom < 100) {
+      setActiveSection('contact')
+    }
+  }, [])
+
+  // Track active section for navigation highlighting
+  useEffect(() => {
+    const sectionIds = NAV_ITEMS.map(item => item.sectionId)
+
+    const observer = new IntersectionObserver(
+      entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            setActiveSection(entry.target.id)
+          }
+        })
+      },
+      {
+        threshold: 0.3,
+        rootMargin: '-80px 0px -50% 0px', // Account for fixed nav height
+      }
+    )
+
+    sectionIds.forEach(id => {
+      const element = document.getElementById(id)
+      if (element) observer.observe(element)
+    })
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+
+    return () => {
+      observer.disconnect()
+      window.removeEventListener('scroll', handleScroll)
+    }
+  }, [handleScroll])
+
   const toggleTheme = () => setTheme(theme === 'dark' ? 'light' : 'dark')
   const showThemeToggle = themeConfig?.allowToggle !== false
+
+  // Handle preset change and persist to localStorage (SSR-safe)
+  const handlePresetChange = useCallback((presetId: string) => {
+    setActivePreset(presetId)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('theme-preset', presetId)
+    }
+  }, [])
 
   // Get stats from data or use defaults
   const stats = useMemo(() => {
@@ -265,10 +395,50 @@ export function CVPageClient({ data }: CVPageClientProps) {
           >
             {branding}
           </a>
+
+          {/* Desktop navigation */}
+          <div className="hidden md:flex items-center gap-6">
+            {NAV_ITEMS.map(item => {
+              const isActive = activeSection === item.sectionId
+              return (
+                <a
+                  key={item.label}
+                  href={`#${item.sectionId}`}
+                  className="relative text-sm transition-colors py-1"
+                  style={{ color: isActive ? colors.accent : colors.textMuted }}
+                >
+                  {item.label}
+                  {isActive && (
+                    <motion.div
+                      layoutId="activeSection"
+                      className="absolute -bottom-1 left-0 right-0 h-0.5"
+                      style={{ background: colors.accent }}
+                      transition={{
+                        type: 'spring',
+                        stiffness: 500,
+                        damping: 30,
+                      }}
+                    />
+                  )}
+                </a>
+              )
+            })}
+          </div>
+
           <div
             className="flex items-center gap-4 text-xs"
             style={{ color: colors.textMuted }}
           >
+            {/* Theme preset selector */}
+            {themeConfig?.presets &&
+              Object.keys(themeConfig.presets).length > 1 && (
+                <ThemePresetSelector
+                  presets={themeConfig.presets}
+                  activePreset={activePreset}
+                  onPresetChange={handlePresetChange}
+                  colors={colors}
+                />
+              )}
             {/* Theme toggle */}
             {showThemeToggle && (
               <button
@@ -510,58 +680,110 @@ export function CVPageClient({ data }: CVPageClientProps) {
             <h2 className="text-2xl font-bold">{titles.experience}</h2>
           </motion.div>
 
-          <div className="space-y-6">
-            {experience.map((exp, index) => (
-              <motion.div
-                key={exp.id}
-                className="p-6 rounded-lg hover:border-opacity-50 transition-all duration-300"
-                style={{
-                  background: colors.surface,
-                  border: `1px solid ${colors.border}`,
-                }}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
-                  <div>
-                    <h3 className="text-lg font-semibold mb-1">
-                      {exp.position}
-                    </h3>
-                    <p className="text-sm" style={{ color: colors.accent }}>
-                      {exp.company}
-                    </p>
-                  </div>
+          {/* Timeline container */}
+          <div className="relative">
+            {/* Timeline vertical line */}
+            <div
+              className="absolute left-3 top-0 bottom-0 w-0.5 hidden md:block"
+              style={{ background: colors.border }}
+            />
+
+            {experience.map((exp, index) => {
+              const isCurrentRole = !exp.endDate
+              return (
+                <motion.div
+                  key={exp.id}
+                  className="relative md:pl-12 pb-8 last:pb-0"
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  {/* Timeline dot */}
                   <div
-                    className="text-xs px-3 py-1 rounded"
+                    className={`absolute left-0 w-6 h-6 rounded-full border-4 hidden md:flex items-center justify-center ${isCurrentRole ? 'animate-pulse' : ''}`}
                     style={{
-                      background: colors.accentDim,
-                      color: colors.accent,
+                      background: isCurrentRole
+                        ? colors.accent
+                        : colors.surface,
+                      borderColor: colors.bg,
+                      boxShadow: `0 0 0 2px ${isCurrentRole ? colors.accent : colors.border}`,
                     }}
                   >
-                    {new Date(exp.startDate).getFullYear()} -{' '}
-                    {exp.endDate
-                      ? new Date(exp.endDate).getFullYear()
-                      : 'Present'}
+                    {isCurrentRole && (
+                      <div
+                        className="w-2 h-2 rounded-full"
+                        style={{ background: colors.bg }}
+                      />
+                    )}
                   </div>
-                </div>
-                <p className="text-sm mb-4" style={{ color: colors.textMuted }}>
-                  {exp.description}
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {exp.technologies.map(tech => (
-                    <span
-                      key={tech}
-                      className="text-xs px-2 py-1 rounded"
-                      style={{ background: colors.bg, color: colors.textMuted }}
-                    >
-                      {tech}
+
+                  {/* Date badge - shown above card on timeline */}
+                  <div
+                    className="text-xs mb-3 flex items-center gap-2"
+                    style={{ color: colors.textMuted }}
+                  >
+                    <span className="font-mono">
+                      {new Date(exp.startDate).getFullYear()} -{' '}
+                      {exp.endDate
+                        ? new Date(exp.endDate).getFullYear()
+                        : 'Present'}
                     </span>
-                  ))}
-                </div>
-              </motion.div>
-            ))}
+                    {isCurrentRole && (
+                      <span
+                        className="px-2 py-0.5 rounded text-xs font-medium"
+                        style={{
+                          background: colors.accentDim,
+                          color: colors.accent,
+                        }}
+                      >
+                        Current
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Experience card */}
+                  <div
+                    className="p-6 rounded-lg hover:border-opacity-50 transition-all duration-300"
+                    style={{
+                      background: colors.surface,
+                      border: `1px solid ${isCurrentRole ? colors.accent + '40' : colors.border}`,
+                    }}
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
+                      <div>
+                        <h3 className="text-lg font-semibold mb-1">
+                          {exp.position}
+                        </h3>
+                        <p className="text-sm" style={{ color: colors.accent }}>
+                          {exp.company}
+                        </p>
+                      </div>
+                    </div>
+                    <p
+                      className="text-sm mb-4"
+                      style={{ color: colors.textMuted }}
+                    >
+                      {exp.description}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {exp.technologies.map(tech => (
+                        <span
+                          key={tech}
+                          className="text-xs px-2 py-1 rounded"
+                          style={{
+                            background: colors.bg,
+                            color: colors.textMuted,
+                          }}
+                        >
+                          {tech}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </motion.div>
+              )
+            })}
           </div>
         </div>
       </section>
@@ -584,54 +806,100 @@ export function CVPageClient({ data }: CVPageClientProps) {
           </motion.div>
 
           <div className="grid lg:grid-cols-2 gap-6">
-            {skills.map((category, catIndex) => (
-              <motion.div
-                key={category.id}
-                className="p-6 rounded-lg transition-colors duration-300"
-                style={{
-                  background: colors.bg,
-                  border: `1px solid ${colors.border}`,
-                }}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: catIndex * 0.1 }}
-              >
-                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                  <Cpu size={16} style={{ color: colors.accent }} />
-                  {category.name}
-                </h3>
-                <div className="space-y-3">
-                  {category.skills.map(skill => (
-                    <div
-                      key={skill.name}
-                      className="flex items-center justify-between"
-                    >
-                      <span className="text-sm">{skill.name}</span>
-                      <div className="flex gap-1">
-                        {[1, 2, 3, 4, 5].map(level => (
-                          <div
-                            key={level}
-                            className="w-3 h-3 rounded-sm transition-colors duration-300"
-                            style={{
-                              background:
-                                level <=
-                                (skill.level === 'expert'
-                                  ? 5
-                                  : skill.level === 'advanced'
-                                    ? 4
-                                    : 3)
-                                  ? colors.accent
-                                  : colors.border,
-                            }}
-                          />
-                        ))}
-                      </div>
+            {[...skills]
+              .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+              .map((category, catIndex) => {
+                // Get the appropriate icon for this category
+                const CategoryIcon =
+                  skillIconMap[category.icon as keyof typeof skillIconMap] ||
+                  Cpu
+
+                return (
+                  <motion.div
+                    key={category.id}
+                    className="p-6 rounded-lg transition-colors duration-300"
+                    style={{
+                      background: colors.bg,
+                      border: `1px solid ${colors.border}`,
+                    }}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: catIndex * 0.1 }}
+                  >
+                    <div className="mb-4">
+                      <h3 className="text-lg font-semibold flex items-center gap-2">
+                        <CategoryIcon
+                          size={16}
+                          style={{ color: colors.accent }}
+                        />
+                        {category.name}
+                      </h3>
+                      {category.description && (
+                        <p
+                          className="text-xs mt-1"
+                          style={{ color: colors.textMuted }}
+                        >
+                          {category.description}
+                        </p>
+                      )}
                     </div>
-                  ))}
-                </div>
-              </motion.div>
-            ))}
+                    <div className="space-y-3">
+                      {category.skills.map(skill => {
+                        const filledCount = skillLevelToNumber(skill.level)
+                        return (
+                          <div
+                            key={skill.name}
+                            className="flex items-center justify-between"
+                          >
+                            <span
+                              className="text-sm flex items-center gap-2"
+                              style={{
+                                color: skill.featured
+                                  ? colors.text
+                                  : colors.textMuted,
+                              }}
+                            >
+                              {skill.name}
+                              {skill.featured && (
+                                <Star
+                                  size={12}
+                                  style={{ color: colors.accent }}
+                                  fill={colors.accent}
+                                />
+                              )}
+                            </span>
+                            <div className="flex items-center gap-2">
+                              {skill.yearsOfExperience && (
+                                <span
+                                  className="text-xs"
+                                  style={{ color: colors.textDim }}
+                                >
+                                  {skill.yearsOfExperience}y
+                                </span>
+                              )}
+                              <div className="flex gap-1">
+                                {[1, 2, 3, 4].map(level => (
+                                  <div
+                                    key={level}
+                                    className="w-2.5 h-2.5 rounded-sm transition-colors duration-300"
+                                    style={{
+                                      background:
+                                        level <= filledCount
+                                          ? colors.accent
+                                          : colors.border,
+                                    }}
+                                  />
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </motion.div>
+                )
+              })}
           </div>
         </div>
       </section>
@@ -1066,12 +1334,128 @@ export function CVPageClient({ data }: CVPageClientProps) {
 
       {/* Footer */}
       <footer
-        className="py-8 px-6 lg:px-12 text-center transition-colors duration-300"
+        className="py-12 px-6 lg:px-12"
         style={{ borderTop: `1px solid ${colors.border}` }}
       >
-        <p className="text-xs" style={{ color: colors.textMuted }}>
-          {footerText}
-        </p>
+        <div className="max-w-7xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-8 mb-8">
+            {/* Brand Column */}
+            <div>
+              <a
+                href="#hero"
+                className="text-lg font-bold font-mono"
+                style={{ color: colors.accent }}
+              >
+                {personalInfo.fullName}
+              </a>
+              <p className="mt-2 text-sm" style={{ color: colors.textMuted }}>
+                {personalInfo.title}
+              </p>
+              <p className="mt-4 text-xs" style={{ color: colors.textDim }}>
+                Platform Engineer specializing in Kubernetes, cloud automation,
+                and scalable CI/CD solutions.
+              </p>
+            </div>
+
+            {/* Quick Links Column */}
+            <nav>
+              <h3
+                className="text-sm font-semibold mb-4 font-mono"
+                style={{ color: colors.text }}
+              >
+                ~/quick_links
+              </h3>
+              <ul className="space-y-2">
+                {[
+                  'About',
+                  'Experience',
+                  'Skills',
+                  'Certifications',
+                  'Contact',
+                ].map(item => (
+                  <li key={item}>
+                    <a
+                      href={`#${item.toLowerCase() === 'about' ? 'hero' : item.toLowerCase()}`}
+                      className="text-sm hover:opacity-80 transition-opacity"
+                      style={{ color: colors.textMuted }}
+                    >
+                      → {item}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+
+            {/* Connect Column */}
+            <div>
+              <h3
+                className="text-sm font-semibold mb-4 font-mono"
+                style={{ color: colors.text }}
+              >
+                ./connect.sh
+              </h3>
+              <div className="flex gap-3 mb-4">
+                {personalInfo.social.linkedin && (
+                  <a
+                    href={personalInfo.social.linkedin}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 rounded-lg hover:opacity-80 transition-opacity"
+                    style={{
+                      background: colors.surface,
+                      border: `1px solid ${colors.border}`,
+                    }}
+                    aria-label="LinkedIn"
+                  >
+                    <Linkedin size={18} style={{ color: colors.textMuted }} />
+                  </a>
+                )}
+                {personalInfo.social.github && (
+                  <a
+                    href={personalInfo.social.github}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 rounded-lg hover:opacity-80 transition-opacity"
+                    style={{
+                      background: colors.surface,
+                      border: `1px solid ${colors.border}`,
+                    }}
+                    aria-label="GitHub"
+                  >
+                    <Github size={18} style={{ color: colors.textMuted }} />
+                  </a>
+                )}
+                <a
+                  href={`mailto:${personalInfo.email}`}
+                  className="p-2 rounded-lg hover:opacity-80 transition-opacity"
+                  style={{
+                    background: colors.surface,
+                    border: `1px solid ${colors.border}`,
+                  }}
+                  aria-label="Email"
+                >
+                  <Mail size={18} style={{ color: colors.textMuted }} />
+                </a>
+              </div>
+              <p className="text-xs" style={{ color: colors.textDim }}>
+                {personalInfo.email}
+              </p>
+            </div>
+          </div>
+
+          {/* Bottom Bar */}
+          <div
+            className="pt-6 flex flex-col md:flex-row justify-between items-center gap-4"
+            style={{ borderTop: `1px solid ${colors.border}` }}
+          >
+            <p className="text-xs" style={{ color: colors.textMuted }}>
+              {footerText}
+            </p>
+            <p className="text-xs font-mono" style={{ color: colors.textDim }}>
+              {version}
+            </p>
+          </div>
+        </div>
       </footer>
     </div>
   )

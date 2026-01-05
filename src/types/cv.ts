@@ -402,6 +402,8 @@ export interface HeroStat {
     | 'award'
     | 'users'
     | 'briefcase'
+    | 'star'
+    | 'trophy'
 
   /** Display order */
   order: number
@@ -484,12 +486,33 @@ export interface ColorPalette {
 }
 
 /**
- * Preset palette identifier
+ * Available palette preset names for the theme editor
  */
 export type PalettePreset = 'green' | 'blue' | 'purple' | 'orange' | 'custom'
 
 /**
+ * Theme preset definition (for switchable theme styles)
+ */
+export interface ThemePreset {
+  /** Preset identifier */
+  id: string
+
+  /** Display name (e.g., "Terminal", "Clean Professional") */
+  name: string
+
+  /** Short description of the theme style */
+  description?: string
+
+  /** Dark mode palette for this preset */
+  dark: ColorPalette
+
+  /** Light mode palette for this preset */
+  light: ColorPalette
+}
+
+/**
  * Dashboard theme configuration
+ * Supports both legacy (dark/light only) and new preset-based themes
  */
 export interface ThemeConfig {
   /** Default theme ('dark' | 'light' | 'system') */
@@ -498,14 +521,17 @@ export interface ThemeConfig {
   /** Allow theme switching */
   allowToggle: boolean
 
-  /** Active palette preset (for quick switching) */
-  activePreset?: PalettePreset
+  /** Active preset identifier (e.g., "terminal", "clean") */
+  activePreset?: string
 
-  /** Dark mode palette */
-  dark: ColorPalette
+  /** Available theme presets */
+  presets?: Record<string, ThemePreset>
 
-  /** Light mode palette */
-  light: ColorPalette
+  /** Dark mode palette (backwards compatibility) */
+  dark?: ColorPalette
+
+  /** Light mode palette (backwards compatibility) */
+  light?: ColorPalette
 }
 
 // ============================================================================

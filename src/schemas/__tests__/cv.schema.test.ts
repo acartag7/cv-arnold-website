@@ -23,6 +23,7 @@ import {
   DateRangeSchema,
   // Configuration Schemas
   ColorPaletteSchema,
+  ThemePresetSchema,
   ThemeConfigSchema,
   SiteConfigSchema,
   HeroStatSchema,
@@ -734,16 +735,229 @@ describe('ThemeConfigSchema', () => {
     ).toThrow()
   })
 
-  it('should reject invalid activePreset', () => {
-    expect(() =>
+  it('should accept any string for activePreset (references preset key)', () => {
+    // activePreset is a string that references a key in the presets object
+    expect(
       ThemeConfigSchema.parse({ ...validThemeConfig, activePreset: 'red' })
-    ).toThrow()
+    ).toBeDefined()
+    expect(
+      ThemeConfigSchema.parse({
+        ...validThemeConfig,
+        activePreset: 'my-custom-theme',
+      })
+    ).toBeDefined()
   })
 
-  it('should reject theme config without required palettes', () => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { dark, ...incomplete } = validThemeConfig
-    expect(() => ThemeConfigSchema.parse(incomplete)).toThrow()
+  it('should accept theme config without palettes (uses presets instead)', () => {
+    // dark/light palettes are optional when using presets
+    const minimalConfig = {
+      defaultTheme: 'dark' as const,
+      allowToggle: true,
+    }
+    expect(ThemeConfigSchema.parse(minimalConfig)).toBeDefined()
+  })
+
+  it('should accept theme config with presets', () => {
+    const configWithPresets = {
+      defaultTheme: 'dark' as const,
+      allowToggle: true,
+      activePreset: 'terminal',
+      presets: {
+        terminal: {
+          id: 'terminal',
+          name: 'Terminal',
+          dark: validPalette,
+          light: { ...validPalette, bg: '#ffffff', text: '#1a1a2e' },
+        },
+      },
+    }
+    expect(ThemeConfigSchema.parse(configWithPresets)).toBeDefined()
+  })
+})
+
+describe('ThemePresetSchema', () => {
+  const validPalette = {
+    bg: '#1a1a2e',
+    surface: '#16213e',
+    surfaceHover: '#1f3a5f',
+    border: '#0f3460',
+    text: '#e4e4e7',
+    textMuted: '#a1a1aa',
+    textDim: '#71717a',
+    accent: '#00ff88',
+    accentDim: '#00cc6a',
+  }
+
+  const validPreset = {
+    id: 'terminal',
+    name: 'Terminal',
+    dark: validPalette,
+    light: { ...validPalette, bg: '#ffffff', text: '#1a1a2e' },
+  }
+
+  describe('valid presets', () => {
+    it('should accept valid preset with both dark/light palettes', () => {
+      expect(ThemePresetSchema.parse(validPreset)).toBeDefined()
+    })
+
+    it('should accept preset with optional description', () => {
+      const presetWithDescription = {
+        ...validPreset,
+        description: 'Classic terminal green theme',
+      }
+      expect(ThemePresetSchema.parse(presetWithDescription)).toBeDefined()
+    })
+
+    it('should accept preset with max length name (50 chars)', () => {
+      const presetWithLongName = {
+        ...validPreset,
+        name: 'a'.repeat(50),
+      }
+      expect(ThemePresetSchema.parse(presetWithLongName)).toBeDefined()
+    })
+
+    it('should accept preset with max length description (200 chars)', () => {
+      const presetWithLongDesc = {
+        ...validPreset,
+        description: 'a'.repeat(200),
+      }
+      expect(ThemePresetSchema.parse(presetWithLongDesc)).toBeDefined()
+    })
+  })
+
+  describe('required fields', () => {
+    it('should reject preset without id', () => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { id: _removed, ...presetWithoutId } = validPreset
+      expect(() => ThemePresetSchema.parse(presetWithoutId)).toThrow()
+    })
+
+    it('should reject preset with empty id', () => {
+      expect(() => ThemePresetSchema.parse({ ...validPreset, id: '' })).toThrow(
+        /required/
+      )
+    })
+
+    it('should reject preset without name', () => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { name: _removed, ...presetWithoutName } = validPreset
+      expect(() => ThemePresetSchema.parse(presetWithoutName)).toThrow()
+    })
+
+    it('should reject preset with empty name', () => {
+      expect(() =>
+        ThemePresetSchema.parse({ ...validPreset, name: '' })
+      ).toThrow(/required/)
+    })
+
+    it('should reject preset without dark palette', () => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { dark: _removed, ...presetWithoutDark } = validPreset
+      expect(() => ThemePresetSchema.parse(presetWithoutDark)).toThrow()
+    })
+
+    it('should reject preset without light palette', () => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { light: _removed, ...presetWithoutLight } = validPreset
+      expect(() => ThemePresetSchema.parse(presetWithoutLight)).toThrow()
+    })
+  })
+
+  describe('length validations', () => {
+    it('should reject name exceeding 50 characters', () => {
+      expect(() =>
+        ThemePresetSchema.parse({
+          ...validPreset,
+          name: 'a'.repeat(51),
+        })
+      ).toThrow(/50/)
+    })
+
+    it('should reject description exceeding 200 characters', () => {
+      expect(() =>
+        ThemePresetSchema.parse({
+          ...validPreset,
+          description: 'a'.repeat(201),
+        })
+      ).toThrow(/200/)
+    })
+  })
+
+  describe('color validation in palettes', () => {
+    it('should reject invalid hex color in dark palette', () => {
+      const invalidPalette = { ...validPalette, accent: 'not-a-color' }
+      expect(() =>
+        ThemePresetSchema.parse({
+          ...validPreset,
+          dark: invalidPalette,
+        })
+      ).toThrow(/color/)
+    })
+
+    it('should reject invalid hex color in light palette', () => {
+      const invalidPalette = { ...validPalette, bg: '#gggggg' }
+      expect(() =>
+        ThemePresetSchema.parse({
+          ...validPreset,
+          light: invalidPalette,
+        })
+      ).toThrow(/color/)
+    })
+
+    it('should reject malformed hex code with invalid characters', () => {
+      const invalidPalette = { ...validPalette, text: '#zzzzzz' }
+      expect(() =>
+        ThemePresetSchema.parse({
+          ...validPreset,
+          dark: invalidPalette,
+        })
+      ).toThrow(/color/)
+    })
+
+    it('should accept various valid color formats', () => {
+      const paletteWithVariousFormats = {
+        bg: '#fff',
+        surface: '#ffffff',
+        surfaceHover: '#ffffffaa',
+        border: 'rgb(255, 255, 255)',
+        text: 'rgba(0, 0, 0, 0.9)',
+        textMuted: 'hsl(0, 0%, 50%)',
+        textDim: 'hsla(0, 0%, 50%, 0.5)',
+        accent: 'var(--accent-color)',
+        accentDim: 'blue',
+      }
+      expect(
+        ThemePresetSchema.parse({
+          ...validPreset,
+          dark: paletteWithVariousFormats,
+          light: paletteWithVariousFormats,
+        })
+      ).toBeDefined()
+    })
+  })
+
+  describe('palette completeness', () => {
+    it('should reject dark palette missing required color', () => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { accent: _removed, ...incompletePalette } = validPalette
+      expect(() =>
+        ThemePresetSchema.parse({
+          ...validPreset,
+          dark: incompletePalette,
+        })
+      ).toThrow()
+    })
+
+    it('should reject light palette missing required color', () => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { bg: _removed, ...incompletePalette } = validPalette
+      expect(() =>
+        ThemePresetSchema.parse({
+          ...validPreset,
+          light: incompletePalette,
+        })
+      ).toThrow()
+    })
   })
 })
 

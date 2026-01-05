@@ -20,6 +20,8 @@ import {
   Award,
   Users,
   Briefcase,
+  Star,
+  Trophy,
 } from 'lucide-react'
 import type { HeroStat } from '@/types/cv'
 
@@ -41,6 +43,8 @@ const iconMap: Record<HeroStat['icon'], typeof Terminal> = {
   award: Award,
   users: Users,
   briefcase: Briefcase,
+  star: Star,
+  trophy: Trophy,
 }
 
 function HeroStatCard({
