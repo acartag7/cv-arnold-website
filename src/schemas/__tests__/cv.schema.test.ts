@@ -734,16 +734,43 @@ describe('ThemeConfigSchema', () => {
     ).toThrow()
   })
 
-  it('should reject invalid activePreset', () => {
-    expect(() =>
+  it('should accept any string for activePreset (references preset key)', () => {
+    // activePreset is a string that references a key in the presets object
+    expect(
       ThemeConfigSchema.parse({ ...validThemeConfig, activePreset: 'red' })
-    ).toThrow()
+    ).toBeDefined()
+    expect(
+      ThemeConfigSchema.parse({
+        ...validThemeConfig,
+        activePreset: 'my-custom-theme',
+      })
+    ).toBeDefined()
   })
 
-  it('should reject theme config without required palettes', () => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { dark, ...incomplete } = validThemeConfig
-    expect(() => ThemeConfigSchema.parse(incomplete)).toThrow()
+  it('should accept theme config without palettes (uses presets instead)', () => {
+    // dark/light palettes are optional when using presets
+    const minimalConfig = {
+      defaultTheme: 'dark' as const,
+      allowToggle: true,
+    }
+    expect(ThemeConfigSchema.parse(minimalConfig)).toBeDefined()
+  })
+
+  it('should accept theme config with presets', () => {
+    const configWithPresets = {
+      defaultTheme: 'dark' as const,
+      allowToggle: true,
+      activePreset: 'terminal',
+      presets: {
+        terminal: {
+          id: 'terminal',
+          name: 'Terminal',
+          dark: validPalette,
+          light: { ...validPalette, bg: '#ffffff', text: '#1a1a2e' },
+        },
+      },
+    }
+    expect(ThemeConfigSchema.parse(configWithPresets)).toBeDefined()
   })
 })
 
