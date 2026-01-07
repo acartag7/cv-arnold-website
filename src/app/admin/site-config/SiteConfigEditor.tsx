@@ -87,6 +87,9 @@ export function SiteConfigEditor() {
     Required<SectionVisibility>
   >(DEFAULT_SECTION_VISIBILITY)
 
+  // Hero stats visibility (default to true/visible)
+  const [showHeroStats, setShowHeroStats] = useState(true)
+
   const {
     register,
     handleSubmit,
@@ -115,6 +118,8 @@ export function SiteConfigEditor() {
       setSectionVisibility(
         loadSectionVisibility(data.siteConfig.sectionVisibility)
       )
+      // Load hero stats visibility (default to true if not set)
+      setShowHeroStats(data.siteConfig.showHeroStats !== false)
     }
   }, [data, reset])
 
@@ -195,6 +200,11 @@ export function SiteConfigEditor() {
 
     // Add section visibility settings
     siteConfig.sectionVisibility = sectionVisibility
+
+    // Add hero stats visibility (only include if explicitly false to minimize payload)
+    if (!showHeroStats) {
+      siteConfig.showHeroStats = false
+    }
 
     updateData(
       { ...data, siteConfig },
@@ -286,7 +296,15 @@ export function SiteConfigEditor() {
   const hasSectionVisibilityChanges =
     JSON.stringify(sectionVisibility) !== JSON.stringify(defaultVisibility)
 
-  const hasChanges = isDirty || hasNavLinkChanges || hasSectionVisibilityChanges
+  // Check if hero stats visibility has changed
+  const originalShowHeroStats = data.siteConfig?.showHeroStats !== false
+  const hasHeroStatsChange = showHeroStats !== originalShowHeroStats
+
+  const hasChanges =
+    isDirty ||
+    hasNavLinkChanges ||
+    hasSectionVisibilityChanges ||
+    hasHeroStatsChange
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -401,6 +419,49 @@ export function SiteConfigEditor() {
                 <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                   Use {'{{year}}'} for dynamic year
                 </p>
+              </div>
+            </section>
+
+            {/* Display Options Section */}
+            <section className="space-y-4">
+              <div>
+                <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium">
+                  <Settings size={18} className="text-blue-500" />
+                  Display Options
+                </div>
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                  Control what elements appear on your public site
+                </p>
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-600">
+                <div>
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    Show Hero Stats Cards
+                  </label>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    Display the stats cards (Years Experience, Certifications,
+                    etc.) in the hero section
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={showHeroStats}
+                  onClick={() => setShowHeroStats(!showHeroStats)}
+                  className={`
+                    relative inline-flex h-6 w-11 items-center rounded-full transition-colors
+                    focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:ring-offset-2
+                    ${showHeroStats ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-600'}
+                  `}
+                >
+                  <span
+                    className={`
+                      inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform
+                      ${showHeroStats ? 'translate-x-6' : 'translate-x-1'}
+                    `}
+                  />
+                </button>
               </div>
             </section>
 

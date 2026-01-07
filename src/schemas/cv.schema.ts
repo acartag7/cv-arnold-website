@@ -628,6 +628,7 @@ export const SiteConfigSchema = z.object({
     })
     .optional(),
   sectionVisibility: SectionVisibilitySchema.optional(),
+  showHeroStats: z.boolean().optional(),
 })
 
 /**
