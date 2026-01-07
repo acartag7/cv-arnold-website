@@ -26,6 +26,7 @@ import {
   ThemePresetSchema,
   ThemeConfigSchema,
   SiteConfigSchema,
+  SectionVisibilitySchema,
   HeroStatSchema,
   SectionTitlesSchema,
   FeaturedHighlightSchema,
@@ -1014,6 +1015,100 @@ describe('SiteConfigSchema', () => {
         footerText: 'x'.repeat(501),
       })
     ).toThrow(/500/)
+  })
+})
+
+describe('SectionVisibilitySchema', () => {
+  it('should accept empty object and apply all defaults to true', () => {
+    const result = SectionVisibilitySchema.parse({})
+    expect(result).toEqual({
+      hero: true,
+      experience: true,
+      skills: true,
+      certifications: true,
+      education: true,
+      languages: true,
+      achievements: true,
+      contact: true,
+    })
+  })
+
+  it('should accept partial visibility settings', () => {
+    const result = SectionVisibilitySchema.parse({
+      hero: false,
+      experience: true,
+    })
+    expect(result.hero).toBe(false)
+    expect(result.experience).toBe(true)
+    // Defaults should apply for unspecified
+    expect(result.skills).toBe(true)
+    expect(result.certifications).toBe(true)
+  })
+
+  it('should accept all visibility settings explicitly set', () => {
+    const fullVisibility = {
+      hero: false,
+      experience: true,
+      skills: false,
+      certifications: true,
+      education: false,
+      languages: true,
+      achievements: false,
+      contact: true,
+    }
+    const result = SectionVisibilitySchema.parse(fullVisibility)
+    expect(result).toEqual(fullVisibility)
+  })
+
+  it('should coerce truthy/falsy values to boolean', () => {
+    // Zod booleans typically don't coerce, so this should fail
+    expect(() => SectionVisibilitySchema.parse({ hero: 'yes' })).toThrow()
+  })
+
+  it('should reject non-boolean values', () => {
+    expect(() => SectionVisibilitySchema.parse({ hero: 1 })).toThrow()
+    expect(() =>
+      SectionVisibilitySchema.parse({ experience: 'true' })
+    ).toThrow()
+  })
+
+  it.each([
+    'hero',
+    'experience',
+    'skills',
+    'certifications',
+    'education',
+    'languages',
+    'achievements',
+    'contact',
+  ])('should default %s to true when not specified', section => {
+    const result = SectionVisibilitySchema.parse({})
+    expect(result[section as keyof typeof result]).toBe(true)
+  })
+})
+
+describe('SiteConfigSchema with SectionVisibility', () => {
+  it('should accept siteConfig with sectionVisibility', () => {
+    const config = {
+      branding: 'My CV',
+      version: '1.0.0',
+      sectionVisibility: {
+        hero: true,
+        experience: false,
+      },
+    }
+    const result = SiteConfigSchema.parse(config)
+    expect(result.sectionVisibility?.hero).toBe(true)
+    expect(result.sectionVisibility?.experience).toBe(false)
+  })
+
+  it('should accept siteConfig without sectionVisibility', () => {
+    const config = {
+      branding: 'My CV',
+      version: '1.0.0',
+    }
+    const result = SiteConfigSchema.parse(config)
+    expect(result.sectionVisibility).toBeUndefined()
   })
 })
 

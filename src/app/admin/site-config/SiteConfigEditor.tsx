@@ -28,9 +28,10 @@ import {
   Plus,
   X,
   ExternalLink,
+  LayoutGrid,
 } from 'lucide-react'
 import Link from 'next/link'
-import type { SiteConfig } from '@/types/cv'
+import type { SiteConfig, SectionVisibility } from '@/types/cv'
 
 const navLinkSchema = z.object({
   label: z.string().min(1, 'Label is required').max(50),
@@ -78,6 +79,20 @@ export function SiteConfigEditor() {
     href?: string
   }>({})
 
+  // Section visibility state (all default to true/visible)
+  const [sectionVisibility, setSectionVisibility] = useState<SectionVisibility>(
+    {
+      hero: true,
+      experience: true,
+      skills: true,
+      certifications: true,
+      education: true,
+      languages: true,
+      achievements: true,
+      contact: true,
+    }
+  )
+
   const {
     register,
     handleSubmit,
@@ -102,6 +117,18 @@ export function SiteConfigEditor() {
         ogImage: data.siteConfig.seo?.ogImage || '',
       })
       setNavLinks(data.siteConfig.navLinks || [])
+      // Load section visibility (default all to true if not set)
+      setSectionVisibility({
+        hero: data.siteConfig.sectionVisibility?.hero !== false,
+        experience: data.siteConfig.sectionVisibility?.experience !== false,
+        skills: data.siteConfig.sectionVisibility?.skills !== false,
+        certifications:
+          data.siteConfig.sectionVisibility?.certifications !== false,
+        education: data.siteConfig.sectionVisibility?.education !== false,
+        languages: data.siteConfig.sectionVisibility?.languages !== false,
+        achievements: data.siteConfig.sectionVisibility?.achievements !== false,
+        contact: data.siteConfig.sectionVisibility?.contact !== false,
+      })
     }
   }, [data, reset])
 
@@ -179,6 +206,9 @@ export function SiteConfigEditor() {
       if (keywords.length > 0) siteConfig.seo.keywords = keywords
       if (formData.ogImage) siteConfig.seo.ogImage = formData.ogImage
     }
+
+    // Add section visibility settings
+    siteConfig.sectionVisibility = sectionVisibility
 
     updateData(
       { ...data, siteConfig },
@@ -259,10 +289,26 @@ export function SiteConfigEditor() {
     return null
   }
 
-  // Check if we have actual changes (including nav links)
+  // Check if we have actual changes (including nav links and section visibility)
   const hasNavLinkChanges =
     JSON.stringify(navLinks) !== JSON.stringify(data.siteConfig?.navLinks || [])
-  const hasChanges = isDirty || hasNavLinkChanges
+
+  // Build default visibility for comparison (all true if not set)
+  const defaultVisibility: SectionVisibility = {
+    hero: data.siteConfig?.sectionVisibility?.hero !== false,
+    experience: data.siteConfig?.sectionVisibility?.experience !== false,
+    skills: data.siteConfig?.sectionVisibility?.skills !== false,
+    certifications:
+      data.siteConfig?.sectionVisibility?.certifications !== false,
+    education: data.siteConfig?.sectionVisibility?.education !== false,
+    languages: data.siteConfig?.sectionVisibility?.languages !== false,
+    achievements: data.siteConfig?.sectionVisibility?.achievements !== false,
+    contact: data.siteConfig?.sectionVisibility?.contact !== false,
+  }
+  const hasSectionVisibilityChanges =
+    JSON.stringify(sectionVisibility) !== JSON.stringify(defaultVisibility)
+
+  const hasChanges = isDirty || hasNavLinkChanges || hasSectionVisibilityChanges
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -530,6 +576,97 @@ export function SiteConfigEditor() {
                   "
                   placeholder="https://example.com/og-image.png"
                 />
+              </div>
+            </section>
+
+            {/* Section Visibility Section */}
+            <section className="space-y-4">
+              <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium">
+                <LayoutGrid size={18} className="text-blue-500" />
+                Section Visibility
+              </div>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                Control which sections are displayed on your public CV site.
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {[
+                  {
+                    key: 'hero',
+                    label: 'Hero / About',
+                    description: 'Main introduction section',
+                  },
+                  {
+                    key: 'experience',
+                    label: 'Experience',
+                    description: 'Work history timeline',
+                  },
+                  {
+                    key: 'skills',
+                    label: 'Skills',
+                    description: 'Technical skills grid',
+                  },
+                  {
+                    key: 'certifications',
+                    label: 'Certifications',
+                    description: 'Professional certifications',
+                  },
+                  {
+                    key: 'education',
+                    label: 'Education',
+                    description: 'Educational background',
+                  },
+                  {
+                    key: 'languages',
+                    label: 'Languages',
+                    description: 'Language proficiencies',
+                  },
+                  {
+                    key: 'achievements',
+                    label: 'Achievements',
+                    description: 'Notable accomplishments',
+                  },
+                  {
+                    key: 'contact',
+                    label: 'Contact',
+                    description: 'Contact form section',
+                  },
+                ].map(({ key, label, description }) => (
+                  <label
+                    key={key}
+                    className={`
+                      flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-colors
+                      ${
+                        sectionVisibility[key as keyof SectionVisibility]
+                          ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
+                          : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700'
+                      }
+                    `}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={
+                        sectionVisibility[key as keyof SectionVisibility] ??
+                        true
+                      }
+                      onChange={e =>
+                        setSectionVisibility({
+                          ...sectionVisibility,
+                          [key]: e.target.checked,
+                        })
+                      }
+                      className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                        {label}
+                      </div>
+                      <div className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                        {description}
+                      </div>
+                    </div>
+                  </label>
+                ))}
               </div>
             </section>
 

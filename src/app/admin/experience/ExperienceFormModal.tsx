@@ -212,7 +212,7 @@ export function ExperienceFormModal({
           ? `Editing ${experience.position}`
           : 'Add a new work experience entry'
       }
-      size="lg"
+      size="xl"
       footer={
         <>
           <button
