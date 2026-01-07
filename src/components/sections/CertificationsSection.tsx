@@ -29,8 +29,11 @@ const KUBESTRONAUT_CERTS = [
   'KCSA', // Kubernetes and Cloud Native Security Associate
 ]
 
-// Category color mapping based on certification name/issuer
-function getCategoryInfo(cert: Certification): {
+/**
+ * Category color mapping based on certification name/issuer
+ * Exported for testing
+ */
+export function getCategoryInfo(cert: Certification): {
   category: string
   color: string
 } {
@@ -74,8 +77,11 @@ function getCategoryInfo(cert: Certification): {
   return { category: 'Other', color: 'bg-slate-500' }
 }
 
-// Check if a certification is one of the Kubestronaut certifications
-function isKubestronautCert(cert: Certification): boolean {
+/**
+ * Check if a certification is one of the Kubestronaut certifications
+ * Exported for testing
+ */
+export function isKubestronautCert(cert: Certification): boolean {
   const name = cert.name.toUpperCase()
   return KUBESTRONAUT_CERTS.some(pattern => name.includes(pattern))
 }
