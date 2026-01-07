@@ -30,6 +30,7 @@ import {
   HeroStatSchema,
   SectionTitlesSchema,
   FeaturedHighlightSchema,
+  ValidationResultSchema,
   // Helper functions
   validateCVData,
   parseCVData,
@@ -1275,6 +1276,79 @@ describe('FeaturedHighlightSchema', () => {
   it('should require enabled to be boolean', () => {
     expect(() =>
       FeaturedHighlightSchema.parse({ ...validHighlight, enabled: 'true' })
+    ).toThrow()
+  })
+})
+
+describe('ValidationResultSchema', () => {
+  // Create a concrete instance with a simple data schema
+  const TestDataSchema = z.object({ name: z.string() })
+  const TestValidationResultSchema = ValidationResultSchema(TestDataSchema)
+
+  it('should accept success result with data', () => {
+    const result = TestValidationResultSchema.parse({
+      success: true,
+      data: { name: 'Test' },
+    })
+    expect(result.success).toBe(true)
+    expect(result.data).toEqual({ name: 'Test' })
+    expect(result.error).toBeUndefined()
+  })
+
+  it('should accept success result without data', () => {
+    const result = TestValidationResultSchema.parse({
+      success: true,
+    })
+    expect(result.success).toBe(true)
+    expect(result.data).toBeUndefined()
+  })
+
+  it('should accept failure result with error', () => {
+    const result = TestValidationResultSchema.parse({
+      success: false,
+      error: {
+        message: 'Validation failed',
+        field: 'name',
+        details: { code: 'required' },
+      },
+    })
+    expect(result.success).toBe(false)
+    expect(result.error?.message).toBe('Validation failed')
+    expect(result.error?.field).toBe('name')
+    expect(result.error?.details).toEqual({ code: 'required' })
+  })
+
+  it('should accept error with only message', () => {
+    const result = TestValidationResultSchema.parse({
+      success: false,
+      error: {
+        message: 'Something went wrong',
+      },
+    })
+    expect(result.error?.message).toBe('Something went wrong')
+    expect(result.error?.field).toBeUndefined()
+    expect(result.error?.details).toBeUndefined()
+  })
+
+  it('should reject invalid success type', () => {
+    expect(() => TestValidationResultSchema.parse({ success: 'yes' })).toThrow()
+  })
+
+  it('should reject error without message', () => {
+    expect(() =>
+      TestValidationResultSchema.parse({
+        success: false,
+        error: { field: 'name' },
+      })
+    ).toThrow()
+  })
+
+  it('should validate data against provided schema', () => {
+    expect(() =>
+      TestValidationResultSchema.parse({
+        success: true,
+        data: { name: 123 }, // name should be string
+      })
     ).toThrow()
   })
 })
