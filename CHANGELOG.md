@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.6](https://github.com/acartag7/cv-arnold-website/compare/v0.1.5...v0.1.6) (2026-01-05)
+
+
+### ✨ Features
+
+* **cv:** restore complete CV data and improve UI components ([#64](https://github.com/acartag7/cv-arnold-website/issues/64)) ([b695fa8](https://github.com/acartag7/cv-arnold-website/commit/b695fa866b35f02b33cbad3bda6104a9f678b6fe))
+
+
+### 📚 Documentation
+
+* **ai:** comprehensive AI features implementation plan ([#61](https://github.com/acartag7/cv-arnold-website/issues/61)) ([7b73235](https://github.com/acartag7/cv-arnold-website/commit/7b7323523d21811821ce34a4df625e9a6b06c246))
+
 ## [0.1.5](https://github.com/acartag7/cv-arnold-website/compare/v0.1.4...v0.1.5) (2026-01-04)
 
 
