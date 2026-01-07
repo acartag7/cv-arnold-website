@@ -67,9 +67,10 @@ describe('AdminLayoutClient', () => {
         </AdminLayoutClient>
       )
 
-      // Find logout link by href (desktop version)
+      // Find logout links (desktop and mobile versions)
       const logoutLinks = screen.getAllByRole('link', { name: /sign out/i })
-      expect(logoutLinks.length).toBeGreaterThan(0)
+      // Exactly 2: desktop header + mobile sidebar
+      expect(logoutLinks).toHaveLength(2)
 
       // Verify correct Cloudflare Access logout URL
       const desktopLogout = logoutLinks[0]
@@ -95,9 +96,10 @@ describe('AdminLayoutClient', () => {
         </AdminLayoutClient>
       )
 
-      // Mobile logout button has full "Sign out" text
+      // Both desktop (lg:inline) and mobile have "Sign out" text
       const logoutButtons = screen.getAllByText('Sign out')
-      expect(logoutButtons.length).toBeGreaterThan(0)
+      // Exactly 2: desktop header (hidden on smaller screens) + mobile sidebar
+      expect(logoutButtons).toHaveLength(2)
 
       // Verify it links to Cloudflare Access logout
       const mobileLogout = logoutButtons[0]!.closest('a')
@@ -127,9 +129,9 @@ describe('AdminLayoutClient', () => {
         </AdminLayoutClient>
       )
 
-      // Find the avatar div with user initial
+      // Find the avatar divs with user initial (desktop header + mobile sidebar)
       const avatars = screen.getAllByText('J')
-      expect(avatars.length).toBeGreaterThan(0)
+      expect(avatars).toHaveLength(2)
 
       // Verify tooltip shows full email
       const avatarWithTooltip = avatars[0]!.closest('[title]')
@@ -143,9 +145,9 @@ describe('AdminLayoutClient', () => {
         </AdminLayoutClient>
       )
 
-      // Find the fallback avatar
+      // Find the fallback avatars (desktop header + mobile sidebar)
       const questionMarks = screen.getAllByText('?')
-      expect(questionMarks.length).toBeGreaterThan(0)
+      expect(questionMarks).toHaveLength(2)
     })
 
     it('should show uppercase initial', () => {
@@ -155,9 +157,9 @@ describe('AdminLayoutClient', () => {
         </AdminLayoutClient>
       )
 
-      // Should show uppercase 'A' not lowercase 'a'
+      // Should show uppercase 'A' not lowercase 'a' (desktop header + mobile sidebar)
       const avatars = screen.getAllByText('A')
-      expect(avatars.length).toBeGreaterThan(0)
+      expect(avatars).toHaveLength(2)
 
       // Verify uppercase avatar is in the document
       expect(avatars[0]).toBeInTheDocument()
@@ -210,8 +212,8 @@ describe('AdminLayoutClient', () => {
       expect(screen.getByText('Personal Info')).toBeInTheDocument()
       expect(screen.getByText('Experience')).toBeInTheDocument()
       expect(screen.getByText('Skills')).toBeInTheDocument()
-      // "Theme" appears in both nav and ThemeSwitcher, so use getAllByText
-      expect(screen.getAllByText('Theme').length).toBeGreaterThan(0)
+      // "Theme" appears in nav item + mocked ThemeSwitcher
+      expect(screen.getAllByText('Theme')).toHaveLength(2)
       expect(screen.getByText('Site Config')).toBeInTheDocument()
     })
 
