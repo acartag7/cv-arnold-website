@@ -316,6 +316,33 @@ export function CVPageClient({ data }: CVPageClientProps) {
     ]
   }, [heroStats])
 
+  // Memoize parsed experience bullets to avoid regex parsing on every render
+  const experienceBullets = useMemo(() => {
+    return experience.reduce(
+      (acc, exp) => {
+        const bullets = exp.description
+          .split(/(?<=\.)\s+/)
+          .filter(sentence => sentence.trim().length > 0)
+        acc[exp.id] = {
+          bullets,
+          previewBullets: bullets.slice(0, 3),
+          hasMoreBullets: bullets.length > 3,
+          hasAchievements: exp.achievements && exp.achievements.length > 0,
+        }
+        return acc
+      },
+      {} as Record<
+        string,
+        {
+          bullets: string[]
+          previewBullets: string[]
+          hasMoreBullets: boolean
+          hasAchievements: boolean
+        }
+      >
+    )
+  }, [experience])
+
   // Get section titles from data or use defaults
   const titles = {
     heroPath: sectionTitles?.heroPath || '~/platform-engineer',
@@ -723,13 +750,17 @@ export function CVPageClient({ data }: CVPageClientProps) {
                     {/* Experience card - Expandable */}
                     {(() => {
                       const isExpanded = expandedExperiences.has(exp.id)
-                      const bullets = exp.description
-                        .split(/(?<=\.)\s+/)
-                        .filter(sentence => sentence.trim().length > 0)
-                      const previewBullets = bullets.slice(0, 3)
-                      const hasMoreBullets = bullets.length > 3
-                      const hasAchievements =
-                        exp.achievements && exp.achievements.length > 0
+                      const {
+                        bullets,
+                        previewBullets,
+                        hasMoreBullets,
+                        hasAchievements,
+                      } = experienceBullets[exp.id] || {
+                        bullets: [],
+                        previewBullets: [],
+                        hasMoreBullets: false,
+                        hasAchievements: false,
+                      }
 
                       return (
                         <div

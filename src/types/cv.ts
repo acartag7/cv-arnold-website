@@ -414,6 +414,53 @@ export interface SectionVisibility {
 }
 
 /**
+ * Section visibility keys as a const array
+ * Used for type-safe iteration over visibility settings
+ */
+export const SECTION_VISIBILITY_KEYS = [
+  'hero',
+  'experience',
+  'skills',
+  'certifications',
+  'education',
+  'languages',
+  'achievements',
+  'contact',
+] as const
+
+/**
+ * Type representing valid section visibility keys
+ */
+export type SectionVisibilityKey = (typeof SECTION_VISIBILITY_KEYS)[number]
+
+/**
+ * Default section visibility settings (all visible)
+ */
+export const DEFAULT_SECTION_VISIBILITY: Required<SectionVisibility> = {
+  hero: true,
+  experience: true,
+  skills: true,
+  certifications: true,
+  education: true,
+  languages: true,
+  achievements: true,
+  contact: true,
+}
+
+/**
+ * Load section visibility from data with defaults
+ * Ensures all sections have boolean values (defaults to true if not set)
+ */
+export function loadSectionVisibility(
+  data: SectionVisibility | undefined
+): Required<SectionVisibility> {
+  return SECTION_VISIBILITY_KEYS.reduce((acc, key) => {
+    acc[key] = data?.[key] !== false
+    return acc
+  }, {} as Required<SectionVisibility>)
+}
+
+/**
  * Hero stats configuration
  */
 export interface HeroStat {

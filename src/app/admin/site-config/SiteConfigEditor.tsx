@@ -32,6 +32,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import type { SiteConfig, SectionVisibility } from '@/types/cv'
+import { DEFAULT_SECTION_VISIBILITY, loadSectionVisibility } from '@/types/cv'
 
 const navLinkSchema = z.object({
   label: z.string().min(1, 'Label is required').max(50),
@@ -80,18 +81,9 @@ export function SiteConfigEditor() {
   }>({})
 
   // Section visibility state (all default to true/visible)
-  const [sectionVisibility, setSectionVisibility] = useState<SectionVisibility>(
-    {
-      hero: true,
-      experience: true,
-      skills: true,
-      certifications: true,
-      education: true,
-      languages: true,
-      achievements: true,
-      contact: true,
-    }
-  )
+  const [sectionVisibility, setSectionVisibility] = useState<
+    Required<SectionVisibility>
+  >(DEFAULT_SECTION_VISIBILITY)
 
   const {
     register,
@@ -117,18 +109,10 @@ export function SiteConfigEditor() {
         ogImage: data.siteConfig.seo?.ogImage || '',
       })
       setNavLinks(data.siteConfig.navLinks || [])
-      // Load section visibility (default all to true if not set)
-      setSectionVisibility({
-        hero: data.siteConfig.sectionVisibility?.hero !== false,
-        experience: data.siteConfig.sectionVisibility?.experience !== false,
-        skills: data.siteConfig.sectionVisibility?.skills !== false,
-        certifications:
-          data.siteConfig.sectionVisibility?.certifications !== false,
-        education: data.siteConfig.sectionVisibility?.education !== false,
-        languages: data.siteConfig.sectionVisibility?.languages !== false,
-        achievements: data.siteConfig.sectionVisibility?.achievements !== false,
-        contact: data.siteConfig.sectionVisibility?.contact !== false,
-      })
+      // Load section visibility using type-safe helper (defaults all to true if not set)
+      setSectionVisibility(
+        loadSectionVisibility(data.siteConfig.sectionVisibility)
+      )
     }
   }, [data, reset])
 
@@ -293,18 +277,10 @@ export function SiteConfigEditor() {
   const hasNavLinkChanges =
     JSON.stringify(navLinks) !== JSON.stringify(data.siteConfig?.navLinks || [])
 
-  // Build default visibility for comparison (all true if not set)
-  const defaultVisibility: SectionVisibility = {
-    hero: data.siteConfig?.sectionVisibility?.hero !== false,
-    experience: data.siteConfig?.sectionVisibility?.experience !== false,
-    skills: data.siteConfig?.sectionVisibility?.skills !== false,
-    certifications:
-      data.siteConfig?.sectionVisibility?.certifications !== false,
-    education: data.siteConfig?.sectionVisibility?.education !== false,
-    languages: data.siteConfig?.sectionVisibility?.languages !== false,
-    achievements: data.siteConfig?.sectionVisibility?.achievements !== false,
-    contact: data.siteConfig?.sectionVisibility?.contact !== false,
-  }
+  // Build default visibility for comparison using type-safe helper
+  const defaultVisibility = loadSectionVisibility(
+    data.siteConfig?.sectionVisibility
+  )
   const hasSectionVisibilityChanges =
     JSON.stringify(sectionVisibility) !== JSON.stringify(defaultVisibility)
 
