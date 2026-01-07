@@ -17,7 +17,8 @@ import Link from 'next/link'
 import { AchievementList } from './AchievementList'
 import { AchievementFormModal } from './AchievementFormModal'
 import { ConfirmDialog } from '@/components/admin'
-import type { Achievement } from '@/types/cv'
+import { SectionVisibilityToggle } from '@/components/admin/SectionVisibilityToggle'
+import type { Achievement, SectionVisibilityKey } from '@/types/cv'
 
 export function AchievementsEditor() {
   const { data, isLoading, error, refetch } = useAdminData()
@@ -176,6 +177,46 @@ export function AchievementsEditor() {
     [data, updateData, toast]
   )
 
+  // Handle section visibility toggle
+  const handleVisibilityChange = useCallback(
+    (sectionKey: SectionVisibilityKey, isVisible: boolean) => {
+      if (!data) return
+
+      // Preserve existing siteConfig or provide defaults for required fields
+      const existingSiteConfig = data.siteConfig ?? {
+        branding: '~/cv',
+        version: 'v1.0.0',
+      }
+
+      const updatedSiteConfig = {
+        ...existingSiteConfig,
+        sectionVisibility: {
+          ...existingSiteConfig.sectionVisibility,
+          [sectionKey]: isVisible,
+        },
+      }
+
+      updateData(
+        { ...data, siteConfig: updatedSiteConfig },
+        {
+          onSuccess: () => {
+            toast.success(
+              isVisible
+                ? 'Section is now visible on public site'
+                : 'Section is now hidden from public site'
+            )
+          },
+          onError: err => {
+            toast.error(
+              err instanceof Error ? err.message : 'Failed to update visibility'
+            )
+          },
+        }
+      )
+    },
+    [data, updateData, toast]
+  )
+
   // Loading state
   if (isLoading) {
     return (
@@ -251,6 +292,9 @@ export function AchievementsEditor() {
     (a, b) => a.order - b.order
   )
 
+  // Get current visibility (default to true if not set)
+  const isVisible = data.siteConfig?.sectionVisibility?.achievements !== false
+
   return (
     <div className="max-w-4xl mx-auto">
       {/* Back link */}
@@ -261,6 +305,17 @@ export function AchievementsEditor() {
         <ArrowLeft size={16} />
         Back to Dashboard
       </Link>
+
+      {/* Section Visibility Toggle */}
+      <div className="mb-6">
+        <SectionVisibilityToggle
+          sectionKey="achievements"
+          isVisible={isVisible}
+          onChange={handleVisibilityChange}
+          disabled={isSaving}
+          label="Show Achievements Section"
+        />
+      </div>
 
       {/* Main content */}
       <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-8">

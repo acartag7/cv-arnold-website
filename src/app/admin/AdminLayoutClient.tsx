@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react'
 import Link from 'next/link'
-import { QueryClientProvider } from '@tanstack/react-query'
+import { QueryClientProvider, useQuery } from '@tanstack/react-query'
 import {
   Menu,
   X,
@@ -22,12 +22,14 @@ import {
   ChevronLeft,
   ChevronRight,
   LogOut,
+  EyeOff,
 } from 'lucide-react'
 import { createQueryClient } from '@/lib/queryClient'
 import { ThemeSwitcher } from '@/components/ui/ThemeSwitcher'
 import { ToastProvider } from '@/components/ui/ToastProvider'
 import { ErrorBoundary } from '@/components/common/ErrorBoundary'
 import { AdminErrorFallback } from '@/components/admin'
+import type { SectionVisibilityKey, CVData } from '@/types/cv'
 
 interface AdminLayoutClientProps {
   children: React.ReactNode
@@ -37,8 +39,15 @@ interface AdminLayoutClientProps {
 /**
  * Navigation items for admin sidebar
  * Organized in logical sections: Content, Homepage, Site Settings
+ * visibilityKey maps to sectionVisibility for showing disabled state
  */
-const navItems = [
+const navItems: {
+  id: string
+  label: string
+  href: string
+  icon: typeof Home
+  visibilityKey?: SectionVisibilityKey
+}[] = [
   // Dashboard
   { id: 'dashboard', label: 'Dashboard', href: '/admin', icon: Home },
 
@@ -54,31 +63,42 @@ const navItems = [
     label: 'Experience',
     href: '/admin/experience',
     icon: Briefcase,
+    visibilityKey: 'experience',
   },
-  { id: 'skills', label: 'Skills', href: '/admin/skills', icon: Code },
+  {
+    id: 'skills',
+    label: 'Skills',
+    href: '/admin/skills',
+    icon: Code,
+    visibilityKey: 'skills',
+  },
   {
     id: 'certifications',
     label: 'Certifications',
     href: '/admin/certifications',
     icon: Award,
+    visibilityKey: 'certifications',
   },
   {
     id: 'education',
     label: 'Education',
     href: '/admin/education',
     icon: GraduationCap,
+    visibilityKey: 'education',
   },
   {
     id: 'languages',
     label: 'Languages',
     href: '/admin/languages',
     icon: Languages,
+    visibilityKey: 'languages',
   },
   {
     id: 'achievements',
     label: 'Achievements',
     href: '/admin/achievements',
     icon: Trophy,
+    visibilityKey: 'achievements',
   },
 
   // Homepage Customization
@@ -104,6 +124,86 @@ const navItems = [
     icon: Settings,
   },
 ]
+
+/**
+ * Sidebar Navigation Component
+ *
+ * Uses query hook to check section visibility and grey out disabled sections
+ */
+function SidebarNav({
+  sidebarOpen,
+  onNavClick,
+}: {
+  sidebarOpen: boolean
+  onNavClick: () => void
+}) {
+  // Fetch CV data to get section visibility
+  const { data } = useQuery<CVData>({
+    queryKey: ['admin-data'],
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  })
+
+  const sectionVisibility = data?.siteConfig?.sectionVisibility
+
+  return (
+    <nav className="p-4 space-y-1">
+      {navItems.map(item => {
+        const Icon = item.icon
+        // Check if this section is hidden (default to visible if not set)
+        const isHidden =
+          item.visibilityKey &&
+          sectionVisibility?.[item.visibilityKey] === false
+
+        return (
+          <Link
+            key={item.id}
+            href={item.href}
+            onClick={onNavClick}
+            className={`
+              flex items-center gap-3 px-3 py-2.5 rounded-lg
+              transition-colors relative group
+              ${!sidebarOpen && 'md:justify-center md:px-2'}
+              ${
+                isHidden
+                  ? 'text-gray-400 dark:text-gray-500 hover:bg-gray-100/50 dark:hover:bg-gray-700/50'
+                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+              }
+            `}
+            title={
+              !sidebarOpen
+                ? `${item.label}${isHidden ? ' (Hidden)' : ''}`
+                : undefined
+            }
+          >
+            <div className="relative flex-shrink-0">
+              <Icon size={20} className={isHidden ? 'opacity-50' : ''} />
+              {isHidden && (
+                <EyeOff
+                  size={10}
+                  className="absolute -top-1 -right-1 text-gray-400 dark:text-gray-500"
+                />
+              )}
+            </div>
+            <span
+              className={`
+                text-sm font-medium
+                ${!sidebarOpen && 'md:hidden'}
+                ${isHidden ? 'opacity-60' : ''}
+              `}
+            >
+              {item.label}
+            </span>
+            {isHidden && sidebarOpen && (
+              <span className="ml-auto text-xs text-gray-400 dark:text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                Hidden
+              </span>
+            )}
+          </Link>
+        )
+      })}
+    </nav>
+  )
+}
 
 /**
  * Admin Layout Client Component
@@ -226,36 +326,7 @@ export function AdminLayoutClient({
             w-64
           `}
           >
-            <nav className="p-4 space-y-1">
-              {navItems.map(item => {
-                const Icon = item.icon
-                return (
-                  <Link
-                    key={item.id}
-                    href={item.href}
-                    onClick={handleNavClick}
-                    className={`
-                    flex items-center gap-3 px-3 py-2.5 rounded-lg
-                    text-gray-700 dark:text-gray-300
-                    hover:bg-gray-100 dark:hover:bg-gray-700
-                    transition-colors
-                    ${!sidebarOpen && 'md:justify-center md:px-2'}
-                  `}
-                    title={!sidebarOpen ? item.label : undefined}
-                  >
-                    <Icon size={20} className="flex-shrink-0" />
-                    <span
-                      className={`
-                      text-sm font-medium
-                      ${!sidebarOpen && 'md:hidden'}
-                    `}
-                    >
-                      {item.label}
-                    </span>
-                  </Link>
-                )
-              })}
-            </nav>
+            <SidebarNav sidebarOpen={sidebarOpen} onNavClick={handleNavClick} />
 
             {/* User info on mobile (bottom of sidebar) */}
             <div className="absolute bottom-4 left-4 right-4 sm:hidden space-y-2">

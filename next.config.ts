@@ -1,4 +1,5 @@
 import type { NextConfig } from 'next'
+import packageJson from './package.json' with { type: 'json' }
 
 // Initialize Cloudflare bindings for local development ONLY
 // This enables getCloudflareContext() to work with `next dev`
@@ -78,6 +79,12 @@ const securityHeaders = [
 ]
 
 const nextConfig: NextConfig = {
+  // Expose app version from package.json at build time
+  // Used as default fallback when siteConfig.version is not set
+  env: {
+    NEXT_PUBLIC_APP_VERSION: `v${packageJson.version}`,
+  },
+
   // Image configuration - restrict to known domains for security
   images: {
     remotePatterns: [

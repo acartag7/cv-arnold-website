@@ -357,7 +357,9 @@ export function CVPageClient({ data }: CVPageClientProps) {
 
   // Get site config values
   const branding = siteConfig?.branding || '~/arnold.dev'
-  const version = siteConfig?.version || 'v2024.12'
+  // Use package.json version as fallback (injected at build time)
+  const version =
+    siteConfig?.version || process.env.NEXT_PUBLIC_APP_VERSION || 'v0.1.0'
   const footerText = (
     siteConfig?.footerText ||
     '© {{year}} Arnold Cartagena · Built with Next.js'
@@ -419,7 +421,7 @@ export function CVPageClient({ data }: CVPageClientProps) {
                 <a
                   key={item.label}
                   href={`#${item.sectionId}`}
-                  className="relative text-sm font-mono transition-colors py-1"
+                  className="relative text-sm font-mono transition-all py-1 hover:opacity-80"
                   style={{ color: isActive ? colors.accent : colors.textMuted }}
                 >
                   {item.label}
@@ -1383,7 +1385,7 @@ export function CVPageClient({ data }: CVPageClientProps) {
                           className="mt-1 flex-shrink-0"
                           style={{ color: colors.accent }}
                         />
-                        <div className="flex-1 min-w-0">
+                        <div className="flex-1 min-w-0 min-h-[2.5rem]">
                           <h4 className="text-sm font-semibold mb-1">
                             {achievement.title}
                           </h4>

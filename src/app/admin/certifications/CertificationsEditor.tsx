@@ -17,7 +17,8 @@ import Link from 'next/link'
 import { CertificationList } from './CertificationList'
 import { CertificationFormModal } from './CertificationFormModal'
 import { ConfirmDialog } from '@/components/admin'
-import type { Certification } from '@/types/cv'
+import { SectionVisibilityToggle } from '@/components/admin/SectionVisibilityToggle'
+import type { Certification, SectionVisibilityKey } from '@/types/cv'
 
 export function CertificationsEditor() {
   const { data, isLoading, error, refetch } = useAdminData()
@@ -150,6 +151,46 @@ export function CertificationsEditor() {
     [data, updateData, toast]
   )
 
+  // Handle section visibility toggle
+  const handleVisibilityChange = useCallback(
+    (sectionKey: SectionVisibilityKey, isVisible: boolean) => {
+      if (!data) return
+
+      // Preserve existing siteConfig or provide defaults for required fields
+      const existingSiteConfig = data.siteConfig ?? {
+        branding: '~/cv',
+        version: 'v1.0.0',
+      }
+
+      const updatedSiteConfig = {
+        ...existingSiteConfig,
+        sectionVisibility: {
+          ...existingSiteConfig.sectionVisibility,
+          [sectionKey]: isVisible,
+        },
+      }
+
+      updateData(
+        { ...data, siteConfig: updatedSiteConfig },
+        {
+          onSuccess: () => {
+            toast.success(
+              isVisible
+                ? 'Section is now visible on public site'
+                : 'Section is now hidden from public site'
+            )
+          },
+          onError: err => {
+            toast.error(
+              err instanceof Error ? err.message : 'Failed to update visibility'
+            )
+          },
+        }
+      )
+    },
+    [data, updateData, toast]
+  )
+
   // Loading state
   if (isLoading) {
     return (
@@ -225,6 +266,9 @@ export function CertificationsEditor() {
     (a, b) => a.order - b.order
   )
 
+  // Get current visibility (default to true if not set)
+  const isVisible = data.siteConfig?.sectionVisibility?.certifications !== false
+
   return (
     <div className="max-w-4xl mx-auto">
       {/* Back link */}
@@ -235,6 +279,17 @@ export function CertificationsEditor() {
         <ArrowLeft size={16} />
         Back to Dashboard
       </Link>
+
+      {/* Section Visibility Toggle */}
+      <div className="mb-6">
+        <SectionVisibilityToggle
+          sectionKey="certifications"
+          isVisible={isVisible}
+          onChange={handleVisibilityChange}
+          disabled={isSaving}
+          label="Show Certifications Section"
+        />
+      </div>
 
       {/* Main content */}
       <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-8">
