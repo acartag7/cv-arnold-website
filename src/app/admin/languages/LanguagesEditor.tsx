@@ -11,6 +11,7 @@
 
 import { useState, useCallback } from 'react'
 import { useAdminData, useUpdateData } from '@/hooks/useAdminData'
+import { useSectionVisibility } from '@/hooks/useSectionVisibility'
 import { useToast } from '@/components/ui/ToastProvider'
 import { AlertCircle, RefreshCw, ArrowLeft, Plus, Globe } from 'lucide-react'
 import Link from 'next/link'
@@ -18,12 +19,17 @@ import { LanguageList } from './LanguageList'
 import { LanguageFormModal } from './LanguageFormModal'
 import { ConfirmDialog } from '@/components/admin'
 import { SectionVisibilityToggle } from '@/components/admin/SectionVisibilityToggle'
-import type { Language, SectionVisibilityKey } from '@/types/cv'
+import type { Language } from '@/types/cv'
 
 export function LanguagesEditor() {
   const { data, isLoading, error, refetch } = useAdminData()
-  const { mutate: updateData, isPending: isSaving } = useUpdateData()
+  const { mutate: updateData, isPending: isMutating } = useUpdateData()
+  const { handleVisibilityChange, isSaving: isVisibilitySaving } =
+    useSectionVisibility({ data })
   const toast = useToast()
+
+  // Combine saving states from mutations
+  const isSaving = isMutating || isVisibilitySaving
 
   // Modal state
   const [isFormOpen, setIsFormOpen] = useState(false)
@@ -132,46 +138,6 @@ export function LanguagesEditor() {
           onError: err => {
             toast.error(
               err instanceof Error ? err.message : 'Failed to update order'
-            )
-          },
-        }
-      )
-    },
-    [data, updateData, toast]
-  )
-
-  // Handle section visibility toggle
-  const handleVisibilityChange = useCallback(
-    (sectionKey: SectionVisibilityKey, isVisible: boolean) => {
-      if (!data) return
-
-      // Preserve existing siteConfig or provide defaults for required fields
-      const existingSiteConfig = data.siteConfig ?? {
-        branding: '~/cv',
-        version: 'v1.0.0',
-      }
-
-      const updatedSiteConfig = {
-        ...existingSiteConfig,
-        sectionVisibility: {
-          ...existingSiteConfig.sectionVisibility,
-          [sectionKey]: isVisible,
-        },
-      }
-
-      updateData(
-        { ...data, siteConfig: updatedSiteConfig },
-        {
-          onSuccess: () => {
-            toast.success(
-              isVisible
-                ? 'Section is now visible on public site'
-                : 'Section is now hidden from public site'
-            )
-          },
-          onError: err => {
-            toast.error(
-              err instanceof Error ? err.message : 'Failed to update visibility'
             )
           },
         }

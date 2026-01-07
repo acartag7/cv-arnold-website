@@ -654,6 +654,9 @@ export const HeroStatSchema = z.object({
 
 /**
  * Section titles schema
+ *
+ * Required fields: heroPath, experience, skills, certifications, contact
+ * Optional fields: education, languages, achievements (may not be displayed on all CVs)
  */
 export const SectionTitlesSchema = z.object({
   heroPath: z.string().max(100),

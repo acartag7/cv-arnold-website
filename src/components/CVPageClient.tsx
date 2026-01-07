@@ -421,7 +421,7 @@ export function CVPageClient({ data }: CVPageClientProps) {
                 <a
                   key={item.label}
                   href={`#${item.sectionId}`}
-                  className="relative text-sm font-mono transition-all py-1 hover:opacity-80"
+                  className="relative text-sm font-mono transition-all py-1 hover:opacity-80 hover:underline underline-offset-4"
                   style={{ color: isActive ? colors.accent : colors.textMuted }}
                 >
                   {item.label}
