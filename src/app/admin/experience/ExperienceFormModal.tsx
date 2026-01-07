@@ -212,6 +212,7 @@ export function ExperienceFormModal({
           ? `Editing ${experience.position}`
           : 'Add a new work experience entry'
       }
+      // XL size accommodates the rich form with description, achievements, and technologies
       size="xl"
       footer={
         <>
