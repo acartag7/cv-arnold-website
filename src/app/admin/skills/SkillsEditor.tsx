@@ -11,6 +11,7 @@
 
 import { useState, useCallback } from 'react'
 import { useAdminData, useUpdateData } from '@/hooks/useAdminData'
+import { useSectionVisibility } from '@/hooks/useSectionVisibility'
 import { useToast } from '@/components/ui/ToastProvider'
 import { AlertCircle, RefreshCw, ArrowLeft, Plus, Code } from 'lucide-react'
 import Link from 'next/link'
@@ -18,12 +19,18 @@ import { SkillCategoryList } from './SkillCategoryList'
 import { SkillCategoryModal } from './SkillCategoryModal'
 import { SkillModal } from './SkillModal'
 import { ConfirmDialog } from '@/components/admin'
+import { SectionVisibilityToggle } from '@/components/admin/SectionVisibilityToggle'
 import type { SkillCategory, Skill } from '@/types/cv'
 
 export function SkillsEditor() {
   const { data, isLoading, error, refetch } = useAdminData()
-  const { mutate: updateData, isPending: isSaving } = useUpdateData()
+  const { mutate: updateData, isPending: isMutating } = useUpdateData()
+  const { handleVisibilityChange, isSaving: isVisibilitySaving } =
+    useSectionVisibility({ data })
   const toast = useToast()
+
+  // Combine saving states from mutations
+  const isSaving = isMutating || isVisibilitySaving
 
   // Category modal state
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false)
@@ -365,6 +372,9 @@ export function SkillsEditor() {
 
   const sortedCategories = [...data.skills].sort((a, b) => a.order - b.order)
 
+  // Get current visibility (default to true if not set)
+  const isVisible = data.siteConfig?.sectionVisibility?.skills !== false
+
   return (
     <div className="max-w-4xl mx-auto">
       {/* Back link */}
@@ -375,6 +385,17 @@ export function SkillsEditor() {
         <ArrowLeft size={16} />
         Back to Dashboard
       </Link>
+
+      {/* Section Visibility Toggle */}
+      <div className="mb-6">
+        <SectionVisibilityToggle
+          sectionKey="skills"
+          isVisible={isVisible}
+          onChange={handleVisibilityChange}
+          disabled={isSaving}
+          label="Show Skills Section"
+        />
+      </div>
 
       {/* Main content */}
       <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-8">

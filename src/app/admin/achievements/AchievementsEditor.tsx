@@ -11,18 +11,25 @@
 
 import { useState, useCallback } from 'react'
 import { useAdminData, useUpdateData } from '@/hooks/useAdminData'
+import { useSectionVisibility } from '@/hooks/useSectionVisibility'
 import { useToast } from '@/components/ui/ToastProvider'
 import { AlertCircle, RefreshCw, ArrowLeft, Plus, Trophy } from 'lucide-react'
 import Link from 'next/link'
 import { AchievementList } from './AchievementList'
 import { AchievementFormModal } from './AchievementFormModal'
 import { ConfirmDialog } from '@/components/admin'
+import { SectionVisibilityToggle } from '@/components/admin/SectionVisibilityToggle'
 import type { Achievement } from '@/types/cv'
 
 export function AchievementsEditor() {
   const { data, isLoading, error, refetch } = useAdminData()
-  const { mutate: updateData, isPending: isSaving } = useUpdateData()
+  const { mutate: updateData, isPending: isMutating } = useUpdateData()
+  const { handleVisibilityChange, isSaving: isVisibilitySaving } =
+    useSectionVisibility({ data })
   const toast = useToast()
+
+  // Combine saving states from mutations
+  const isSaving = isMutating || isVisibilitySaving
 
   // Modal state
   const [isFormOpen, setIsFormOpen] = useState(false)
@@ -251,6 +258,9 @@ export function AchievementsEditor() {
     (a, b) => a.order - b.order
   )
 
+  // Get current visibility (default to true if not set)
+  const isVisible = data.siteConfig?.sectionVisibility?.achievements !== false
+
   return (
     <div className="max-w-4xl mx-auto">
       {/* Back link */}
@@ -261,6 +271,17 @@ export function AchievementsEditor() {
         <ArrowLeft size={16} />
         Back to Dashboard
       </Link>
+
+      {/* Section Visibility Toggle */}
+      <div className="mb-6">
+        <SectionVisibilityToggle
+          sectionKey="achievements"
+          isVisible={isVisible}
+          onChange={handleVisibilityChange}
+          disabled={isSaving}
+          label="Show Achievements Section"
+        />
+      </div>
 
       {/* Main content */}
       <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-8">

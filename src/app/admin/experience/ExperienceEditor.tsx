@@ -15,6 +15,7 @@
 
 import { useState, useCallback } from 'react'
 import { useAdminData, useUpdateData } from '@/hooks/useAdminData'
+import { useSectionVisibility } from '@/hooks/useSectionVisibility'
 import { useToast } from '@/components/ui/ToastProvider'
 import {
   AlertCircle,
@@ -27,12 +28,18 @@ import Link from 'next/link'
 import { ExperienceList } from './ExperienceList'
 import { ExperienceFormModal } from './ExperienceFormModal'
 import { ConfirmDialog } from '@/components/admin'
+import { SectionVisibilityToggle } from '@/components/admin/SectionVisibilityToggle'
 import type { Experience } from '@/types/cv'
 
 export function ExperienceEditor() {
   const { data, isLoading, error, refetch } = useAdminData()
-  const { mutate: updateData, isPending: isSaving } = useUpdateData()
+  const { mutate: updateData, isPending: isMutating } = useUpdateData()
+  const { handleVisibilityChange, isSaving: isVisibilitySaving } =
+    useSectionVisibility({ data })
   const toast = useToast()
+
+  // Combine saving states from mutations
+  const isSaving = isMutating || isVisibilitySaving
 
   // Modal state
   const [isFormOpen, setIsFormOpen] = useState(false)
@@ -248,6 +255,9 @@ export function ExperienceEditor() {
     (a, b) => a.order - b.order
   )
 
+  // Get current visibility (default to true if not set)
+  const isVisible = data.siteConfig?.sectionVisibility?.experience !== false
+
   return (
     <div className="max-w-4xl mx-auto">
       {/* Back link */}
@@ -258,6 +268,17 @@ export function ExperienceEditor() {
         <ArrowLeft size={16} />
         Back to Dashboard
       </Link>
+
+      {/* Section Visibility Toggle */}
+      <div className="mb-6">
+        <SectionVisibilityToggle
+          sectionKey="experience"
+          isVisible={isVisible}
+          onChange={handleVisibilityChange}
+          disabled={isSaving}
+          label="Show Experience Section"
+        />
+      </div>
 
       {/* Main content */}
       <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-8">

@@ -26,6 +26,9 @@ import {
   Award,
   Mail,
   Save,
+  GraduationCap,
+  Languages,
+  Trophy,
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -37,6 +40,9 @@ const formSchema = z.object({
     .string()
     .min(1, 'Certifications title is required')
     .max(100),
+  education: z.string().max(100).optional(),
+  languages: z.string().max(100).optional(),
+  achievements: z.string().max(100).optional(),
   contact: z.string().min(1, 'Contact title is required').max(100),
 })
 
@@ -47,6 +53,9 @@ const defaultValues: FormData = {
   experience: 'experience.log',
   skills: 'skills.json',
   certifications: 'certifications.yaml',
+  education: 'education.log',
+  languages: 'languages.config',
+  achievements: 'achievements.yaml',
   contact: './send_message.sh',
 }
 
@@ -87,6 +96,27 @@ const fieldConfig: {
     description: 'Title for the certifications section',
   },
   {
+    name: 'education',
+    label: 'Education Section',
+    icon: GraduationCap,
+    placeholder: 'education.log',
+    description: 'Title for the education section',
+  },
+  {
+    name: 'languages',
+    label: 'Languages Section',
+    icon: Languages,
+    placeholder: 'languages.config',
+    description: 'Title for the languages section',
+  },
+  {
+    name: 'achievements',
+    label: 'Achievements Section',
+    icon: Trophy,
+    placeholder: 'achievements.yaml',
+    description: 'Title for the achievements section',
+  },
+  {
     name: 'contact',
     label: 'Contact Section',
     icon: Mail,
@@ -119,6 +149,10 @@ export function SectionTitlesEditor() {
         experience: data.sectionTitles.experience,
         skills: data.sectionTitles.skills,
         certifications: data.sectionTitles.certifications,
+        education: data.sectionTitles.education ?? defaultValues.education,
+        languages: data.sectionTitles.languages ?? defaultValues.languages,
+        achievements:
+          data.sectionTitles.achievements ?? defaultValues.achievements,
         contact: data.sectionTitles.contact,
       })
     }
@@ -127,16 +161,22 @@ export function SectionTitlesEditor() {
   const onSubmit = (formData: FormData) => {
     if (!data) return
 
+    // Build sectionTitles object, only including optional fields if they have values
+    const sectionTitles = {
+      heroPath: formData.heroPath,
+      experience: formData.experience,
+      skills: formData.skills,
+      certifications: formData.certifications,
+      contact: formData.contact,
+      ...(formData.education && { education: formData.education }),
+      ...(formData.languages && { languages: formData.languages }),
+      ...(formData.achievements && { achievements: formData.achievements }),
+    }
+
     updateData(
       {
         ...data,
-        sectionTitles: {
-          heroPath: formData.heroPath,
-          experience: formData.experience,
-          skills: formData.skills,
-          certifications: formData.certifications,
-          contact: formData.contact,
-        },
+        sectionTitles,
       },
       {
         onSuccess: () => {
@@ -164,7 +204,7 @@ export function SectionTitlesEditor() {
             <div className="flex items-center justify-between mb-6">
               <div className="h-8 w-48 bg-slate-200 dark:bg-slate-700 rounded" />
             </div>
-            {[1, 2, 3, 4, 5].map(i => (
+            {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
               <div key={i} className="space-y-2">
                 <div className="h-4 w-32 bg-slate-200 dark:bg-slate-700 rounded" />
                 <div className="h-11 w-full bg-slate-200 dark:bg-slate-700 rounded-xl" />

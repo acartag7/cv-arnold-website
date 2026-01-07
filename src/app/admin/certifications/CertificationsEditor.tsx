@@ -11,18 +11,25 @@
 
 import { useState, useCallback } from 'react'
 import { useAdminData, useUpdateData } from '@/hooks/useAdminData'
+import { useSectionVisibility } from '@/hooks/useSectionVisibility'
 import { useToast } from '@/components/ui/ToastProvider'
 import { AlertCircle, RefreshCw, ArrowLeft, Plus, Award } from 'lucide-react'
 import Link from 'next/link'
 import { CertificationList } from './CertificationList'
 import { CertificationFormModal } from './CertificationFormModal'
 import { ConfirmDialog } from '@/components/admin'
+import { SectionVisibilityToggle } from '@/components/admin/SectionVisibilityToggle'
 import type { Certification } from '@/types/cv'
 
 export function CertificationsEditor() {
   const { data, isLoading, error, refetch } = useAdminData()
-  const { mutate: updateData, isPending: isSaving } = useUpdateData()
+  const { mutate: updateData, isPending: isMutating } = useUpdateData()
+  const { handleVisibilityChange, isSaving: isVisibilitySaving } =
+    useSectionVisibility({ data })
   const toast = useToast()
+
+  // Combine saving states from mutations
+  const isSaving = isMutating || isVisibilitySaving
 
   // Modal state
   const [isFormOpen, setIsFormOpen] = useState(false)
@@ -225,6 +232,9 @@ export function CertificationsEditor() {
     (a, b) => a.order - b.order
   )
 
+  // Get current visibility (default to true if not set)
+  const isVisible = data.siteConfig?.sectionVisibility?.certifications !== false
+
   return (
     <div className="max-w-4xl mx-auto">
       {/* Back link */}
@@ -235,6 +245,17 @@ export function CertificationsEditor() {
         <ArrowLeft size={16} />
         Back to Dashboard
       </Link>
+
+      {/* Section Visibility Toggle */}
+      <div className="mb-6">
+        <SectionVisibilityToggle
+          sectionKey="certifications"
+          isVisible={isVisible}
+          onChange={handleVisibilityChange}
+          disabled={isSaving}
+          label="Show Certifications Section"
+        />
+      </div>
 
       {/* Main content */}
       <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-8">

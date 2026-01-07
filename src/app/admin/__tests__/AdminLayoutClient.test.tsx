@@ -16,6 +16,12 @@ vi.mock('@tanstack/react-query', () => ({
   QueryClientProvider: ({ children }: { children: React.ReactNode }) => (
     <>{children}</>
   ),
+  // Mock useQuery for SidebarNav visibility checks
+  useQuery: () => ({
+    data: undefined,
+    isLoading: false,
+    error: null,
+  }),
 }))
 
 vi.mock('@/lib/queryClient', () => ({

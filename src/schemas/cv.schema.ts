@@ -41,21 +41,32 @@ const iso8601DateSchema = z
     { message: 'Must be a valid date (e.g., 2025-13-40 is invalid)' }
   )
 
+// URL validation is handled inline in SocialLinksSchema with custom refinement
+
 /**
- * URL validator with protocol restriction (http/https only)
- * Optimized to parse URL only once
+ * Optional URL schema that treats empty strings as undefined
+ * This fixes the React Hook Form issue where empty inputs submit '' instead of undefined
  */
-const urlSchema = z.string().refine(
-  url => {
-    try {
-      const parsed = new URL(url)
-      return ['http:', 'https:'].includes(parsed.protocol)
-    } catch {
-      return false
-    }
-  },
-  { message: 'Must be a valid URL with http:// or https:// protocol' }
-)
+const optionalUrlSchema = z
+  .string()
+  .optional()
+  .transform(val => (val === '' ? undefined : val))
+  .pipe(
+    z
+      .string()
+      .refine(
+        url => {
+          try {
+            const parsed = new URL(url)
+            return ['http:', 'https:'].includes(parsed.protocol)
+          } catch {
+            return false
+          }
+        },
+        { message: 'Must be a valid URL with http:// or https:// protocol' }
+      )
+      .optional()
+  )
 
 /**
  * Email validator
@@ -88,14 +99,21 @@ const languageCodeSchema = z
 
 /**
  * E.164 phone number format (optional)
+ * Treats empty strings as undefined to fix React Hook Form issue
  */
 const phoneSchema = z
   .string()
-  .regex(
-    /^\+?[1-9]\d{1,14}$/,
-    'Must be a valid phone number (E.164 format recommended)'
-  )
   .optional()
+  .transform(val => (val === '' ? undefined : val))
+  .pipe(
+    z
+      .string()
+      .regex(
+        /^\+?[1-9]\d{1,14}$/,
+        'Must be a valid phone number (E.164 format recommended)'
+      )
+      .optional()
+  )
 
 // ============================================================================
 // Enums
@@ -199,13 +217,13 @@ export const PersonalInfoSchema = z.object({
     countryCode: countryCodeSchema,
   }),
 
-  website: urlSchema.optional(),
+  website: optionalUrlSchema,
 
   social: z
     .object({
-      linkedin: urlSchema.optional(),
-      github: urlSchema.optional(),
-      twitter: urlSchema.optional(),
+      linkedin: optionalUrlSchema,
+      github: optionalUrlSchema,
+      twitter: optionalUrlSchema,
     })
     .catchall(z.string().url().optional()),
 
@@ -214,7 +232,7 @@ export const PersonalInfoSchema = z.object({
     .min(10, 'Summary must be at least 10 characters')
     .max(5000, 'Summary must not exceed 5000 characters'),
 
-  profileImage: urlSchema.optional(),
+  profileImage: optionalUrlSchema,
 
   availability: z.object({
     status: AvailabilityStatusSchema,
@@ -237,7 +255,7 @@ export const ExperienceSchema = z
       .min(1, 'Company name is required')
       .max(200, 'Company name must not exceed 200 characters'),
 
-    companyUrl: urlSchema.optional(),
+    companyUrl: optionalUrlSchema,
 
     position: z
       .string()
@@ -355,7 +373,7 @@ export const EducationSchema = z
       .min(1, 'Institution name is required')
       .max(200, 'Institution name must not exceed 200 characters'),
 
-    institutionUrl: urlSchema.optional(),
+    institutionUrl: optionalUrlSchema,
 
     degree: z
       .string()
@@ -421,7 +439,7 @@ export const CertificationSchema = z
       .min(1, 'Issuer is required')
       .max(200, 'Issuer must not exceed 200 characters'),
 
-    issuerUrl: urlSchema.optional(),
+    issuerUrl: optionalUrlSchema,
 
     issueDate: iso8601DateSchema,
 
@@ -434,7 +452,7 @@ export const CertificationSchema = z
       .max(200, 'Credential ID must not exceed 200 characters')
       .optional(),
 
-    credentialUrl: urlSchema.optional(),
+    credentialUrl: optionalUrlSchema,
 
     description: z
       .string()
@@ -481,7 +499,7 @@ export const AchievementSchema = z.object({
     .min(10, 'Description must be at least 10 characters')
     .max(2000, 'Description must not exceed 2000 characters'),
 
-  url: urlSchema.optional(),
+  url: optionalUrlSchema,
 
   technologies: z
     .array(z.string().min(1, 'Technology name must not be empty'))
@@ -636,6 +654,9 @@ export const HeroStatSchema = z.object({
 
 /**
  * Section titles schema
+ *
+ * Required fields: heroPath, experience, skills, certifications, contact
+ * Optional fields: education, languages, achievements (may not be displayed on all CVs)
  */
 export const SectionTitlesSchema = z.object({
   heroPath: z.string().max(100),

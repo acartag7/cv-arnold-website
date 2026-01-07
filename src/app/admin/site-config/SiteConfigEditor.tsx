@@ -28,7 +28,6 @@ import {
   Plus,
   X,
   ExternalLink,
-  LayoutGrid,
 } from 'lucide-react'
 import Link from 'next/link'
 import type { SiteConfig, SectionVisibility } from '@/types/cv'
@@ -53,9 +52,12 @@ const formSchema = z.object({
 type FormData = z.infer<typeof formSchema>
 type NavLink = z.infer<typeof navLinkSchema>
 
+// Use build-time version from package.json as default
+const appVersion = process.env.NEXT_PUBLIC_APP_VERSION || 'v0.1.0'
+
 const defaultValues: FormData = {
   branding: '~/developer',
-  version: `v${new Date().getFullYear()}.1`,
+  version: appVersion,
   footerText: '© {{year}} All rights reserved.',
   seoTitle: '',
   seoDescription: '',
@@ -321,9 +323,14 @@ export function SiteConfigEditor() {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
             {/* Branding Section */}
             <section className="space-y-4">
-              <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium">
-                <Globe size={18} className="text-blue-500" />
-                Branding
+              <div>
+                <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium">
+                  <Globe size={18} className="text-blue-500" />
+                  Branding
+                </div>
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                  Customize how your site appears in the header and browser tab
+                </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -341,6 +348,9 @@ export function SiteConfigEditor() {
                     `}
                     placeholder="~/arnold.dev"
                   />
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                    Displayed in the header as your site identity
+                  </p>
                   {errors.branding && (
                     <p className="mt-1 text-sm text-red-600 dark:text-red-400">
                       {errors.branding.message}
@@ -360,8 +370,12 @@ export function SiteConfigEditor() {
                       transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500
                       ${errors.version ? 'border-red-300 dark:border-red-600' : 'border-slate-200 dark:border-slate-600'}
                     `}
-                    placeholder="v2024.12"
+                    placeholder={appVersion}
                   />
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                    Version badge shown in footer (defaults to package.json
+                    version)
+                  </p>
                   {errors.version && (
                     <p className="mt-1 text-sm text-red-600 dark:text-red-400">
                       {errors.version.message}
@@ -392,9 +406,15 @@ export function SiteConfigEditor() {
 
             {/* Navigation Links Section */}
             <section className="space-y-4">
-              <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium">
-                <Navigation size={18} className="text-blue-500" />
-                Navigation Links
+              <div>
+                <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium">
+                  <Navigation size={18} className="text-blue-500" />
+                  Navigation Links
+                </div>
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                  Add custom links to the header navigation (e.g., Blog,
+                  Portfolio, GitHub)
+                </p>
               </div>
 
               {/* Existing Links */}
@@ -479,9 +499,15 @@ export function SiteConfigEditor() {
 
             {/* SEO Section */}
             <section className="space-y-4">
-              <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium">
-                <Search size={18} className="text-blue-500" />
-                SEO Settings
+              <div>
+                <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium">
+                  <Search size={18} className="text-blue-500" />
+                  SEO Settings
+                </div>
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                  Optimize how your site appears in search results and social
+                  media shares
+                </p>
               </div>
 
               <div>
@@ -552,97 +578,10 @@ export function SiteConfigEditor() {
                   "
                   placeholder="https://example.com/og-image.png"
                 />
-              </div>
-            </section>
-
-            {/* Section Visibility Section */}
-            <section className="space-y-4">
-              <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium">
-                <LayoutGrid size={18} className="text-blue-500" />
-                Section Visibility
-              </div>
-              <p className="text-sm text-slate-500 dark:text-slate-400">
-                Control which sections are displayed on your public CV site.
-              </p>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {[
-                  {
-                    key: 'hero',
-                    label: 'Hero / About',
-                    description: 'Main introduction section',
-                  },
-                  {
-                    key: 'experience',
-                    label: 'Experience',
-                    description: 'Work history timeline',
-                  },
-                  {
-                    key: 'skills',
-                    label: 'Skills',
-                    description: 'Technical skills grid',
-                  },
-                  {
-                    key: 'certifications',
-                    label: 'Certifications',
-                    description: 'Professional certifications',
-                  },
-                  {
-                    key: 'education',
-                    label: 'Education',
-                    description: 'Educational background',
-                  },
-                  {
-                    key: 'languages',
-                    label: 'Languages',
-                    description: 'Language proficiencies',
-                  },
-                  {
-                    key: 'achievements',
-                    label: 'Achievements',
-                    description: 'Notable accomplishments',
-                  },
-                  {
-                    key: 'contact',
-                    label: 'Contact',
-                    description: 'Contact form section',
-                  },
-                ].map(({ key, label, description }) => (
-                  <label
-                    key={key}
-                    className={`
-                      flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-colors
-                      ${
-                        sectionVisibility[key as keyof SectionVisibility]
-                          ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
-                          : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700'
-                      }
-                    `}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={
-                        sectionVisibility[key as keyof SectionVisibility] ??
-                        true
-                      }
-                      onChange={e =>
-                        setSectionVisibility({
-                          ...sectionVisibility,
-                          [key]: e.target.checked,
-                        })
-                      }
-                      className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                        {label}
-                      </div>
-                      <div className="text-xs text-slate-500 dark:text-slate-400 truncate">
-                        {description}
-                      </div>
-                    </div>
-                  </label>
-                ))}
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                  Image shown when sharing on social media (recommended:
+                  1200×630px)
+                </p>
               </div>
             </section>
 
