@@ -2,6 +2,7 @@
  * Tests for DatePicker Component
  *
  * Tests for date input with null toggle and various modes.
+ * The component uses custom dropdowns for month-year mode and native input for full date mode.
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
@@ -19,10 +20,14 @@ describe('DatePicker', () => {
   })
 
   describe('rendering', () => {
-    it('renders date input with value', () => {
+    it('renders month and year dropdowns in month-year mode', () => {
       render(<DatePicker {...defaultProps} />)
-      const input = screen.getByDisplayValue('2024-06')
-      expect(input).toBeInTheDocument()
+      // Month dropdown should have "June" selected
+      const monthSelect = screen.getByDisplayValue('June')
+      expect(monthSelect).toBeInTheDocument()
+      // Year dropdown should have "2024" selected
+      const yearSelect = screen.getByDisplayValue('2024')
+      expect(yearSelect).toBeInTheDocument()
     })
 
     it('renders label when provided', () => {
@@ -35,21 +40,24 @@ describe('DatePicker', () => {
       expect(screen.getByText('Date is required')).toBeInTheDocument()
     })
 
-    it('renders as disabled when disabled prop is true', () => {
+    it('renders dropdowns as disabled when disabled prop is true', () => {
       render(<DatePicker {...defaultProps} disabled />)
-      const input = screen.getByDisplayValue('2024-06')
-      expect(input).toBeDisabled()
+      const monthSelect = screen.getByDisplayValue('June')
+      const yearSelect = screen.getByDisplayValue('2024')
+      expect(monthSelect).toBeDisabled()
+      expect(yearSelect).toBeDisabled()
     })
   })
 
   describe('modes', () => {
-    it('renders month-year mode by default', () => {
+    it('renders dropdown selects in month-year mode by default', () => {
       render(<DatePicker {...defaultProps} />)
-      const input = screen.getByDisplayValue('2024-06')
-      expect(input).toHaveAttribute('type', 'month')
+      // Should have comboboxes (select elements)
+      const selects = screen.getAllByRole('combobox')
+      expect(selects.length).toBe(2) // month and year
     })
 
-    it('renders full date mode when specified', () => {
+    it('renders full date input when specified', () => {
       render(<DatePicker {...defaultProps} mode="full" />)
       const input = screen.getByDisplayValue('2024-06-15')
       expect(input).toHaveAttribute('type', 'date')
@@ -95,11 +103,18 @@ describe('DatePicker', () => {
   })
 
   describe('interactions', () => {
-    it('calls onChange when date is changed in month-year mode', () => {
+    it('calls onChange when month is changed', () => {
       render(<DatePicker {...defaultProps} />)
-      const input = screen.getByDisplayValue('2024-06')
-      fireEvent.change(input, { target: { value: '2024-08' } })
+      const monthSelect = screen.getByDisplayValue('June')
+      fireEvent.change(monthSelect, { target: { value: '08' } })
       expect(defaultProps.onChange).toHaveBeenCalledWith('2024-08-01')
+    })
+
+    it('calls onChange when year is changed', () => {
+      render(<DatePicker {...defaultProps} />)
+      const yearSelect = screen.getByDisplayValue('2024')
+      fireEvent.change(yearSelect, { target: { value: '2023' } })
+      expect(defaultProps.onChange).toHaveBeenCalledWith('2023-06-01')
     })
 
     it('calls onChange when date is changed in full mode', () => {
@@ -117,52 +132,56 @@ describe('DatePicker', () => {
     })
 
     it('calls onChange with today when null toggle is unchecked', () => {
-      const today = new Date().toISOString().split('T')[0]
+      const today = new Date()
+      const year = today.getFullYear().toString()
+      const month = String(today.getMonth() + 1).padStart(2, '0')
+      const expectedDate = `${year}-${month}-01`
+
       render(
         <DatePicker value={null} onChange={defaultProps.onChange} allowNull />
       )
       const checkbox = screen.getByRole('checkbox')
       fireEvent.click(checkbox)
-      expect(defaultProps.onChange).toHaveBeenCalledWith(today)
-    })
-
-    it('calls onChange with null when input is cleared', () => {
-      render(<DatePicker {...defaultProps} />)
-      const input = screen.getByDisplayValue('2024-06')
-      fireEvent.change(input, { target: { value: '' } })
-      expect(defaultProps.onChange).toHaveBeenCalledWith(null)
+      expect(defaultProps.onChange).toHaveBeenCalledWith(expectedDate)
     })
   })
 
-  describe('constraints', () => {
-    it('applies min constraint', () => {
-      render(<DatePicker {...defaultProps} min="2024-01-01" />)
-      const input = screen.getByDisplayValue('2024-06')
+  describe('full mode constraints', () => {
+    it('applies min constraint to full date input', () => {
+      render(<DatePicker {...defaultProps} mode="full" min="2024-01-01" />)
+      const input = screen.getByDisplayValue('2024-06-15')
       expect(input).toHaveAttribute('min', '2024-01-01')
     })
 
-    it('applies max constraint', () => {
-      render(<DatePicker {...defaultProps} max="2024-12-31" />)
-      const input = screen.getByDisplayValue('2024-06')
+    it('applies max constraint to full date input', () => {
+      render(<DatePicker {...defaultProps} mode="full" max="2024-12-31" />)
+      const input = screen.getByDisplayValue('2024-06-15')
       expect(input).toHaveAttribute('max', '2024-12-31')
     })
   })
 
   describe('edge cases', () => {
-    it('handles empty value gracefully', () => {
-      const { container } = render(<DatePicker value="" onChange={vi.fn()} />)
-      // Month input doesn't have role="textbox", so query by type
-      const input = container.querySelector('input[type="month"]')
-      expect(input).toBeInTheDocument()
+    it('handles empty value gracefully with placeholder dropdowns', () => {
+      render(<DatePicker value="" onChange={vi.fn()} />)
+      // Should render month dropdown with placeholder
+      const monthSelect = screen.getByDisplayValue('Month')
+      expect(monthSelect).toBeInTheDocument()
+    })
+
+    it('handles null value gracefully without dropdowns visible', () => {
+      render(<DatePicker value={null} onChange={vi.fn()} allowNull />)
+      // Dropdowns should be hidden, null indicator shown
+      expect(screen.queryByDisplayValue('Month')).not.toBeInTheDocument()
+      // The "Present" text appears in both the label and the indicator
+      const presentElements = screen.getAllByText('Present')
+      expect(presentElements.length).toBeGreaterThanOrEqual(1)
     })
 
     it('handles malformed date value gracefully', () => {
-      const { container } = render(
-        <DatePicker value="invalid-date" onChange={vi.fn()} />
-      )
-      // Should not crash, just render the input
-      const input = container.querySelector('input[type="month"]')
-      expect(input).toBeInTheDocument()
+      render(<DatePicker value="invalid-date" onChange={vi.fn()} />)
+      // Should not crash, render with placeholder
+      const monthSelect = screen.getByDisplayValue('Month')
+      expect(monthSelect).toBeInTheDocument()
     })
   })
 })

@@ -32,6 +32,7 @@ import {
   ChevronUp,
 } from 'lucide-react'
 import { CVData, HeroStat } from '@/types'
+import { formatDateRange } from '@/lib/date-utils'
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { DEFAULT_PALETTES } from '@/styles/themes'
 
@@ -518,7 +519,7 @@ export function CVPageClient({ data }: CVPageClientProps) {
 
               {/* README card */}
               <motion.div
-                className="p-6 rounded-lg mb-8 transition-colors duration-300"
+                className="p-6 rounded-lg mb-6 transition-colors duration-300"
                 style={{
                   background: colors.surface,
                   border: `1px solid ${colors.border}`,
@@ -543,37 +544,41 @@ export function CVPageClient({ data }: CVPageClientProps) {
                 </p>
               </motion.div>
 
-              {/* Stats */}
-              <motion.div
-                className="grid grid-cols-2 lg:grid-cols-4 gap-4"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
-              >
-                {stats.map(stat => (
-                  <div
-                    key={stat.id}
-                    className="p-4 rounded-lg group hover:border-opacity-50 transition-all duration-300"
-                    style={{
-                      background: colors.surface,
-                      border: `1px solid ${colors.border}`,
-                    }}
-                  >
-                    <stat.IconComponent
-                      size={16}
-                      className="mb-3"
-                      style={{ color: colors.accent }}
-                    />
-                    <div className="text-2xl font-bold mb-1">{stat.value}</div>
+              {/* Stats - only show if showHeroStats is not explicitly false */}
+              {siteConfig?.showHeroStats !== false && (
+                <motion.div
+                  className="grid grid-cols-2 lg:grid-cols-4 gap-3"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                >
+                  {stats.map(stat => (
                     <div
-                      className="text-xs"
-                      style={{ color: colors.textMuted }}
+                      key={stat.id}
+                      className="p-4 rounded-lg text-center hover:scale-[1.02] transition-all duration-300"
+                      style={{
+                        background: colors.surface,
+                        border: `1px solid ${colors.border}`,
+                      }}
                     >
-                      {stat.label}
+                      <stat.IconComponent
+                        size={18}
+                        className="mx-auto mb-2"
+                        style={{ color: colors.accent }}
+                      />
+                      <div className="text-2xl font-bold mb-0.5">
+                        {stat.value}
+                      </div>
+                      <div
+                        className="text-xs"
+                        style={{ color: colors.textMuted }}
+                      >
+                        {stat.label}
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </motion.div>
+                  ))}
+                </motion.div>
+              )}
             </div>
 
             {/* Sidebar */}
@@ -733,10 +738,7 @@ export function CVPageClient({ data }: CVPageClientProps) {
                       style={{ color: colors.textMuted }}
                     >
                       <span className="font-mono">
-                        {new Date(exp.startDate).getFullYear()} -{' '}
-                        {exp.endDate
-                          ? new Date(exp.endDate).getFullYear()
-                          : 'Present'}
+                        {formatDateRange(exp.startDate, exp.endDate)}
                       </span>
                       {isCurrentRole && (
                         <span
@@ -906,10 +908,11 @@ export function CVPageClient({ data }: CVPageClientProps) {
                                     {exp.technologies.map(tech => (
                                       <span
                                         key={tech}
-                                        className="text-xs px-2 py-1 rounded"
+                                        className="text-xs px-2.5 py-1 rounded-full font-medium transition-all duration-200 hover:-translate-y-0.5 cursor-default"
                                         style={{
-                                          background: colors.bg,
-                                          color: colors.textMuted,
+                                          background: colors.accentDim,
+                                          color: colors.accent,
+                                          border: `1px solid ${colors.accent}33`,
                                         }}
                                       >
                                         {tech}
@@ -928,10 +931,11 @@ export function CVPageClient({ data }: CVPageClientProps) {
                                 {exp.technologies.slice(0, 6).map(tech => (
                                   <span
                                     key={tech}
-                                    className="text-xs px-2 py-0.5 rounded"
+                                    className="text-xs px-2 py-0.5 rounded-full font-medium"
                                     style={{
-                                      background: colors.bg,
-                                      color: colors.textDim,
+                                      background: colors.accentDim,
+                                      color: colors.accent,
+                                      border: `1px solid ${colors.accent}33`,
                                     }}
                                   >
                                     {tech}
@@ -939,8 +943,8 @@ export function CVPageClient({ data }: CVPageClientProps) {
                                 ))}
                                 {exp.technologies.length > 6 && (
                                   <span
-                                    className="text-xs px-2 py-0.5"
-                                    style={{ color: colors.textDim }}
+                                    className="text-xs px-2 py-0.5 font-medium"
+                                    style={{ color: colors.accent }}
                                   >
                                     +{exp.technologies.length - 6} more
                                   </span>
@@ -1296,10 +1300,7 @@ export function CVPageClient({ data }: CVPageClientProps) {
                           color: colors.accent,
                         }}
                       >
-                        {new Date(edu.startDate).getFullYear()} -{' '}
-                        {edu.endDate
-                          ? new Date(edu.endDate).getFullYear()
-                          : 'Present'}
+                        {formatDateRange(edu.startDate, edu.endDate)}
                       </div>
                     </div>
                     {edu.description && (

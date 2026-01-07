@@ -100,6 +100,12 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: '*.r2.cloudflarestorage.com',
       },
+      // CNCF artwork for Kubestronaut badge
+      {
+        protocol: 'https',
+        hostname: 'raw.githubusercontent.com',
+        pathname: '/cncf/artwork/**',
+      },
       // Allow localhost for development
       {
         protocol: 'http',

@@ -5,15 +5,16 @@
  *
  * A date input with optional "present" or "no end date" toggle.
  * Features:
- * - Standard date input with month/year or full date modes
+ * - Custom month/year dropdowns for better UX (replaces native browser picker)
+ * - Standard date input for full date mode
  * - Optional checkbox to indicate ongoing/null date
  * - Accessible labels and error states
  *
  * @module components/admin/DatePicker
  */
 
-import { useState, useEffect } from 'react'
-import { Calendar, Check } from 'lucide-react'
+import { useState, useEffect, useMemo } from 'react'
+import { Calendar, Check, ChevronDown } from 'lucide-react'
 
 export interface DatePickerProps {
   /** Current date value (ISO 8601 string or null) */
@@ -40,6 +41,21 @@ export interface DatePickerProps {
   className?: string
 }
 
+const MONTHS = [
+  { value: '01', label: 'January' },
+  { value: '02', label: 'February' },
+  { value: '03', label: 'March' },
+  { value: '04', label: 'April' },
+  { value: '05', label: 'May' },
+  { value: '06', label: 'June' },
+  { value: '07', label: 'July' },
+  { value: '08', label: 'August' },
+  { value: '09', label: 'September' },
+  { value: '10', label: 'October' },
+  { value: '11', label: 'November' },
+  { value: '12', label: 'December' },
+]
+
 export function DatePicker({
   value,
   onChange,
@@ -55,12 +71,56 @@ export function DatePicker({
 }: DatePickerProps) {
   const [isNull, setIsNull] = useState(value === null && allowNull)
 
+  // Parse current value into month and year
+  const [selectedMonth, setSelectedMonth] = useState('')
+  const [selectedYear, setSelectedYear] = useState('')
+
+  // Generate year options (current year - 50 to current year + 10)
+  const years = useMemo(() => {
+    const currentYear = new Date().getFullYear()
+    const startYear = currentYear - 50
+    const endYear = currentYear + 10
+    const yearList: string[] = []
+    for (let y = endYear; y >= startYear; y--) {
+      yearList.push(y.toString())
+    }
+    return yearList
+  }, [])
+
   // Sync isNull state when value changes externally
   useEffect(() => {
     if (allowNull) {
       setIsNull(value === null)
     }
   }, [value, allowNull])
+
+  // Parse value into month/year when value changes
+  useEffect(() => {
+    if (value && !isNull) {
+      const parts = value.split('-')
+      if (parts.length >= 2) {
+        setSelectedYear(parts[0] ?? '')
+        setSelectedMonth(parts[1] ?? '')
+      }
+    } else if (isNull || value === null) {
+      setSelectedMonth('')
+      setSelectedYear('')
+    }
+  }, [value, isNull])
+
+  const handleMonthChange = (month: string) => {
+    setSelectedMonth(month)
+    if (selectedYear && month) {
+      onChange(`${selectedYear}-${month}-01`)
+    }
+  }
+
+  const handleYearChange = (year: string) => {
+    setSelectedYear(year)
+    if (year && selectedMonth) {
+      onChange(`${year}-${selectedMonth}-01`)
+    }
+  }
 
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value
@@ -79,8 +139,12 @@ export function DatePicker({
   const handleNullToggle = () => {
     if (isNull) {
       // Switching from null to a date - set to today
-      const today = new Date().toISOString().split('T')[0] ?? ''
-      onChange(today)
+      const today = new Date()
+      const year = today.getFullYear().toString()
+      const month = String(today.getMonth() + 1).padStart(2, '0')
+      setSelectedYear(year)
+      setSelectedMonth(month)
+      onChange(`${year}-${month}-01`)
       setIsNull(false)
     } else {
       // Switching to null
@@ -89,7 +153,7 @@ export function DatePicker({
     }
   }
 
-  // Format value for input based on mode
+  // Format value for input based on mode (for full date mode)
   const getInputValue = () => {
     if (!value || isNull) return ''
 
@@ -106,6 +170,19 @@ export function DatePicker({
     return value
   }
 
+  const selectClassName = `
+    appearance-none px-3 py-2.5 pr-8
+    bg-white dark:bg-slate-800
+    border rounded-xl
+    text-slate-900 dark:text-slate-100
+    text-sm font-medium
+    cursor-pointer
+    transition-colors
+    ${error ? 'border-red-300 dark:border-red-600' : 'border-slate-200 dark:border-slate-600'}
+    ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-slate-300 dark:hover:border-slate-500'}
+    focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500
+  `
+
   return (
     <div className={className}>
       {label && (
@@ -115,11 +192,58 @@ export function DatePicker({
       )}
 
       <div className="flex flex-col gap-2">
-        {/* Date input */}
-        {!isNull && (
+        {/* Month/Year dropdowns for month-year mode */}
+        {mode === 'month-year' && !isNull && (
+          <div className="flex gap-2">
+            {/* Month dropdown */}
+            <div className="relative flex-1">
+              <select
+                value={selectedMonth}
+                onChange={e => handleMonthChange(e.target.value)}
+                disabled={disabled}
+                className={selectClassName}
+              >
+                <option value="">Month</option>
+                {MONTHS.map(month => (
+                  <option key={month.value} value={month.value}>
+                    {month.label}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown
+                size={16}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+              />
+            </div>
+
+            {/* Year dropdown */}
+            <div className="relative w-28">
+              <select
+                value={selectedYear}
+                onChange={e => handleYearChange(e.target.value)}
+                disabled={disabled}
+                className={selectClassName}
+              >
+                <option value="">Year</option>
+                {years.map(year => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown
+                size={16}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Full date input for full mode */}
+        {mode === 'full' && !isNull && (
           <div className="relative">
             <input
-              type={mode === 'month-year' ? 'month' : 'date'}
+              type="date"
               value={getInputValue()}
               onChange={handleDateChange}
               disabled={disabled || isNull}

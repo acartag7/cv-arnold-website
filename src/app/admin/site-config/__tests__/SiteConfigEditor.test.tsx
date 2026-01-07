@@ -409,4 +409,137 @@ describe('SiteConfigEditor', () => {
       expect(screen.getByText('Search Result Preview')).toBeInTheDocument()
     })
   })
+
+  describe('showHeroStats toggle', () => {
+    beforeEach(() => {
+      mockedUseAdminData.mockReturnValue({
+        data: mockCVData,
+        isLoading: false,
+        error: null,
+        refetch: mockRefetch,
+      } as unknown as ReturnType<typeof useAdminData>)
+    })
+
+    it('defaults to checked (true) when showHeroStats is not set', () => {
+      render(<SiteConfigEditor />)
+
+      // Find the toggle switch for hero stats
+      const toggle = screen.getByRole('switch', {
+        name: /toggle hero stats visibility/i,
+      })
+      expect(toggle).toHaveAttribute('aria-checked', 'true')
+    })
+
+    it('shows unchecked state when showHeroStats is false', () => {
+      const dataWithHeroStatsOff = {
+        ...mockCVData,
+        siteConfig: {
+          ...mockCVData.siteConfig,
+          showHeroStats: false,
+        },
+      }
+
+      mockedUseAdminData.mockReturnValue({
+        data: dataWithHeroStatsOff,
+        isLoading: false,
+        error: null,
+        refetch: mockRefetch,
+      } as unknown as ReturnType<typeof useAdminData>)
+
+      render(<SiteConfigEditor />)
+
+      const toggle = screen.getByRole('switch', {
+        name: /toggle hero stats visibility/i,
+      })
+      expect(toggle).toHaveAttribute('aria-checked', 'false')
+    })
+
+    it('toggles state when clicked', () => {
+      render(<SiteConfigEditor />)
+
+      const toggle = screen.getByRole('switch', {
+        name: /toggle hero stats visibility/i,
+      })
+
+      // Initially true
+      expect(toggle).toHaveAttribute('aria-checked', 'true')
+
+      // Click to toggle off
+      fireEvent.click(toggle)
+      expect(toggle).toHaveAttribute('aria-checked', 'false')
+
+      // Click to toggle back on
+      fireEvent.click(toggle)
+      expect(toggle).toHaveAttribute('aria-checked', 'true')
+    })
+
+    it('toggles state with keyboard (Enter key)', () => {
+      render(<SiteConfigEditor />)
+
+      const toggle = screen.getByRole('switch', {
+        name: /toggle hero stats visibility/i,
+      })
+
+      expect(toggle).toHaveAttribute('aria-checked', 'true')
+
+      // Press Enter to toggle
+      fireEvent.keyDown(toggle, { key: 'Enter' })
+      expect(toggle).toHaveAttribute('aria-checked', 'false')
+    })
+
+    it('toggles state with keyboard (Space key)', () => {
+      render(<SiteConfigEditor />)
+
+      const toggle = screen.getByRole('switch', {
+        name: /toggle hero stats visibility/i,
+      })
+
+      expect(toggle).toHaveAttribute('aria-checked', 'true')
+
+      // Press Space to toggle
+      fireEvent.keyDown(toggle, { key: ' ' })
+      expect(toggle).toHaveAttribute('aria-checked', 'false')
+    })
+
+    it('marks form as dirty when toggle changes', () => {
+      render(<SiteConfigEditor />)
+
+      // Save button should be disabled initially
+      const saveButton = screen.getByRole('button', { name: /Save Changes/i })
+      expect(saveButton).toBeDisabled()
+
+      // Toggle the switch
+      const toggle = screen.getByRole('switch', {
+        name: /toggle hero stats visibility/i,
+      })
+      fireEvent.click(toggle)
+
+      // Save button should be enabled after change
+      expect(saveButton).not.toBeDisabled()
+    })
+
+    it('persists showHeroStats: false when saving with toggle off', async () => {
+      mockUpdateData.mockImplementation((data, options) => {
+        // Verify showHeroStats is false in the submitted data
+        expect(data.siteConfig?.showHeroStats).toBe(false)
+        options?.onSuccess?.()
+      })
+
+      render(<SiteConfigEditor />)
+
+      // Toggle off
+      const toggle = screen.getByRole('switch', {
+        name: /toggle hero stats visibility/i,
+      })
+      fireEvent.click(toggle)
+
+      // Submit form
+      const saveButton = screen.getByRole('button', { name: /Save Changes/i })
+      fireEvent.click(saveButton)
+
+      await waitFor(() => {
+        expect(mockUpdateData).toHaveBeenCalled()
+      })
+    })
+  })
 })

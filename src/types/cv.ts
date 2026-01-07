@@ -380,6 +380,9 @@ export interface SiteConfig {
 
   /** Section visibility toggles - controls which sections appear on public site */
   sectionVisibility?: SectionVisibility
+
+  /** Show hero stats cards (Years Experience, Certifications, etc.) - default: true */
+  showHeroStats?: boolean
 }
 
 /**

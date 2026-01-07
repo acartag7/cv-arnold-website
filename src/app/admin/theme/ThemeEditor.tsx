@@ -540,22 +540,31 @@ export function ThemeEditor() {
                 style={{ backgroundColor: previewColors.surface }}
               >
                 <div
-                  className="text-lg font-bold mb-1"
+                  className="text-lg font-bold mb-1 truncate"
                   style={{ color: previewColors.text }}
+                  title={data.personalInfo?.fullName || 'Your Name'}
                 >
-                  John Doe
+                  {data.personalInfo?.fullName || 'Your Name'}
                 </div>
                 <div
-                  className="text-sm font-mono"
+                  className="text-sm font-mono truncate"
                   style={{ color: previewColors.accent }}
+                  title={data.personalInfo?.title || '~/developer'}
                 >
-                  ~/developer
+                  {data.personalInfo?.title
+                    ? `~/${data.personalInfo.title.toLowerCase().replace(/\s+/g, '-')}`
+                    : '~/developer'}
                 </div>
               </div>
 
               {/* Mock Stats */}
               <div className="grid grid-cols-2 gap-2 mb-4">
-                {['8+', '50+'].map((val, i) => (
+                {(
+                  data.heroStats?.slice(0, 2) || [
+                    { value: '8+', label: 'Years' },
+                    { value: '50+', label: 'Projects' },
+                  ]
+                ).map((stat, i) => (
                   <div
                     key={i}
                     className="rounded-lg p-3 text-center"
@@ -565,13 +574,14 @@ export function ThemeEditor() {
                       className="text-xl font-bold"
                       style={{ color: previewColors.accent }}
                     >
-                      {val}
+                      {stat.value}
                     </div>
                     <div
-                      className="text-xs"
+                      className="text-xs truncate"
                       style={{ color: previewColors.textMuted }}
+                      title={stat.label}
                     >
-                      {i === 0 ? 'Years' : 'Projects'}
+                      {stat.label}
                     </div>
                   </div>
                 ))}
