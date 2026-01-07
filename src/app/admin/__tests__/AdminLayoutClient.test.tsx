@@ -2,13 +2,13 @@
  * Tests for AdminLayoutClient
  *
  * Tests the admin layout including:
- * - Logout button visibility and behavior
- * - User display (initial with tooltip)
+ * - User menu dropdown with logout
+ * - User avatar display with initials
  * - Mobile sidebar logout
  */
 
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import { AdminLayoutClient } from '../AdminLayoutClient'
 
 // Mock dependencies
@@ -65,81 +65,107 @@ vi.mock('next/link', () => ({
 }))
 
 describe('AdminLayoutClient', () => {
-  describe('Logout Button', () => {
-    it('should render logout button when user is authenticated', () => {
-      render(
-        <AdminLayoutClient userEmail="test@example.com">
-          <div>Content</div>
-        </AdminLayoutClient>
-      )
-
-      // Find logout link by href (desktop version)
-      const logoutLinks = screen.getAllByRole('link', { name: /sign out/i })
-      expect(logoutLinks.length).toBeGreaterThan(0)
-
-      // Verify correct Cloudflare Access logout URL
-      const desktopLogout = logoutLinks[0]
-      expect(desktopLogout).toHaveAttribute('href', '/cdn-cgi/access/logout')
-    })
-
-    it('should not render logout button when userEmail is null', () => {
-      render(
-        <AdminLayoutClient userEmail={null}>
-          <div>Content</div>
-        </AdminLayoutClient>
-      )
-
-      // No logout links should be present
-      const logoutLinks = screen.queryAllByRole('link', { name: /sign out/i })
-      expect(logoutLinks.length).toBe(0)
-    })
-
-    it('should render logout button in mobile sidebar', () => {
-      render(
-        <AdminLayoutClient userEmail="test@example.com">
-          <div>Content</div>
-        </AdminLayoutClient>
-      )
-
-      // Mobile logout button has full "Sign out" text
-      const logoutButtons = screen.getAllByText('Sign out')
-      expect(logoutButtons.length).toBeGreaterThan(0)
-
-      // Verify it links to Cloudflare Access logout
-      const mobileLogout = logoutButtons[0]!.closest('a')
-      expect(mobileLogout).toHaveAttribute('href', '/cdn-cgi/access/logout')
-    })
-
-    it('should have correct Cloudflare Access logout URL', () => {
-      render(
-        <AdminLayoutClient userEmail="admin@example.com">
-          <div>Content</div>
-        </AdminLayoutClient>
-      )
-
-      const logoutLinks = document.querySelectorAll(
-        'a[href="/cdn-cgi/access/logout"]'
-      )
-      // Should have both desktop and mobile logout links
-      expect(logoutLinks.length).toBe(2)
-    })
-  })
-
-  describe('User Display', () => {
-    it('should show user initial with email tooltip', () => {
+  describe('User Menu Dropdown', () => {
+    it('should render user avatar button with initials', () => {
       render(
         <AdminLayoutClient userEmail="john.doe@example.com">
           <div>Content</div>
         </AdminLayoutClient>
       )
 
-      // Find the avatar div with user initial
-      const avatars = screen.getAllByText('J')
-      expect(avatars.length).toBeGreaterThan(0)
+      // Find the avatar button with user initials (JD for john.doe)
+      const avatarButton = screen.getByRole('button', { name: /user menu/i })
+      expect(avatarButton).toBeInTheDocument()
+      expect(avatarButton).toHaveTextContent('JD')
+    })
 
-      // Verify tooltip shows full email
-      const avatarWithTooltip = avatars[0]!.closest('[title]')
-      expect(avatarWithTooltip).toHaveAttribute('title', 'john.doe@example.com')
+    it('should show dropdown with email and logout when clicked', () => {
+      render(
+        <AdminLayoutClient userEmail="test@example.com">
+          <div>Content</div>
+        </AdminLayoutClient>
+      )
+
+      // Click the avatar button to open dropdown
+      const avatarButton = screen.getByRole('button', { name: /user menu/i })
+      fireEvent.click(avatarButton)
+
+      // Dropdown should show "Signed in as" label
+      expect(screen.getByText('Signed in as')).toBeInTheDocument()
+
+      // Email may appear in multiple places (dropdown and mobile sidebar)
+      const emailElements = screen.getAllByText('test@example.com')
+      expect(emailElements.length).toBeGreaterThan(0)
+
+      // Dropdown should show logout link
+      const logoutLink = screen.getByRole('menuitem', { name: /sign out/i })
+      expect(logoutLink).toHaveAttribute('href', '/cdn-cgi/access/logout')
+    })
+
+    it('should close dropdown when clicking outside', () => {
+      render(
+        <AdminLayoutClient userEmail="test@example.com">
+          <div data-testid="outside">Content</div>
+        </AdminLayoutClient>
+      )
+
+      // Open dropdown
+      const avatarButton = screen.getByRole('button', { name: /user menu/i })
+      fireEvent.click(avatarButton)
+      expect(screen.getByText('Signed in as')).toBeInTheDocument()
+
+      // Click outside
+      fireEvent.mouseDown(screen.getByTestId('outside'))
+
+      // Dropdown should be closed - "Signed in as" should not be visible
+      expect(screen.queryByText('Signed in as')).not.toBeInTheDocument()
+    })
+
+    it('should not render logout in dropdown when userEmail is null', () => {
+      render(
+        <AdminLayoutClient userEmail={null}>
+          <div>Content</div>
+        </AdminLayoutClient>
+      )
+
+      // Click the avatar button
+      const avatarButton = screen.getByRole('button', { name: /user menu/i })
+      fireEvent.click(avatarButton)
+
+      // Should show "Not authenticated" (may appear in multiple places)
+      const notAuthElements = screen.getAllByText('Not authenticated')
+      expect(notAuthElements.length).toBeGreaterThan(0)
+
+      // No logout link should be present in the dropdown menu
+      expect(
+        screen.queryByRole('menuitem', { name: /sign out/i })
+      ).not.toBeInTheDocument()
+    })
+  })
+
+  describe('User Initials', () => {
+    it('should show two-letter initials for dot-separated email', () => {
+      render(
+        <AdminLayoutClient userEmail="john.doe@example.com">
+          <div>Content</div>
+        </AdminLayoutClient>
+      )
+
+      // john.doe should produce "JD"
+      const avatarButton = screen.getByRole('button', { name: /user menu/i })
+      expect(avatarButton).toHaveTextContent('JD')
+    })
+
+    it('should show two-letter initials for simple email', () => {
+      render(
+        <AdminLayoutClient userEmail="alice@example.com">
+          <div>Content</div>
+        </AdminLayoutClient>
+      )
+
+      // alice should produce "AL"
+      const avatarButton = screen.getByRole('button', { name: /user menu/i })
+      expect(avatarButton).toHaveTextContent('AL')
     })
 
     it('should show ? when userEmail is null', () => {
@@ -149,24 +175,37 @@ describe('AdminLayoutClient', () => {
         </AdminLayoutClient>
       )
 
-      // Find the fallback avatar
-      const questionMarks = screen.getAllByText('?')
-      expect(questionMarks.length).toBeGreaterThan(0)
+      const avatarButton = screen.getByRole('button', { name: /user menu/i })
+      expect(avatarButton).toHaveTextContent('?')
     })
 
-    it('should show uppercase initial', () => {
+    it('should handle underscore-separated email', () => {
       render(
-        <AdminLayoutClient userEmail="alice@example.com">
+        <AdminLayoutClient userEmail="first_last@example.com">
           <div>Content</div>
         </AdminLayoutClient>
       )
 
-      // Should show uppercase 'A' not lowercase 'a'
-      const avatars = screen.getAllByText('A')
-      expect(avatars.length).toBeGreaterThan(0)
+      // first_last should produce "FL"
+      const avatarButton = screen.getByRole('button', { name: /user menu/i })
+      expect(avatarButton).toHaveTextContent('FL')
+    })
+  })
 
-      // Verify uppercase avatar is in the document
-      expect(avatars[0]).toBeInTheDocument()
+  describe('Mobile Sidebar', () => {
+    it('should render logout button in mobile sidebar', () => {
+      render(
+        <AdminLayoutClient userEmail="test@example.com">
+          <div>Content</div>
+        </AdminLayoutClient>
+      )
+
+      // Mobile logout is rendered in sidebar (always visible but hidden via CSS)
+      const logoutLinks = document.querySelectorAll(
+        'a[href="/cdn-cgi/access/logout"]'
+      )
+      // Should have mobile sidebar logout (dropdown logout only shows when open)
+      expect(logoutLinks.length).toBeGreaterThan(0)
     })
   })
 

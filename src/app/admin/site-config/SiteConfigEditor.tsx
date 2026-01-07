@@ -448,7 +448,14 @@ export function SiteConfigEditor() {
                   type="button"
                   role="switch"
                   aria-checked={showHeroStats}
+                  aria-label="Toggle hero stats visibility"
                   onClick={() => setShowHeroStats(!showHeroStats)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      setShowHeroStats(!showHeroStats)
+                    }
+                  }}
                   className={`
                     relative inline-flex h-6 w-11 items-center rounded-full transition-colors
                     focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:ring-offset-2

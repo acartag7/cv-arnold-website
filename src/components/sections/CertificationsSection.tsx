@@ -191,7 +191,7 @@ export default function CertificationsSection({
                 <div className="relative w-16 h-16 flex-shrink-0">
                   <Image
                     src={KUBESTRONAUT_LOGO_URL}
-                    alt="Kubestronaut Badge"
+                    alt="Kubestronaut Badge - All 5 Kubernetes certifications achieved"
                     fill
                     className="object-contain"
                     unoptimized // SVG from external URL

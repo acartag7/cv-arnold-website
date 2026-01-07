@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { QueryClientProvider, useQuery } from '@tanstack/react-query'
 import {
@@ -206,6 +206,137 @@ function SidebarNav({
 }
 
 /**
+ * User Menu Dropdown Component
+ *
+ * Shows user avatar with initials. Clicking reveals dropdown with email and logout.
+ */
+function UserMenu({ userEmail }: { userEmail: string | null }) {
+  const [isOpen, setIsOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+
+  // Get user initials (up to 2 characters)
+  const getInitials = (email: string | null): string => {
+    if (!email) return '?'
+    // Try to get initials from email prefix (before @)
+    const prefix = email.split('@')[0] || ''
+    // If prefix has a dot or underscore, use first letter of each part
+    const parts = prefix.split(/[._-]/)
+    if (parts.length >= 2) {
+      return (
+        (parts[0]?.[0] || '').toUpperCase() +
+        (parts[1]?.[0] || '').toUpperCase()
+      )
+    }
+    // Otherwise just use first 1-2 letters
+    return prefix.slice(0, 2).toUpperCase() || '?'
+  }
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    if (!isOpen) return
+
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [isOpen])
+
+  // Close on escape key
+  useEffect(() => {
+    if (!isOpen) return
+
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setIsOpen(false)
+      }
+    }
+
+    document.addEventListener('keydown', handleEscape)
+    return () => document.removeEventListener('keydown', handleEscape)
+  }, [isOpen])
+
+  return (
+    <div className="relative" ref={menuRef}>
+      {/* Avatar button */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className={`
+          w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-blue-600
+          flex items-center justify-center text-white text-sm font-semibold
+          hover:from-blue-600 hover:to-blue-700
+          focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+          dark:focus:ring-offset-gray-800
+          transition-all duration-200 shadow-sm
+          ${isOpen ? 'ring-2 ring-blue-500 ring-offset-2 dark:ring-offset-gray-800' : ''}
+        `}
+        aria-expanded={isOpen}
+        aria-haspopup="true"
+        aria-label="User menu"
+      >
+        {getInitials(userEmail)}
+      </button>
+
+      {/* Dropdown menu */}
+      {isOpen && (
+        <div
+          className="
+            absolute right-0 mt-2 w-64
+            bg-white dark:bg-gray-800
+            rounded-xl shadow-lg
+            border border-gray-200 dark:border-gray-700
+            py-2 z-50
+            animate-in fade-in slide-in-from-top-2 duration-200
+          "
+          role="menu"
+          aria-orientation="vertical"
+        >
+          {/* User email section */}
+          <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold">
+                {getInitials(userEmail)}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">
+                  Signed in as
+                </p>
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                  {userEmail || 'Not authenticated'}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Logout button */}
+          {userEmail && (
+            <div className="px-2 pt-2">
+              <a
+                href="/cdn-cgi/access/logout"
+                className="
+                  flex items-center gap-3 px-3 py-2.5
+                  text-sm text-red-600 dark:text-red-400
+                  hover:bg-red-50 dark:hover:bg-red-900/20
+                  rounded-lg transition-colors w-full
+                "
+                role="menuitem"
+                onClick={() => setIsOpen(false)}
+              >
+                <LogOut size={18} />
+                <span>Sign out</span>
+              </a>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+/**
  * Admin Layout Client Component
  *
  * Provides the admin shell with:
@@ -272,7 +403,7 @@ export function AdminLayoutClient({
               </div>
 
               {/* Right side - User info and actions */}
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3">
                 <Link
                   href="/"
                   className="hidden sm:flex items-center gap-2 px-3 py-1.5 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
@@ -283,24 +414,9 @@ export function AdminLayoutClient({
 
                 <ThemeSwitcher />
 
-                {/* User info */}
-                <div className="hidden sm:flex items-center gap-2">
-                  <div
-                    className="w-8 h-8 rounded-full bg-semantic-primary flex items-center justify-center text-white text-sm font-medium"
-                    title={userEmail || 'Not authenticated'}
-                  >
-                    {userEmail?.[0]?.toUpperCase() ?? '?'}
-                  </div>
-                  {userEmail && (
-                    <a
-                      href="/cdn-cgi/access/logout"
-                      className="flex items-center gap-1.5 px-2 py-1.5 text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20"
-                      title="Sign out"
-                    >
-                      <LogOut size={16} />
-                      <span className="hidden lg:inline">Sign out</span>
-                    </a>
-                  )}
+                {/* User menu dropdown */}
+                <div className="hidden sm:block">
+                  <UserMenu userEmail={userEmail} />
                 </div>
               </div>
             </div>
