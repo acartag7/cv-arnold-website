@@ -21,6 +21,7 @@ import {
   ExternalLink,
   ChevronLeft,
   ChevronRight,
+  LogOut,
 } from 'lucide-react'
 import { createQueryClient } from '@/lib/queryClient'
 import { ThemeSwitcher } from '@/components/ui/ThemeSwitcher'
@@ -184,12 +185,22 @@ export function AdminLayoutClient({
 
                 {/* User info */}
                 <div className="hidden sm:flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-semantic-primary flex items-center justify-center text-white text-sm font-medium">
+                  <div
+                    className="w-8 h-8 rounded-full bg-semantic-primary flex items-center justify-center text-white text-sm font-medium"
+                    title={userEmail || 'Not authenticated'}
+                  >
                     {userEmail?.[0]?.toUpperCase() ?? '?'}
                   </div>
-                  <span className="text-sm text-gray-600 dark:text-gray-300 max-w-[150px] truncate">
-                    {userEmail || 'Not authenticated'}
-                  </span>
+                  {userEmail && (
+                    <a
+                      href="/cdn-cgi/access/logout"
+                      className="flex items-center gap-1.5 px-2 py-1.5 text-sm text-gray-600 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                      title="Sign out"
+                    >
+                      <LogOut size={16} />
+                      <span className="hidden lg:inline">Sign out</span>
+                    </a>
+                  )}
                 </div>
               </div>
             </div>
@@ -247,15 +258,24 @@ export function AdminLayoutClient({
             </nav>
 
             {/* User info on mobile (bottom of sidebar) */}
-            <div className="absolute bottom-4 left-4 right-4 sm:hidden">
+            <div className="absolute bottom-4 left-4 right-4 sm:hidden space-y-2">
               <div className="flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
                 <div className="w-8 h-8 rounded-full bg-semantic-primary flex items-center justify-center text-white text-sm font-medium">
                   {userEmail?.[0]?.toUpperCase() ?? '?'}
                 </div>
-                <span className="text-sm text-gray-600 dark:text-gray-300 truncate">
+                <span className="text-sm text-gray-600 dark:text-gray-300 truncate flex-1">
                   {userEmail || 'Not authenticated'}
                 </span>
               </div>
+              {userEmail && (
+                <a
+                  href="/cdn-cgi/access/logout"
+                  className="flex items-center justify-center gap-2 px-3 py-2 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+                >
+                  <LogOut size={16} />
+                  <span>Sign out</span>
+                </a>
+              )}
             </div>
           </aside>
 

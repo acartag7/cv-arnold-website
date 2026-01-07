@@ -404,7 +404,7 @@ export function CVPageClient({ data }: CVPageClientProps) {
         <div className="flex justify-between items-center max-w-7xl mx-auto">
           <a
             href="#"
-            className="text-sm font-semibold transition-colors"
+            className="text-sm font-semibold font-mono transition-colors"
             style={{ color: colors.accent }}
           >
             {branding}
@@ -418,7 +418,7 @@ export function CVPageClient({ data }: CVPageClientProps) {
                 <a
                   key={item.label}
                   href={`#${item.sectionId}`}
-                  className="relative text-sm transition-colors py-1"
+                  className="relative text-sm font-mono transition-colors py-1"
                   style={{ color: isActive ? colors.accent : colors.textMuted }}
                 >
                   {item.label}
@@ -532,7 +532,7 @@ export function CVPageClient({ data }: CVPageClientProps) {
                   {' README.md'}
                 </div>
                 <p
-                  className="text-sm leading-relaxed"
+                  className="text-sm leading-relaxed font-sans"
                   style={{ color: colors.textMuted }}
                 >
                   {personalInfo.summary}
