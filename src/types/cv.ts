@@ -377,6 +377,87 @@ export interface SiteConfig {
     keywords?: string[]
     ogImage?: string
   }
+
+  /** Section visibility toggles - controls which sections appear on public site */
+  sectionVisibility?: SectionVisibility
+}
+
+/**
+ * Section visibility configuration
+ * Controls which sections are displayed on the public-facing CV site
+ * All sections default to true (visible) if not specified
+ */
+export interface SectionVisibility {
+  /** Hero/About section - default: true */
+  hero?: boolean
+
+  /** Work experience timeline - default: true */
+  experience?: boolean
+
+  /** Technical skills grid - default: true */
+  skills?: boolean
+
+  /** Professional certifications - default: true */
+  certifications?: boolean
+
+  /** Education history - default: true */
+  education?: boolean
+
+  /** Language proficiencies - default: true */
+  languages?: boolean
+
+  /** Notable achievements - default: true */
+  achievements?: boolean
+
+  /** Contact section - default: true */
+  contact?: boolean
+}
+
+/**
+ * Section visibility keys as a const array
+ * Used for type-safe iteration over visibility settings
+ */
+export const SECTION_VISIBILITY_KEYS = [
+  'hero',
+  'experience',
+  'skills',
+  'certifications',
+  'education',
+  'languages',
+  'achievements',
+  'contact',
+] as const
+
+/**
+ * Type representing valid section visibility keys
+ */
+export type SectionVisibilityKey = (typeof SECTION_VISIBILITY_KEYS)[number]
+
+/**
+ * Default section visibility settings (all visible)
+ */
+export const DEFAULT_SECTION_VISIBILITY: Required<SectionVisibility> = {
+  hero: true,
+  experience: true,
+  skills: true,
+  certifications: true,
+  education: true,
+  languages: true,
+  achievements: true,
+  contact: true,
+}
+
+/**
+ * Load section visibility from data with defaults
+ * Ensures all sections have boolean values (defaults to true if not set)
+ */
+export function loadSectionVisibility(
+  data: SectionVisibility | undefined
+): Required<SectionVisibility> {
+  return SECTION_VISIBILITY_KEYS.reduce((acc, key) => {
+    acc[key] = data?.[key] !== false
+    return acc
+  }, {} as Required<SectionVisibility>)
 }
 
 /**

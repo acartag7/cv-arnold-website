@@ -28,11 +28,12 @@ import {
   BarChart3,
   Radio,
   Lock,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react'
 import { CVData, HeroStat } from '@/types'
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { DEFAULT_PALETTES } from '@/styles/themes'
-import { ThemePresetSelector } from '@/components/ui/ThemePresetSelector'
 
 /**
  * CV Website - Client Component
@@ -162,31 +163,36 @@ export function CVPageClient({ data }: CVPageClientProps) {
   // Active section state for navigation highlighting
   const [activeSection, setActiveSection] = useState<string>('hero')
 
-  // Active preset state for theme presets
-  const [activePreset, setActivePreset] = useState<string>('terminal')
+  // Track which experience cards are expanded (by ID)
+  const [expandedExperiences, setExpandedExperiences] = useState<Set<string>>(
+    new Set()
+  )
+
+  // Toggle experience card expansion
+  const toggleExperience = useCallback((id: string) => {
+    setExpandedExperiences(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) {
+        next.delete(id)
+      } else {
+        next.add(id)
+      }
+      return next
+    })
+  }, [])
 
   // Build theme colors from CMS config with fallback to defaults
+  // Uses themeConfig.activePreset (set by admin in CMS) - no visitor selection
   const colors = useMemo(() => {
     const defaults = DEFAULT_PALETTES[theme]
     const presets = themeConfig?.presets
+    const activePreset = themeConfig?.activePreset
 
-    // Validate preset exists before lookup (type safety)
+    // Get colors from active preset if available
     const presetColors =
-      presets && activePreset in presets
+      presets && activePreset && activePreset in presets
         ? presets[activePreset]?.[theme]
         : undefined
-
-    // Warn in development if preset not found
-    if (
-      process.env.NODE_ENV === 'development' &&
-      activePreset &&
-      presets &&
-      !(activePreset in presets)
-    ) {
-      console.warn(
-        `[ThemePreset] Preset "${activePreset}" not found, using defaults`
-      )
-    }
 
     // Fall back to themeConfig.dark/light for backwards compatibility
     const cmsColors = presetColors || themeConfig?.[theme]
@@ -203,7 +209,7 @@ export function CVPageClient({ data }: CVPageClientProps) {
       accentDim: cmsColors?.accentDim || defaults.accentDim,
       scanlines: defaults.scanlines, // Fixed per theme
     }
-  }, [theme, themeConfig, activePreset])
+  }, [theme, themeConfig])
 
   // Detect system preference on mount
   useEffect(() => {
@@ -222,17 +228,6 @@ export function CVPageClient({ data }: CVPageClientProps) {
       return undefined
     }
   }, [themeConfig?.defaultTheme])
-
-  // Load preset from localStorage on mount (SSR-safe)
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    const saved = localStorage.getItem('theme-preset')
-    if (saved && themeConfig?.presets?.[saved]) {
-      setActivePreset(saved)
-    } else if (themeConfig?.activePreset) {
-      setActivePreset(themeConfig.activePreset)
-    }
-  }, [themeConfig])
 
   // Handle bottom of page edge case for contact section (memoized for cleanup)
   const handleScroll = useCallback(() => {
@@ -278,14 +273,6 @@ export function CVPageClient({ data }: CVPageClientProps) {
   const toggleTheme = () => setTheme(theme === 'dark' ? 'light' : 'dark')
   const showThemeToggle = themeConfig?.allowToggle !== false
 
-  // Handle preset change and persist to localStorage (SSR-safe)
-  const handlePresetChange = useCallback((presetId: string) => {
-    setActivePreset(presetId)
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('theme-preset', presetId)
-    }
-  }, [])
-
   // Get stats from data or use defaults
   const stats = useMemo(() => {
     if (heroStats && heroStats.length > 0) {
@@ -328,6 +315,33 @@ export function CVPageClient({ data }: CVPageClientProps) {
       },
     ]
   }, [heroStats])
+
+  // Memoize parsed experience bullets to avoid regex parsing on every render
+  const experienceBullets = useMemo(() => {
+    return experience.reduce(
+      (acc, exp) => {
+        const bullets = exp.description
+          .split(/(?<=\.)\s+/)
+          .filter(sentence => sentence.trim().length > 0)
+        acc[exp.id] = {
+          bullets,
+          previewBullets: bullets.slice(0, 3),
+          hasMoreBullets: bullets.length > 3,
+          hasAchievements: exp.achievements && exp.achievements.length > 0,
+        }
+        return acc
+      },
+      {} as Record<
+        string,
+        {
+          bullets: string[]
+          previewBullets: string[]
+          hasMoreBullets: boolean
+          hasAchievements: boolean
+        }
+      >
+    )
+  }, [experience])
 
   // Get section titles from data or use defaults
   const titles = {
@@ -429,17 +443,7 @@ export function CVPageClient({ data }: CVPageClientProps) {
             className="flex items-center gap-4 text-xs"
             style={{ color: colors.textMuted }}
           >
-            {/* Theme preset selector */}
-            {themeConfig?.presets &&
-              Object.keys(themeConfig.presets).length > 1 && (
-                <ThemePresetSelector
-                  presets={themeConfig.presets}
-                  activePreset={activePreset}
-                  onPresetChange={handlePresetChange}
-                  colors={colors}
-                />
-              )}
-            {/* Theme toggle */}
+            {/* Theme toggle - preset is controlled by admin in CMS */}
             {showThemeToggle && (
               <button
                 onClick={toggleTheme}
@@ -668,317 +672,293 @@ export function CVPageClient({ data }: CVPageClientProps) {
       </section>
 
       {/* ==================== EXPERIENCE ==================== */}
-      <section id="experience" className="py-24 px-6 lg:px-12">
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            className="flex items-center gap-3 mb-12"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            <Terminal size={20} style={{ color: colors.accent }} />
-            <h2 className="text-2xl font-bold">{titles.experience}</h2>
-          </motion.div>
-
-          {/* Timeline container */}
-          <div className="relative">
-            {/* Timeline vertical line */}
-            <div
-              className="absolute left-3 top-0 bottom-0 w-0.5 hidden md:block"
-              style={{ background: colors.border }}
-            />
-
-            {experience.map((exp, index) => {
-              const isCurrentRole = !exp.endDate
-              return (
-                <motion.div
-                  key={exp.id}
-                  className="relative md:pl-12 pb-8 last:pb-0"
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                >
-                  {/* Timeline dot */}
-                  <div
-                    className={`absolute left-0 w-6 h-6 rounded-full border-4 hidden md:flex items-center justify-center ${isCurrentRole ? 'animate-pulse' : ''}`}
-                    style={{
-                      background: isCurrentRole
-                        ? colors.accent
-                        : colors.surface,
-                      borderColor: colors.bg,
-                      boxShadow: `0 0 0 2px ${isCurrentRole ? colors.accent : colors.border}`,
-                    }}
-                  >
-                    {isCurrentRole && (
-                      <div
-                        className="w-2 h-2 rounded-full"
-                        style={{ background: colors.bg }}
-                      />
-                    )}
-                  </div>
-
-                  {/* Date badge - shown above card on timeline */}
-                  <div
-                    className="text-xs mb-3 flex items-center gap-2"
-                    style={{ color: colors.textMuted }}
-                  >
-                    <span className="font-mono">
-                      {new Date(exp.startDate).getFullYear()} -{' '}
-                      {exp.endDate
-                        ? new Date(exp.endDate).getFullYear()
-                        : 'Present'}
-                    </span>
-                    {isCurrentRole && (
-                      <span
-                        className="px-2 py-0.5 rounded text-xs font-medium"
-                        style={{
-                          background: colors.accentDim,
-                          color: colors.accent,
-                        }}
-                      >
-                        Current
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Experience card */}
-                  <div
-                    className="p-6 rounded-lg hover:border-opacity-50 transition-all duration-300"
-                    style={{
-                      background: colors.surface,
-                      border: `1px solid ${isCurrentRole ? colors.accent + '40' : colors.border}`,
-                    }}
-                  >
-                    <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
-                      <div>
-                        <h3 className="text-lg font-semibold mb-1">
-                          {exp.position}
-                        </h3>
-                        <p className="text-sm" style={{ color: colors.accent }}>
-                          {exp.company}
-                        </p>
-                      </div>
-                    </div>
-                    <p
-                      className="text-sm mb-4"
-                      style={{ color: colors.textMuted }}
-                    >
-                      {exp.description}
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {exp.technologies.map(tech => (
-                        <span
-                          key={tech}
-                          className="text-xs px-2 py-1 rounded"
-                          style={{
-                            background: colors.bg,
-                            color: colors.textMuted,
-                          }}
-                        >
-                          {tech}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </motion.div>
-              )
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* ==================== SKILLS ==================== */}
-      <section
-        id="skills"
-        className="py-24 px-6 lg:px-12 transition-colors duration-300"
-        style={{ background: colors.surface }}
-      >
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            className="flex items-center gap-3 mb-12"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            <Code size={20} style={{ color: colors.accent }} />
-            <h2 className="text-2xl font-bold">{titles.skills}</h2>
-          </motion.div>
-
-          <div className="grid lg:grid-cols-2 gap-6">
-            {[...skills]
-              .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-              .map((category, catIndex) => {
-                // Get the appropriate icon for this category
-                const CategoryIcon =
-                  skillIconMap[category.icon as keyof typeof skillIconMap] ||
-                  Cpu
-
-                return (
-                  <motion.div
-                    key={category.id}
-                    className="p-6 rounded-lg transition-colors duration-300"
-                    style={{
-                      background: colors.bg,
-                      border: `1px solid ${colors.border}`,
-                    }}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: catIndex * 0.1 }}
-                  >
-                    <div className="mb-4">
-                      <h3 className="text-lg font-semibold flex items-center gap-2">
-                        <CategoryIcon
-                          size={16}
-                          style={{ color: colors.accent }}
-                        />
-                        {category.name}
-                      </h3>
-                      {category.description && (
-                        <p
-                          className="text-xs mt-1"
-                          style={{ color: colors.textMuted }}
-                        >
-                          {category.description}
-                        </p>
-                      )}
-                    </div>
-                    <div className="space-y-3">
-                      {category.skills.map(skill => {
-                        const filledCount = skillLevelToNumber(skill.level)
-                        return (
-                          <div
-                            key={skill.name}
-                            className="flex items-center justify-between"
-                          >
-                            <span
-                              className="text-sm flex items-center gap-2"
-                              style={{
-                                color: skill.featured
-                                  ? colors.text
-                                  : colors.textMuted,
-                              }}
-                            >
-                              {skill.name}
-                              {skill.featured && (
-                                <Star
-                                  size={12}
-                                  style={{ color: colors.accent }}
-                                  fill={colors.accent}
-                                />
-                              )}
-                            </span>
-                            <div className="flex items-center gap-2">
-                              {skill.yearsOfExperience && (
-                                <span
-                                  className="text-xs"
-                                  style={{ color: colors.textDim }}
-                                >
-                                  {skill.yearsOfExperience}y
-                                </span>
-                              )}
-                              <div className="flex gap-1">
-                                {[1, 2, 3, 4].map(level => (
-                                  <div
-                                    key={level}
-                                    className="w-2.5 h-2.5 rounded-sm transition-colors duration-300"
-                                    style={{
-                                      background:
-                                        level <= filledCount
-                                          ? colors.accent
-                                          : colors.border,
-                                    }}
-                                  />
-                                ))}
-                              </div>
-                            </div>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </motion.div>
-                )
-              })}
-          </div>
-        </div>
-      </section>
-
-      {/* ==================== CERTIFICATIONS ==================== */}
-      <section id="certifications" className="py-24 px-6 lg:px-12">
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            className="flex items-center gap-3 mb-12"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            <Shield size={20} style={{ color: colors.accent }} />
-            <h2 className="text-2xl font-bold">{titles.certifications}</h2>
-          </motion.div>
-
-          {/* Featured Highlight (e.g., Kubestronaut) */}
-          {certHighlight && (
+      {siteConfig?.sectionVisibility?.experience !== false && (
+        <section id="experience" className="py-24 px-6 lg:px-12">
+          <div className="max-w-7xl mx-auto">
             <motion.div
-              className="p-6 rounded-lg mb-8 transition-colors duration-300"
-              style={{
-                background: colors.accentDim,
-                border: `1px solid ${colors.accent}40`,
-              }}
+              className="flex items-center gap-3 mb-12"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
             >
-              <div className="flex items-center gap-4">
-                <HighlightIcon size={32} style={{ color: colors.accent }} />
-                <div>
-                  <h3
-                    className="text-xl font-bold"
-                    style={{ color: colors.accent }}
-                  >
-                    {certHighlight.title}
-                  </h3>
-                  <p className="text-sm" style={{ color: colors.textMuted }}>
-                    {certHighlight.subtitle}
-                  </p>
-                </div>
-              </div>
+              <Terminal size={20} style={{ color: colors.accent }} />
+              <h2 className="text-2xl font-bold">{titles.experience}</h2>
             </motion.div>
-          )}
 
-          <div className="grid lg:grid-cols-3 gap-4">
-            {certifications.map((cert, index) => (
-              <motion.div
-                key={cert.id}
-                className="p-4 rounded-lg transition-colors duration-300"
-                style={{
-                  background: colors.surface,
-                  border: `1px solid ${colors.border}`,
-                }}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.05 }}
-              >
-                <div className="text-xs mb-2" style={{ color: colors.accent }}>
-                  [{String(index + 1).padStart(2, '0')}]
-                </div>
-                <h4 className="text-sm font-semibold mb-1">
-                  {cert.name.split(':')[0]}
-                </h4>
-                <p className="text-xs" style={{ color: colors.textMuted }}>
-                  {cert.issuer}
-                </p>
-              </motion.div>
-            ))}
+            {/* Timeline container */}
+            <div className="relative">
+              {/* Timeline vertical line */}
+              <div
+                className="absolute left-3 top-0 bottom-0 w-0.5 hidden md:block"
+                style={{ background: colors.border }}
+              />
+
+              {experience.map((exp, index) => {
+                const isCurrentRole = !exp.endDate
+                return (
+                  <motion.div
+                    key={exp.id}
+                    className="relative md:pl-12 pb-8 last:pb-0"
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.1 }}
+                  >
+                    {/* Timeline dot */}
+                    <div
+                      className={`absolute left-0 w-6 h-6 rounded-full border-4 hidden md:flex items-center justify-center ${isCurrentRole ? 'animate-pulse' : ''}`}
+                      style={{
+                        background: isCurrentRole
+                          ? colors.accent
+                          : colors.surface,
+                        borderColor: colors.bg,
+                        boxShadow: `0 0 0 2px ${isCurrentRole ? colors.accent : colors.border}`,
+                      }}
+                    >
+                      {isCurrentRole && (
+                        <div
+                          className="w-2 h-2 rounded-full"
+                          style={{ background: colors.bg }}
+                        />
+                      )}
+                    </div>
+
+                    {/* Date badge - shown above card on timeline */}
+                    <div
+                      className="text-xs mb-3 flex items-center gap-2"
+                      style={{ color: colors.textMuted }}
+                    >
+                      <span className="font-mono">
+                        {new Date(exp.startDate).getFullYear()} -{' '}
+                        {exp.endDate
+                          ? new Date(exp.endDate).getFullYear()
+                          : 'Present'}
+                      </span>
+                      {isCurrentRole && (
+                        <span
+                          className="px-2 py-0.5 rounded text-xs font-medium"
+                          style={{
+                            background: colors.accentDim,
+                            color: colors.accent,
+                          }}
+                        >
+                          Current
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Experience card - Expandable */}
+                    {(() => {
+                      const isExpanded = expandedExperiences.has(exp.id)
+                      const {
+                        bullets,
+                        previewBullets,
+                        hasMoreBullets,
+                        hasAchievements,
+                      } = experienceBullets[exp.id] || {
+                        bullets: [],
+                        previewBullets: [],
+                        hasMoreBullets: false,
+                        hasAchievements: false,
+                      }
+
+                      return (
+                        <div
+                          className="rounded-lg transition-all duration-300 overflow-hidden"
+                          style={{
+                            background: colors.surface,
+                            border: `1px solid ${isCurrentRole ? colors.accent + '40' : colors.border}`,
+                          }}
+                        >
+                          {/* Card Header - Always visible */}
+                          <div className="p-6 pb-4">
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="flex-1">
+                                <h3 className="text-lg font-semibold mb-1">
+                                  {exp.position}
+                                </h3>
+                                <p
+                                  className="text-sm"
+                                  style={{ color: colors.accent }}
+                                >
+                                  {exp.company}
+                                </p>
+                              </div>
+                              {/* Expand/Collapse button */}
+                              {(hasMoreBullets || hasAchievements) && (
+                                <button
+                                  onClick={() => toggleExperience(exp.id)}
+                                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+                                  style={{
+                                    background: colors.bg,
+                                    color: colors.textMuted,
+                                  }}
+                                  aria-expanded={isExpanded}
+                                  aria-label={
+                                    isExpanded ? 'Show less' : 'Show more'
+                                  }
+                                >
+                                  {isExpanded ? (
+                                    <>
+                                      <span>Less</span>
+                                      <ChevronUp size={14} />
+                                    </>
+                                  ) : (
+                                    <>
+                                      <span>More</span>
+                                      <ChevronDown size={14} />
+                                    </>
+                                  )}
+                                </button>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Preview bullets (always shown) */}
+                          <div className="px-6 pb-4">
+                            <ul
+                              className="text-sm space-y-2 list-none font-sans"
+                              style={{ color: colors.textMuted }}
+                            >
+                              {(isExpanded ? bullets : previewBullets).map(
+                                (sentence, i) => (
+                                  <li
+                                    key={i}
+                                    className="flex items-start gap-2"
+                                  >
+                                    <span
+                                      className="flex-shrink-0 leading-relaxed"
+                                      style={{ color: colors.accent }}
+                                    >
+                                      ▸
+                                    </span>
+                                    <span className="leading-relaxed">
+                                      {sentence.trim().replace(/\.$/, '')}
+                                    </span>
+                                  </li>
+                                )
+                              )}
+                            </ul>
+                          </div>
+
+                          {/* Expanded content */}
+                          {isExpanded && (
+                            <div className="px-6 pb-6 space-y-4">
+                              {/* Key Achievements */}
+                              {hasAchievements && (
+                                <div
+                                  className="pt-4"
+                                  style={{
+                                    borderTop: `1px solid ${colors.border}`,
+                                  }}
+                                >
+                                  <h4
+                                    className="text-xs font-semibold uppercase tracking-wider mb-3 flex items-center gap-2"
+                                    style={{ color: colors.accent }}
+                                  >
+                                    <Trophy size={14} />
+                                    Key Achievements
+                                  </h4>
+                                  <ul
+                                    className="text-sm space-y-2 list-none font-sans"
+                                    style={{ color: colors.textMuted }}
+                                  >
+                                    {exp.achievements.map((achievement, i) => (
+                                      <li
+                                        key={i}
+                                        className="flex items-start gap-2"
+                                      >
+                                        <span
+                                          className="flex-shrink-0 leading-relaxed"
+                                          style={{ color: colors.accent }}
+                                        >
+                                          ★
+                                        </span>
+                                        <span className="leading-relaxed">
+                                          {achievement}
+                                        </span>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
+
+                              {/* Technologies */}
+                              {exp.technologies.length > 0 && (
+                                <div
+                                  className="pt-4"
+                                  style={{
+                                    borderTop: `1px solid ${colors.border}`,
+                                  }}
+                                >
+                                  <h4
+                                    className="text-xs font-semibold uppercase tracking-wider mb-3 flex items-center gap-2"
+                                    style={{ color: colors.textMuted }}
+                                  >
+                                    <Code size={14} />
+                                    Technologies
+                                  </h4>
+                                  <div className="flex flex-wrap gap-2">
+                                    {exp.technologies.map(tech => (
+                                      <span
+                                        key={tech}
+                                        className="text-xs px-2 py-1 rounded"
+                                        style={{
+                                          background: colors.bg,
+                                          color: colors.textMuted,
+                                        }}
+                                      >
+                                        {tech}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Collapsed footer - show tech tags inline */}
+                          {!isExpanded && exp.technologies.length > 0 && (
+                            <div className="px-6 pb-4">
+                              <div className="flex flex-wrap gap-1.5">
+                                {exp.technologies.slice(0, 6).map(tech => (
+                                  <span
+                                    key={tech}
+                                    className="text-xs px-2 py-0.5 rounded"
+                                    style={{
+                                      background: colors.bg,
+                                      color: colors.textDim,
+                                    }}
+                                  >
+                                    {tech}
+                                  </span>
+                                ))}
+                                {exp.technologies.length > 6 && (
+                                  <span
+                                    className="text-xs px-2 py-0.5"
+                                    style={{ color: colors.textDim }}
+                                  >
+                                    +{exp.technologies.length - 6} more
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })()}
+                  </motion.div>
+                )
+              })}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
-      {/* ==================== LANGUAGES ==================== */}
-      {languages && languages.length > 0 && (
+      {/* ==================== SKILLS ==================== */}
+      {siteConfig?.sectionVisibility?.skills !== false && (
         <section
-          id="languages"
+          id="skills"
           className="py-24 px-6 lg:px-12 transition-colors duration-300"
           style={{ background: colors.surface }}
         >
@@ -989,82 +969,113 @@ export function CVPageClient({ data }: CVPageClientProps) {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
             >
-              <Globe size={20} style={{ color: colors.accent }} />
-              <h2 className="text-2xl font-bold">{titles.languages}</h2>
+              <Code size={20} style={{ color: colors.accent }} />
+              <h2 className="text-2xl font-bold">{titles.skills}</h2>
             </motion.div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {languages.map((lang, index) => {
-                // CEFR level to percentage mapping
-                const levelMap: Record<string, number> = {
-                  native: 100,
-                  c2: 95,
-                  c1: 85,
-                  b2: 70,
-                  b1: 55,
-                  a2: 40,
-                  a1: 25,
-                }
-                const percentage = levelMap[lang.proficiency] || 50
-                const levelLabel = lang.native
-                  ? 'Native'
-                  : lang.proficiency.toUpperCase()
+            <div className="grid lg:grid-cols-2 gap-6">
+              {[...skills]
+                .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+                .map((category, catIndex) => {
+                  // Get the appropriate icon for this category
+                  const CategoryIcon =
+                    skillIconMap[category.icon as keyof typeof skillIconMap] ||
+                    Cpu
 
-                return (
-                  <motion.div
-                    key={lang.code}
-                    className="p-4 rounded-lg transition-colors duration-300"
-                    style={{
-                      background: colors.bg,
-                      border: `1px solid ${colors.border}`,
-                    }}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: index * 0.1 }}
-                  >
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="font-semibold">{lang.name}</span>
-                      <span
-                        className="text-xs px-2 py-1 rounded"
-                        style={{
-                          background: lang.native
-                            ? colors.accent
-                            : colors.accentDim,
-                          color: lang.native
-                            ? theme === 'dark'
-                              ? colors.bg
-                              : '#FFFFFF'
-                            : colors.accent,
-                        }}
-                      >
-                        {levelLabel}
-                      </span>
-                    </div>
-                    <div
-                      className="h-2 rounded-full overflow-hidden"
-                      style={{ background: colors.border }}
+                  return (
+                    <motion.div
+                      key={category.id}
+                      className="p-6 rounded-lg transition-colors duration-300"
+                      style={{
+                        background: colors.bg,
+                        border: `1px solid ${colors.border}`,
+                      }}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: catIndex * 0.1 }}
                     >
-                      <motion.div
-                        className="h-full rounded-full"
-                        style={{ background: colors.accent }}
-                        initial={{ width: 0 }}
-                        whileInView={{ width: `${percentage}%` }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.8, delay: index * 0.1 }}
-                      />
-                    </div>
-                  </motion.div>
-                )
-              })}
+                      <div className="mb-4">
+                        <h3 className="text-lg font-semibold flex items-center gap-2">
+                          <CategoryIcon
+                            size={16}
+                            style={{ color: colors.accent }}
+                          />
+                          {category.name}
+                        </h3>
+                        {category.description && (
+                          <p
+                            className="text-xs mt-1"
+                            style={{ color: colors.textMuted }}
+                          >
+                            {category.description}
+                          </p>
+                        )}
+                      </div>
+                      <div className="space-y-3">
+                        {category.skills.map(skill => {
+                          const filledCount = skillLevelToNumber(skill.level)
+                          return (
+                            <div
+                              key={skill.name}
+                              className="flex items-center justify-between"
+                            >
+                              <span
+                                className="text-sm flex items-center gap-2"
+                                style={{
+                                  color: skill.featured
+                                    ? colors.text
+                                    : colors.textMuted,
+                                }}
+                              >
+                                {skill.name}
+                                {skill.featured && (
+                                  <Star
+                                    size={12}
+                                    style={{ color: colors.accent }}
+                                    fill={colors.accent}
+                                  />
+                                )}
+                              </span>
+                              <div className="flex items-center gap-2">
+                                {skill.yearsOfExperience && (
+                                  <span
+                                    className="text-xs"
+                                    style={{ color: colors.textDim }}
+                                  >
+                                    {skill.yearsOfExperience}y
+                                  </span>
+                                )}
+                                <div className="flex gap-1">
+                                  {[1, 2, 3, 4].map(level => (
+                                    <div
+                                      key={level}
+                                      className="w-2.5 h-2.5 rounded-sm transition-colors duration-300"
+                                      style={{
+                                        background:
+                                          level <= filledCount
+                                            ? colors.accent
+                                            : colors.border,
+                                      }}
+                                    />
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </motion.div>
+                  )
+                })}
             </div>
           </div>
         </section>
       )}
 
-      {/* ==================== EDUCATION ==================== */}
-      {education && education.length > 0 && (
-        <section id="education" className="py-24 px-6 lg:px-12">
+      {/* ==================== CERTIFICATIONS ==================== */}
+      {siteConfig?.sectionVisibility?.certifications !== false && (
+        <section id="certifications" className="py-24 px-6 lg:px-12">
           <div className="max-w-7xl mx-auto">
             <motion.div
               className="flex items-center gap-3 mb-12"
@@ -1072,15 +1083,44 @@ export function CVPageClient({ data }: CVPageClientProps) {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
             >
-              <GraduationCap size={20} style={{ color: colors.accent }} />
-              <h2 className="text-2xl font-bold">{titles.education}</h2>
+              <Shield size={20} style={{ color: colors.accent }} />
+              <h2 className="text-2xl font-bold">{titles.certifications}</h2>
             </motion.div>
 
-            <div className="space-y-6">
-              {education.map((edu, index) => (
+            {/* Featured Highlight (e.g., Kubestronaut) */}
+            {certHighlight && (
+              <motion.div
+                className="p-6 rounded-lg mb-8 transition-colors duration-300"
+                style={{
+                  background: colors.accentDim,
+                  border: `1px solid ${colors.accent}40`,
+                }}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+              >
+                <div className="flex items-center gap-4">
+                  <HighlightIcon size={32} style={{ color: colors.accent }} />
+                  <div>
+                    <h3
+                      className="text-xl font-bold"
+                      style={{ color: colors.accent }}
+                    >
+                      {certHighlight.title}
+                    </h3>
+                    <p className="text-sm" style={{ color: colors.textMuted }}>
+                      {certHighlight.subtitle}
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            <div className="grid lg:grid-cols-3 gap-4">
+              {certifications.map((cert, index) => (
                 <motion.div
-                  key={edu.id}
-                  className="p-6 rounded-lg hover:border-opacity-50 transition-all duration-300"
+                  key={cert.id}
+                  className="p-4 rounded-lg transition-colors duration-300"
                   style={{
                     background: colors.surface,
                     border: `1px solid ${colors.border}`,
@@ -1088,62 +1128,20 @@ export function CVPageClient({ data }: CVPageClientProps) {
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
+                  transition={{ delay: index * 0.05 }}
                 >
-                  <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
-                    <div>
-                      <h3 className="text-lg font-semibold mb-1">
-                        {edu.degree} in {edu.field}
-                      </h3>
-                      <p className="text-sm" style={{ color: colors.accent }}>
-                        {edu.institution}
-                      </p>
-                      {edu.location && (
-                        <p
-                          className="text-xs mt-1"
-                          style={{ color: colors.textMuted }}
-                        >
-                          📍 {edu.location.city}, {edu.location.country}
-                        </p>
-                      )}
-                    </div>
-                    <div
-                      className="text-xs px-3 py-1 rounded"
-                      style={{
-                        background: colors.accentDim,
-                        color: colors.accent,
-                      }}
-                    >
-                      {new Date(edu.startDate).getFullYear()} -{' '}
-                      {edu.endDate
-                        ? new Date(edu.endDate).getFullYear()
-                        : 'Present'}
-                    </div>
+                  <div
+                    className="text-xs mb-2"
+                    style={{ color: colors.accent }}
+                  >
+                    [{String(index + 1).padStart(2, '0')}]
                   </div>
-                  {edu.description && (
-                    <p
-                      className="text-sm mb-4"
-                      style={{ color: colors.textMuted }}
-                    >
-                      {edu.description}
-                    </p>
-                  )}
-                  {edu.grade && (
-                    <div className="flex items-center gap-2">
-                      <span
-                        className="text-xs"
-                        style={{ color: colors.textMuted }}
-                      >
-                        Grade:
-                      </span>
-                      <span
-                        className="text-xs px-2 py-1 rounded"
-                        style={{ background: colors.bg, color: colors.text }}
-                      >
-                        {edu.grade}
-                      </span>
-                    </div>
-                  )}
+                  <h4 className="text-sm font-semibold mb-1">
+                    {cert.name.split(':')[0]}
+                  </h4>
+                  <p className="text-xs" style={{ color: colors.textMuted }}>
+                    {cert.issuer}
+                  </p>
                 </motion.div>
               ))}
             </div>
@@ -1151,186 +1149,370 @@ export function CVPageClient({ data }: CVPageClientProps) {
         </section>
       )}
 
-      {/* ==================== ACHIEVEMENTS ==================== */}
-      {achievements && achievements.length > 0 && (
-        <section
-          id="achievements"
-          className="py-24 px-6 lg:px-12 transition-colors duration-300"
-          style={{ background: colors.surface }}
-        >
-          <div className="max-w-7xl mx-auto">
-            <motion.div
-              className="flex items-center gap-3 mb-12"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-            >
-              <Medal size={20} style={{ color: colors.accent }} />
-              <h2 className="text-2xl font-bold">{titles.achievements}</h2>
-            </motion.div>
+      {/* ==================== LANGUAGES ==================== */}
+      {siteConfig?.sectionVisibility?.languages !== false &&
+        languages &&
+        languages.length > 0 && (
+          <section
+            id="languages"
+            className="py-24 px-6 lg:px-12 transition-colors duration-300"
+            style={{ background: colors.surface }}
+          >
+            <div className="max-w-7xl mx-auto">
+              <motion.div
+                className="flex items-center gap-3 mb-12"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+              >
+                <Globe size={20} style={{ color: colors.accent }} />
+                <h2 className="text-2xl font-bold">{titles.languages}</h2>
+              </motion.div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {achievements.map((achievement, index) => {
-                // Category icon mapping
-                const categoryIcons: Record<string, typeof Trophy> = {
-                  award: Trophy,
-                  publication: Code,
-                  speaking: Users,
-                  project: Terminal,
-                  contribution: GitBranch,
-                }
-                const CategoryIcon =
-                  categoryIcons[achievement.category] || Award
+              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {languages.map((lang, index) => {
+                  // CEFR level to percentage mapping
+                  const levelMap: Record<string, number> = {
+                    native: 100,
+                    c2: 95,
+                    c1: 85,
+                    b2: 70,
+                    b1: 55,
+                    a2: 40,
+                    a1: 25,
+                  }
+                  const percentage = levelMap[lang.proficiency] || 50
+                  const levelLabel = lang.native
+                    ? 'Native'
+                    : lang.proficiency.toUpperCase()
 
-                return (
+                  return (
+                    <motion.div
+                      key={lang.code}
+                      className="p-4 rounded-lg transition-colors duration-300"
+                      style={{
+                        background: colors.bg,
+                        border: `1px solid ${colors.border}`,
+                      }}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: index * 0.1 }}
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="font-semibold">{lang.name}</span>
+                        <span
+                          className="text-xs px-2 py-1 rounded"
+                          style={{
+                            background: lang.native
+                              ? colors.accent
+                              : colors.accentDim,
+                            color: lang.native
+                              ? theme === 'dark'
+                                ? colors.bg
+                                : '#FFFFFF'
+                              : colors.accent,
+                          }}
+                        >
+                          {levelLabel}
+                        </span>
+                      </div>
+                      <div
+                        className="h-2 rounded-full overflow-hidden"
+                        style={{ background: colors.border }}
+                      >
+                        <motion.div
+                          className="h-full rounded-full"
+                          style={{ background: colors.accent }}
+                          initial={{ width: 0 }}
+                          whileInView={{ width: `${percentage}%` }}
+                          viewport={{ once: true }}
+                          transition={{ duration: 0.8, delay: index * 0.1 }}
+                        />
+                      </div>
+                    </motion.div>
+                  )
+                })}
+              </div>
+            </div>
+          </section>
+        )}
+
+      {/* ==================== EDUCATION ==================== */}
+      {siteConfig?.sectionVisibility?.education !== false &&
+        education &&
+        education.length > 0 && (
+          <section id="education" className="py-24 px-6 lg:px-12">
+            <div className="max-w-7xl mx-auto">
+              <motion.div
+                className="flex items-center gap-3 mb-12"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+              >
+                <GraduationCap size={20} style={{ color: colors.accent }} />
+                <h2 className="text-2xl font-bold">{titles.education}</h2>
+              </motion.div>
+
+              <div className="space-y-6">
+                {education.map((edu, index) => (
                   <motion.div
-                    key={achievement.id}
-                    className="p-4 rounded-lg transition-colors duration-300"
+                    key={edu.id}
+                    className="p-6 rounded-lg hover:border-opacity-50 transition-all duration-300"
                     style={{
-                      background: colors.bg,
-                      border: `1px solid ${achievement.featured ? colors.accent : colors.border}`,
+                      background: colors.surface,
+                      border: `1px solid ${colors.border}`,
                     }}
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    transition={{ delay: index * 0.05 }}
+                    transition={{ delay: index * 0.1 }}
                   >
-                    <div className="flex items-start gap-3 mb-3">
-                      <CategoryIcon
-                        size={16}
-                        className="mt-1 flex-shrink-0"
-                        style={{ color: colors.accent }}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <h4 className="text-sm font-semibold mb-1">
-                          {achievement.title}
-                        </h4>
-                        {achievement.issuer && (
+                    <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
+                      <div>
+                        <h3 className="text-lg font-semibold mb-1">
+                          {edu.degree} in {edu.field}
+                        </h3>
+                        <p className="text-sm" style={{ color: colors.accent }}>
+                          {edu.institution}
+                        </p>
+                        {edu.location && (
                           <p
-                            className="text-xs"
+                            className="text-xs mt-1"
                             style={{ color: colors.textMuted }}
                           >
-                            {achievement.issuer}
+                            📍 {edu.location.city}, {edu.location.country}
                           </p>
                         )}
                       </div>
-                    </div>
-                    {achievement.description && (
-                      <p
-                        className="text-xs mb-3"
-                        style={{ color: colors.textMuted }}
-                      >
-                        {achievement.description}
-                      </p>
-                    )}
-                    <div className="flex items-center justify-between">
-                      <span
-                        className="text-xs px-2 py-1 rounded capitalize"
+                      <div
+                        className="text-xs px-3 py-1 rounded"
                         style={{
                           background: colors.accentDim,
                           color: colors.accent,
                         }}
                       >
-                        {achievement.category}
-                      </span>
-                      <span
-                        className="text-xs"
-                        style={{ color: colors.textDim }}
-                      >
-                        {new Date(achievement.date).getFullYear()}
-                      </span>
+                        {new Date(edu.startDate).getFullYear()} -{' '}
+                        {edu.endDate
+                          ? new Date(edu.endDate).getFullYear()
+                          : 'Present'}
+                      </div>
                     </div>
-                    {achievement.url && (
-                      <a
-                        href={achievement.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="block mt-3 text-xs hover:underline"
-                        style={{ color: colors.accent }}
+                    {edu.description && (
+                      <p
+                        className="text-sm mb-4"
+                        style={{ color: colors.textMuted }}
                       >
-                        View details →
-                      </a>
+                        {edu.description}
+                      </p>
+                    )}
+                    {edu.grade && (
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="text-xs"
+                          style={{ color: colors.textMuted }}
+                        >
+                          Grade:
+                        </span>
+                        <span
+                          className="text-xs px-2 py-1 rounded"
+                          style={{ background: colors.bg, color: colors.text }}
+                        >
+                          {edu.grade}
+                        </span>
+                      </div>
                     )}
                   </motion.div>
-                )
-              })}
+                ))}
+              </div>
             </div>
+          </section>
+        )}
+
+      {/* ==================== ACHIEVEMENTS ==================== */}
+      {siteConfig?.sectionVisibility?.achievements !== false &&
+        achievements &&
+        achievements.length > 0 && (
+          <section
+            id="achievements"
+            className="py-24 px-6 lg:px-12 transition-colors duration-300"
+            style={{ background: colors.surface }}
+          >
+            <div className="max-w-7xl mx-auto">
+              <motion.div
+                className="flex items-center gap-3 mb-12"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+              >
+                <Medal size={20} style={{ color: colors.accent }} />
+                <h2 className="text-2xl font-bold">{titles.achievements}</h2>
+              </motion.div>
+
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {achievements.map((achievement, index) => {
+                  // Category icon mapping
+                  const categoryIcons: Record<string, typeof Trophy> = {
+                    award: Trophy,
+                    publication: Code,
+                    speaking: Users,
+                    project: Terminal,
+                    contribution: GitBranch,
+                  }
+                  const CategoryIcon =
+                    categoryIcons[achievement.category] || Award
+
+                  return (
+                    <motion.div
+                      key={achievement.id}
+                      className="p-4 rounded-lg transition-colors duration-300"
+                      style={{
+                        background: colors.bg,
+                        border: `1px solid ${achievement.featured ? colors.accent : colors.border}`,
+                      }}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: index * 0.05 }}
+                    >
+                      <div className="flex items-start gap-3 mb-3">
+                        <CategoryIcon
+                          size={16}
+                          className="mt-1 flex-shrink-0"
+                          style={{ color: colors.accent }}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-sm font-semibold mb-1">
+                            {achievement.title}
+                          </h4>
+                          {achievement.issuer && (
+                            <p
+                              className="text-xs"
+                              style={{ color: colors.textMuted }}
+                            >
+                              {achievement.issuer}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      {achievement.description && (
+                        <p
+                          className="text-xs mb-3"
+                          style={{ color: colors.textMuted }}
+                        >
+                          {achievement.description}
+                        </p>
+                      )}
+                      <div className="flex items-center justify-between">
+                        <span
+                          className="text-xs px-2 py-1 rounded capitalize"
+                          style={{
+                            background: colors.accentDim,
+                            color: colors.accent,
+                          }}
+                        >
+                          {achievement.category}
+                        </span>
+                        <span
+                          className="text-xs"
+                          style={{ color: colors.textDim }}
+                        >
+                          {new Date(achievement.date).getFullYear()}
+                        </span>
+                      </div>
+                      {achievement.url && (
+                        <a
+                          href={achievement.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="block mt-3 text-xs hover:underline"
+                          style={{ color: colors.accent }}
+                        >
+                          View details →
+                        </a>
+                      )}
+                    </motion.div>
+                  )
+                })}
+              </div>
+            </div>
+          </section>
+        )}
+
+      {/* ==================== CONTACT ==================== */}
+      {siteConfig?.sectionVisibility?.contact !== false && (
+        <section
+          id="contact"
+          className="py-24 px-6 lg:px-12 transition-colors duration-300"
+          style={{ background: colors.surface }}
+        >
+          <div className="max-w-7xl mx-auto">
+            {/* Terminal window */}
+            <motion.div
+              className="rounded-lg overflow-hidden transition-colors duration-300"
+              style={{ border: `1px solid ${colors.border}` }}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+            >
+              <div
+                className="flex items-center gap-2 px-4 py-3 transition-colors duration-300"
+                style={{
+                  background: colors.bg,
+                  borderBottom: `1px solid ${colors.border}`,
+                }}
+              >
+                <div className="flex gap-1.5">
+                  <span
+                    className="w-3 h-3 rounded-full"
+                    style={{ background: '#FF5F56' }}
+                  />
+                  <span
+                    className="w-3 h-3 rounded-full"
+                    style={{ background: '#FFBD2E' }}
+                  />
+                  <span
+                    className="w-3 h-3 rounded-full"
+                    style={{ background: '#27C93F' }}
+                  />
+                </div>
+                <span
+                  className="text-xs ml-2"
+                  style={{ color: colors.textMuted }}
+                >
+                  contact.sh
+                </span>
+              </div>
+              <div
+                className="p-8 text-center transition-colors duration-300"
+                style={{ background: colors.bg }}
+              >
+                <p className="text-sm mb-6" style={{ color: colors.textMuted }}>
+                  <span style={{ color: colors.accent }}>$</span> echo
+                  &quot;Ready to collaborate?&quot;
+                </p>
+                <h2
+                  className="text-3xl font-bold mb-8"
+                  style={{ color: colors.accent }}
+                >
+                  {titles.contact}
+                </h2>
+                <a
+                  href={`mailto:${personalInfo.email}`}
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded text-sm font-semibold transition-colors"
+                  style={{
+                    background: colors.accent,
+                    color: theme === 'dark' ? colors.bg : '#FFFFFF',
+                  }}
+                >
+                  <Mail size={16} />
+                  {personalInfo.email}
+                </a>
+              </div>
+            </motion.div>
           </div>
         </section>
       )}
-
-      {/* ==================== CONTACT ==================== */}
-      <section
-        id="contact"
-        className="py-24 px-6 lg:px-12 transition-colors duration-300"
-        style={{ background: colors.surface }}
-      >
-        <div className="max-w-7xl mx-auto">
-          {/* Terminal window */}
-          <motion.div
-            className="rounded-lg overflow-hidden transition-colors duration-300"
-            style={{ border: `1px solid ${colors.border}` }}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            <div
-              className="flex items-center gap-2 px-4 py-3 transition-colors duration-300"
-              style={{
-                background: colors.bg,
-                borderBottom: `1px solid ${colors.border}`,
-              }}
-            >
-              <div className="flex gap-1.5">
-                <span
-                  className="w-3 h-3 rounded-full"
-                  style={{ background: '#FF5F56' }}
-                />
-                <span
-                  className="w-3 h-3 rounded-full"
-                  style={{ background: '#FFBD2E' }}
-                />
-                <span
-                  className="w-3 h-3 rounded-full"
-                  style={{ background: '#27C93F' }}
-                />
-              </div>
-              <span
-                className="text-xs ml-2"
-                style={{ color: colors.textMuted }}
-              >
-                contact.sh
-              </span>
-            </div>
-            <div
-              className="p-8 text-center transition-colors duration-300"
-              style={{ background: colors.bg }}
-            >
-              <p className="text-sm mb-6" style={{ color: colors.textMuted }}>
-                <span style={{ color: colors.accent }}>$</span> echo &quot;Ready
-                to collaborate?&quot;
-              </p>
-              <h2
-                className="text-3xl font-bold mb-8"
-                style={{ color: colors.accent }}
-              >
-                {titles.contact}
-              </h2>
-              <a
-                href={`mailto:${personalInfo.email}`}
-                className="inline-flex items-center gap-2 px-6 py-3 rounded text-sm font-semibold transition-colors"
-                style={{
-                  background: colors.accent,
-                  color: theme === 'dark' ? colors.bg : '#FFFFFF',
-                }}
-              >
-                <Mail size={16} />
-                {personalInfo.email}
-              </a>
-            </div>
-          </motion.div>
-        </div>
-      </section>
 
       {/* Footer */}
       <footer

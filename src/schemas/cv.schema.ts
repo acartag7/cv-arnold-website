@@ -570,6 +570,22 @@ export const ThemeConfigSchema = z.object({
 })
 
 /**
+ * Section visibility schema
+ * Controls which sections are displayed on the public-facing CV site
+ * All boolean fields default to true (visible)
+ */
+export const SectionVisibilitySchema = z.object({
+  hero: z.boolean().default(true),
+  experience: z.boolean().default(true),
+  skills: z.boolean().default(true),
+  certifications: z.boolean().default(true),
+  education: z.boolean().default(true),
+  languages: z.boolean().default(true),
+  achievements: z.boolean().default(true),
+  contact: z.boolean().default(true),
+})
+
+/**
  * Site configuration schema
  */
 export const SiteConfigSchema = z.object({
@@ -593,6 +609,7 @@ export const SiteConfigSchema = z.object({
       ogImage: z.string().optional(),
     })
     .optional(),
+  sectionVisibility: SectionVisibilitySchema.optional(),
 })
 
 /**
