@@ -402,6 +402,7 @@ export function CVPageClient({ data }: CVPageClientProps) {
         }}
       >
         <div className="flex justify-between items-center max-w-7xl mx-auto">
+          {/* Terminal aesthetic: monospace for branding */}
           <a
             href="#"
             className="text-sm font-semibold font-mono transition-colors"
@@ -410,7 +411,7 @@ export function CVPageClient({ data }: CVPageClientProps) {
             {branding}
           </a>
 
-          {/* Desktop navigation */}
+          {/* Desktop navigation - font-mono for terminal aesthetic consistency */}
           <div className="hidden md:flex items-center gap-6">
             {NAV_ITEMS.map(item => {
               const isActive = activeSection === item.sectionId
@@ -531,6 +532,7 @@ export function CVPageClient({ data }: CVPageClientProps) {
                   <span style={{ color: colors.accent }}>{'/**'}</span>
                   {' README.md'}
                 </div>
+                {/* Readability: sans-serif for long-form summary text */}
                 <p
                   className="text-sm leading-relaxed font-sans"
                   style={{ color: colors.textMuted }}

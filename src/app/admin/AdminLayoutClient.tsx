@@ -194,7 +194,7 @@ export function AdminLayoutClient({
                   {userEmail && (
                     <a
                       href="/cdn-cgi/access/logout"
-                      className="flex items-center gap-1.5 px-2 py-1.5 text-sm text-gray-600 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                      className="flex items-center gap-1.5 px-2 py-1.5 text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20"
                       title="Sign out"
                     >
                       <LogOut size={16} />
