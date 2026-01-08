@@ -7,5 +7,5 @@
  * @module components/contact
  */
 
-export { ContactForm } from './ContactForm'
+export { ContactForm, type ThemeColors } from './ContactForm'
 export { CalEmbed } from './CalEmbed'
