@@ -118,7 +118,7 @@ export function CalEmbed({
               href={calUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--primary)] text-white rounded-lg hover:bg-[var(--primary-hover)] transition-colors font-medium"
+              className="inline-flex items-center gap-2 px-4 py-2 border border-[var(--color-border)] bg-[var(--surface)] text-[var(--text)] rounded-lg hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors font-mono text-sm"
             >
               <Calendar className="w-4 h-4" />
               Open Calendar
