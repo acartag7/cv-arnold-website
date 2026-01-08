@@ -206,7 +206,8 @@ function generateEmailHtml(
   name: string,
   email: string,
   subject: string,
-  message: string
+  message: string,
+  fromDomain: string
 ): string {
   const timestamp = new Date().toLocaleString('en-US', {
     weekday: 'long',
@@ -232,7 +233,7 @@ function generateEmailHtml(
       New Contact Form Submission
     </h1>
     <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0 0; font-size: 14px;">
-      via arnoldcartagena.com
+      via ${escapeHtml(fromDomain)}
     </p>
   </div>
 
@@ -312,7 +313,13 @@ async function sendEmail(
   fromDomain: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const html = generateEmailHtml(from.name, from.email, subject, message)
+    const html = generateEmailHtml(
+      from.name,
+      from.email,
+      subject,
+      message,
+      fromDomain
+    )
     // Configurable sender domain for OSS platform compatibility
     const senderEmail = `contact@${fromDomain}`
 

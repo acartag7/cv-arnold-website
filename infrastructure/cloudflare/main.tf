@@ -269,7 +269,7 @@ resource "cloudflare_turnstile_widget" "contact_form" {
   account_id = var.cloudflare_account_id
   name       = "CV Contact Form"
   mode       = "managed"
-  domains    = [var.domain, local.prod_frontend]
+  domains    = [local.prod_frontend] # Only cv.arnoldcartagena.com (not root domain)
   # Bot fight mode is automatically enabled
 }
 
