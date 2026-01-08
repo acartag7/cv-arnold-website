@@ -53,6 +53,7 @@ ENVIRONMENT = "production"
 ALLOWED_ORIGINS = "https://cv.arnoldcartagena.com,https://api.arnoldcartagena.com,http://localhost:3000"
 # Contact form configuration
 CONTACT_EMAIL = "cartagena.arnold@gmail.com"
+CONTACT_FROM_DOMAIN = "arnoldcartagena.com"  # Domain for sender email (contact@domain)
 # Public Turnstile site key - from: terraform output turnstile_site_keys
 # TURNSTILE_SITE_KEY = "TODO: Get from terraform output"
 # Cal.com scheduling link
@@ -113,6 +114,7 @@ ENVIRONMENT = "dev"
 ALLOWED_ORIGINS = "https://dev-cv.arnoldcartagena.com,https://api-dev.arnoldcartagena.com,http://localhost:3000"
 # Contact form configuration (dev)
 CONTACT_EMAIL = "cartagena.arnold@gmail.com"
+CONTACT_FROM_DOMAIN = "arnoldcartagena.com"  # Domain for sender email (contact@domain)
 # Public Turnstile site key - for dev use test key or terraform output
 TURNSTILE_SITE_KEY = "1x00000000000000000000AA"  # Cloudflare test key (always passes)
 # Cal.com scheduling link

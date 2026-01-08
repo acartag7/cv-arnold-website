@@ -44,6 +44,8 @@ export interface ContactHandlerEnv {
   RESEND_API_KEY?: string
   /** Email address to receive contact submissions */
   CONTACT_EMAIL?: string
+  /** Domain for sender email (e.g., "example.com" → contact@example.com) */
+  CONTACT_FROM_DOMAIN?: string
 }
 
 /**
@@ -298,6 +300,7 @@ function generateEmailHtml(
  * @param from - Sender info
  * @param subject - Email subject
  * @param message - Email body
+ * @param fromDomain - Domain for sender address (e.g., "example.com")
  * @returns Send result
  */
 async function sendEmail(
@@ -305,10 +308,13 @@ async function sendEmail(
   to: string,
   from: { name: string; email: string },
   subject: string,
-  message: string
+  message: string,
+  fromDomain: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const html = generateEmailHtml(from.name, from.email, subject, message)
+    // Configurable sender domain for OSS platform compatibility
+    const senderEmail = `contact@${fromDomain}`
 
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -317,7 +323,7 @@ async function sendEmail(
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'CV Contact Form <contact@arnoldcartagena.com>',
+        from: `CV Contact Form <${senderEmail}>`,
         to: [to],
         reply_to: from.email,
         subject: `[CV Contact] ${subject}`,
@@ -397,7 +403,13 @@ export async function handlePostContact(
   if (!rateLimit.allowed) {
     console.warn(`[Contact] Rate limit exceeded for IP ${clientIp}`)
     const retryAfter = Math.ceil((rateLimit.resetAt - Date.now()) / 1000)
-    return rateLimited(retryAfter)
+    // Include standard rate limit headers for client feedback
+    const rateLimitHeaders = {
+      'X-RateLimit-Limit': CONTACT_RATE_LIMIT.toString(),
+      'X-RateLimit-Remaining': '0',
+      'X-RateLimit-Reset': Math.floor(rateLimit.resetAt / 1000).toString(),
+    }
+    return rateLimited(retryAfter, rateLimitHeaders)
   }
 
   // ── Parse Request Body ────────────────────────────────────────────────────
@@ -429,6 +441,8 @@ export async function handlePostContact(
   }
 
   // ── Verify Turnstile ──────────────────────────────────────────────────────
+  // Note: Turnstile tokens are single-use. Cloudflare automatically invalidates
+  // them after verification, preventing replay attacks. No additional check needed.
   if (!env.TURNSTILE_SECRET_KEY) {
     console.error('[Contact] TURNSTILE_SECRET_KEY not configured')
     return internalError('Server configuration error')
@@ -449,8 +463,17 @@ export async function handlePostContact(
   }
 
   // ── Check Required Config ─────────────────────────────────────────────────
-  if (!env.RESEND_API_KEY || !env.CONTACT_EMAIL) {
-    console.error('[Contact] Missing RESEND_API_KEY or CONTACT_EMAIL')
+  if (!env.RESEND_API_KEY || !env.CONTACT_EMAIL || !env.CONTACT_FROM_DOMAIN) {
+    console.error(
+      '[Contact] Missing required config: RESEND_API_KEY, CONTACT_EMAIL, or CONTACT_FROM_DOMAIN'
+    )
+    return internalError('Server configuration error')
+  }
+
+  // Validate CONTACT_EMAIL format
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  if (!emailRegex.test(env.CONTACT_EMAIL)) {
+    console.error('[Contact] Invalid CONTACT_EMAIL format:', env.CONTACT_EMAIL)
     return internalError('Server configuration error')
   }
 
@@ -460,7 +483,8 @@ export async function handlePostContact(
     env.CONTACT_EMAIL,
     { name, email },
     subject,
-    message
+    message,
+    env.CONTACT_FROM_DOMAIN
   )
 
   // ── Store Submission (Optional) ───────────────────────────────────────────

@@ -23,6 +23,7 @@ describe('handlePostContact', () => {
     TURNSTILE_SECRET_KEY: 'test-secret-key',
     RESEND_API_KEY: 'test-resend-key',
     CONTACT_EMAIL: 'test@example.com',
+    CONTACT_FROM_DOMAIN: 'example.com',
     RATE_LIMIT_KV: {
       get: vi.fn(),
       put: vi.fn(),
@@ -278,6 +279,8 @@ describe('handlePostContact', () => {
       expect(emailBody.to).toContain('test@example.com')
       expect(emailBody.reply_to).toBe('john@example.com')
       expect(emailBody.subject).toContain('Test Subject')
+      // Verify configurable sender domain is used
+      expect(emailBody.from).toContain('contact@example.com')
     })
 
     it('should return error when email sending fails', async () => {
@@ -367,6 +370,33 @@ describe('handlePostContact', () => {
 
       const request = createRequest(validFormData)
       const response = await handlePostContact(request, envWithoutEmail)
+      const body = await response.json()
+
+      expect(response.status).toBe(500)
+      expect(body.error.message).toContain('configuration')
+    })
+
+    it('should return error when CONTACT_FROM_DOMAIN is missing', async () => {
+      // Omit property entirely due to exactOptionalPropertyTypes
+      const { CONTACT_FROM_DOMAIN: _omit4, ...envWithoutDomain } = mockEnv
+      void _omit4
+
+      const request = createRequest(validFormData)
+      const response = await handlePostContact(request, envWithoutDomain)
+      const body = await response.json()
+
+      expect(response.status).toBe(500)
+      expect(body.error.message).toContain('configuration')
+    })
+
+    it('should return error when CONTACT_EMAIL has invalid format', async () => {
+      const envWithInvalidEmail = {
+        ...mockEnv,
+        CONTACT_EMAIL: 'not-a-valid-email',
+      }
+
+      const request = createRequest(validFormData)
+      const response = await handlePostContact(request, envWithInvalidEmail)
       const body = await response.json()
 
       expect(response.status).toBe(500)

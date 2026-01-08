@@ -287,16 +287,19 @@ resource "cloudflare_turnstile_widget" "contact_form_dev" {
 # Worker Secrets - Production API
 # =============================================================================
 # These secrets are injected into the Worker at runtime
-# Note: Secrets are stored encrypted by Cloudflare, but will appear in Terraform state
+# Note: Secrets appear in Terraform state. For enterprise compliance, use:
+# - Terraform Cloud with encrypted state
+# - S3 backend with server-side encryption
+# - Azure Blob with encryption at rest
 
-resource "cloudflare_worker_secret" "resend_api_key_prod" {
+resource "cloudflare_workers_secret" "resend_api_key_prod" {
   account_id  = var.cloudflare_account_id
   script_name = local.api_worker_prod
   name        = "RESEND_API_KEY"
   secret_text = var.resend_api_key
 }
 
-resource "cloudflare_worker_secret" "turnstile_secret_prod" {
+resource "cloudflare_workers_secret" "turnstile_secret_prod" {
   account_id  = var.cloudflare_account_id
   script_name = local.api_worker_prod
   name        = "TURNSTILE_SECRET_KEY"
@@ -307,7 +310,7 @@ resource "cloudflare_worker_secret" "turnstile_secret_prod" {
 # Worker Secrets - Dev API
 # =============================================================================
 
-resource "cloudflare_worker_secret" "resend_api_key_dev" {
+resource "cloudflare_workers_secret" "resend_api_key_dev" {
   count = var.enable_dev_environment ? 1 : 0
 
   account_id  = var.cloudflare_account_id
@@ -316,7 +319,7 @@ resource "cloudflare_worker_secret" "resend_api_key_dev" {
   secret_text = var.resend_api_key
 }
 
-resource "cloudflare_worker_secret" "turnstile_secret_dev" {
+resource "cloudflare_workers_secret" "turnstile_secret_dev" {
   count = var.enable_dev_environment ? 1 : 0
 
   account_id  = var.cloudflare_account_id
