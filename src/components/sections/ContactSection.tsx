@@ -229,15 +229,17 @@ export default function ContactSection({
                 </div>
               )}
 
-              {/* Tab Content */}
+              {/* Tab Content - Keep both mounted to preserve form state */}
               <div className="text-left">
-                {activeTab === 'message' &&
-                  showContactForm &&
-                  turnstileSiteKey && (
+                {showContactForm && turnstileSiteKey && (
+                  <div className={activeTab !== 'message' ? 'hidden' : ''}>
                     <ContactForm turnstileSiteKey={turnstileSiteKey} />
-                  )}
-                {activeTab === 'schedule' && showCalendar && calLink && (
-                  <CalEmbed calLink={calLink} />
+                  </div>
+                )}
+                {showCalendar && calLink && (
+                  <div className={activeTab !== 'schedule' ? 'hidden' : ''}>
+                    <CalEmbed calLink={calLink} />
+                  </div>
                 )}
               </div>
             </motion.div>
