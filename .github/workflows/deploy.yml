@@ -110,7 +110,7 @@ jobs:
         env:
           NEXT_PUBLIC_API_URL: ${{ env.API_URL }}
           NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${{ env.TURNSTILE_KEY }}
-          NEXT_PUBLIC_CAL_LINK: arnold-wesly-cartagena-3kgqze
+          NEXT_PUBLIC_CAL_LINK: ${{ secrets.NEXT_PUBLIC_CAL_LINK }}
 
       - name: Deploy to Production
         if: env.DEPLOY_ENV == 'production' && github.event_name != 'pull_request'
