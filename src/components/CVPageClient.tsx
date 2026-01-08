@@ -35,6 +35,7 @@ import { CVData, HeroStat } from '@/types'
 import { formatDateRange } from '@/lib/date-utils'
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { DEFAULT_PALETTES } from '@/styles/themes'
+import { ContactForm, CalEmbed } from '@/components/contact'
 
 /**
  * CV Website - Client Component
@@ -46,6 +47,10 @@ import { DEFAULT_PALETTES } from '@/styles/themes'
 
 interface CVPageClientProps {
   data: CVData
+  /** Cloudflare Turnstile site key for contact form */
+  turnstileSiteKey?: string
+  /** Cal.com username for scheduling */
+  calLink?: string
 }
 
 // Icon mapping for dynamic icon rendering
@@ -142,7 +147,11 @@ const NAV_ITEMS = [
   { label: 'Contact', sectionId: 'contact' },
 ] as const
 
-export function CVPageClient({ data }: CVPageClientProps) {
+export function CVPageClient({
+  data,
+  turnstileSiteKey,
+  calLink,
+}: CVPageClientProps) {
   const {
     personalInfo,
     experience,
@@ -157,6 +166,13 @@ export function CVPageClient({ data }: CVPageClientProps) {
     featuredHighlights,
     themeConfig,
   } = data
+
+  // Contact form state
+  const [contactTab, setContactTab] = useState<'message' | 'schedule'>(
+    'message'
+  )
+  const showContactForm = Boolean(turnstileSiteKey)
+  const showCalendar = Boolean(calLink)
 
   // Theme state with CMS-configurable default
   const [theme, setTheme] = useState<'dark' | 'light'>('dark')
@@ -1452,56 +1468,164 @@ export function CVPageClient({ data }: CVPageClientProps) {
           style={{ background: colors.surface }}
         >
           <div className="max-w-7xl mx-auto">
-            {/* Terminal window */}
+            {/* Header */}
             <motion.div
-              className="rounded-lg overflow-hidden transition-colors duration-300"
-              style={{ border: `1px solid ${colors.border}` }}
+              className="text-center mb-12"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
             >
-              <div
-                className="flex items-center gap-2 px-4 py-3 transition-colors duration-300"
+              <p className="text-sm mb-4" style={{ color: colors.textMuted }}>
+                <span style={{ color: colors.accent }}>$</span> echo &quot;Ready
+                to collaborate?&quot;
+              </p>
+              <h2
+                className="text-3xl font-bold mb-4"
+                style={{ color: colors.accent }}
+              >
+                {titles.contact}
+              </h2>
+              <p className="text-sm" style={{ color: colors.textMuted }}>
+                Let&apos;s build something great together
+              </p>
+            </motion.div>
+
+            {/* Contact Info Chips */}
+            <motion.div
+              className="flex flex-wrap justify-center gap-3 mb-8"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+            >
+              <a
+                href={`mailto:${personalInfo.email}`}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm transition-colors"
                 style={{
                   background: colors.bg,
-                  borderBottom: `1px solid ${colors.border}`,
+                  border: `1px solid ${colors.border}`,
+                  color: colors.textMuted,
                 }}
               >
-                <div className="flex gap-1.5">
-                  <span
-                    className="w-3 h-3 rounded-full"
-                    style={{ background: '#FF5F56' }}
-                  />
-                  <span
-                    className="w-3 h-3 rounded-full"
-                    style={{ background: '#FFBD2E' }}
-                  />
-                  <span
-                    className="w-3 h-3 rounded-full"
-                    style={{ background: '#27C93F' }}
-                  />
-                </div>
-                <span
-                  className="text-xs ml-2"
-                  style={{ color: colors.textMuted }}
+                <Mail size={14} style={{ color: colors.accent }} />
+                {personalInfo.email}
+              </a>
+              {personalInfo.social.linkedin && (
+                <a
+                  href={personalInfo.social.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm transition-colors"
+                  style={{
+                    background: colors.bg,
+                    border: `1px solid ${colors.border}`,
+                    color: colors.textMuted,
+                  }}
                 >
-                  contact.sh
-                </span>
-              </div>
-              <div
-                className="p-8 text-center transition-colors duration-300"
-                style={{ background: colors.bg }}
+                  <Linkedin size={14} style={{ color: colors.accent }} />
+                  LinkedIn
+                </a>
+              )}
+              {personalInfo.social.github && (
+                <a
+                  href={personalInfo.social.github}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm transition-colors"
+                  style={{
+                    background: colors.bg,
+                    border: `1px solid ${colors.border}`,
+                    color: colors.textMuted,
+                  }}
+                >
+                  <Github size={14} style={{ color: colors.accent }} />
+                  GitHub
+                </a>
+              )}
+            </motion.div>
+
+            {/* Contact Form / Calendar Tabs */}
+            {(showContactForm || showCalendar) && (
+              <motion.div
+                className="max-w-xl mx-auto"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.2 }}
               >
-                <p className="text-sm mb-6" style={{ color: colors.textMuted }}>
-                  <span style={{ color: colors.accent }}>$</span> echo
-                  &quot;Ready to collaborate?&quot;
-                </p>
-                <h2
-                  className="text-3xl font-bold mb-8"
-                  style={{ color: colors.accent }}
-                >
-                  {titles.contact}
-                </h2>
+                {/* Tab Buttons */}
+                {showContactForm && showCalendar && (
+                  <div className="flex justify-center mb-6">
+                    <div
+                      className="inline-flex rounded-lg p-1"
+                      style={{
+                        background: colors.bg,
+                        border: `1px solid ${colors.border}`,
+                      }}
+                    >
+                      <button
+                        onClick={() => setContactTab('message')}
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all"
+                        style={{
+                          background:
+                            contactTab === 'message'
+                              ? colors.accent
+                              : 'transparent',
+                          color:
+                            contactTab === 'message'
+                              ? theme === 'dark'
+                                ? colors.bg
+                                : '#FFFFFF'
+                              : colors.textMuted,
+                        }}
+                      >
+                        <Mail size={16} />
+                        Send Message
+                      </button>
+                      <button
+                        onClick={() => setContactTab('schedule')}
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all"
+                        style={{
+                          background:
+                            contactTab === 'schedule'
+                              ? colors.accent
+                              : 'transparent',
+                          color:
+                            contactTab === 'schedule'
+                              ? theme === 'dark'
+                                ? colors.bg
+                                : '#FFFFFF'
+                              : colors.textMuted,
+                        }}
+                      >
+                        <Users size={16} />
+                        Book a Call
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Tab Content */}
+                {contactTab === 'message' &&
+                  showContactForm &&
+                  turnstileSiteKey && (
+                    <ContactForm turnstileSiteKey={turnstileSiteKey} />
+                  )}
+                {contactTab === 'schedule' && showCalendar && calLink && (
+                  <CalEmbed calLink={calLink} />
+                )}
+              </motion.div>
+            )}
+
+            {/* Fallback: Direct email button when no form/calendar configured */}
+            {!showContactForm && !showCalendar && (
+              <motion.div
+                className="text-center"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.2 }}
+              >
                 <a
                   href={`mailto:${personalInfo.email}`}
                   className="inline-flex items-center gap-2 px-6 py-3 rounded text-sm font-semibold transition-colors"
@@ -1511,10 +1635,10 @@ export function CVPageClient({ data }: CVPageClientProps) {
                   }}
                 >
                   <Mail size={16} />
-                  {personalInfo.email}
+                  Send a Message
                 </a>
-              </div>
-            </motion.div>
+              </motion.div>
+            )}
           </div>
         </section>
       )}

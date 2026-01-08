@@ -47,6 +47,7 @@ import {
   handleCreateSnapshot,
   handleDeleteSnapshot,
 } from './handlers/history'
+import { handlePostContact } from './handlers/contact'
 
 /**
  * Environment bindings for the Worker
@@ -57,6 +58,14 @@ export interface Env {
   RATE_LIMIT_KV?: KVNamespace
   /** Optional: Allowed CORS origins (comma-separated) */
   ALLOWED_ORIGINS?: string
+  /** Optional: KV namespace for contact form submissions */
+  CONTACT_SUBMISSIONS?: KVNamespace
+  /** Cloudflare Turnstile secret key (for spam protection) */
+  TURNSTILE_SECRET_KEY?: string
+  /** Resend API key (for email delivery) */
+  RESEND_API_KEY?: string
+  /** Email address to receive contact submissions */
+  CONTACT_EMAIL?: string
 }
 
 /**
@@ -169,6 +178,13 @@ const routes: Route[] = [
       handleDeleteSnapshot(req, env, params.id ?? ''),
     requiresAuth: true,
     params: ['id'],
+  },
+  // Contact form endpoint (public, with its own rate limiting)
+  {
+    method: 'POST',
+    pattern: /^\/api\/v1\/contact\/?$/,
+    handler: async (req, env) => handlePostContact(req, env),
+    requiresAuth: false,
   },
 ]
 

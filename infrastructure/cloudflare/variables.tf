@@ -81,3 +81,20 @@ variable "github_oauth_client_secret" {
   type        = string
   sensitive   = true
 }
+
+# =============================================================================
+# Contact Form Secrets
+# =============================================================================
+#
+# These secrets are NOT stored in git. Provide via:
+#   - Environment variable: export TF_VAR_resend_api_key="re_xxx"
+#   - CI/CD: GitHub Actions secrets → TF_VAR_resend_api_key
+#   - Terraform Cloud: Sensitive variable in workspace
+#
+# The terraform.tfvars file is .gitignored and can be used for local dev.
+
+variable "resend_api_key" {
+  description = "Resend API key for contact form email delivery. Set via TF_VAR_resend_api_key env var."
+  type        = string
+  sensitive   = true
+}

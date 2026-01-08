@@ -55,7 +55,19 @@ export default async function HomePage() {
     return <DataLoadError />
   }
 
-  return <CVPageClient data={cvData} />
+  // Contact form configuration from environment variables
+  // Only pass props if they're defined (CVPageClient handles undefined gracefully)
+  const turnstileSiteKey =
+    process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || undefined
+  const calLink = process.env.NEXT_PUBLIC_CAL_LINK || undefined
+
+  return (
+    <CVPageClient
+      data={cvData}
+      {...(turnstileSiteKey && { turnstileSiteKey })}
+      {...(calLink && { calLink })}
+    />
+  )
 }
 
 /**

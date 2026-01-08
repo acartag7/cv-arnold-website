@@ -245,6 +245,91 @@ resource "cloudflare_zero_trust_access_policy" "api_allow_users" {
 }
 
 # =============================================================================
+# Contact Form KV Namespace - Production
+# =============================================================================
+
+# Contact form submissions backup storage
+resource "cloudflare_workers_kv_namespace" "contact_submissions" {
+  account_id = var.cloudflare_account_id
+  title      = "CONTACT_SUBMISSIONS"
+}
+
+# Contact form submissions - Dev
+resource "cloudflare_workers_kv_namespace" "contact_submissions_dev" {
+  account_id = var.cloudflare_account_id
+  title      = "CONTACT_SUBMISSIONS_DEV"
+}
+
+# =============================================================================
+# Cloudflare Turnstile - Spam Protection for Contact Form
+# =============================================================================
+
+# Production Turnstile widget
+resource "cloudflare_turnstile_widget" "contact_form" {
+  account_id = var.cloudflare_account_id
+  name       = "CV Contact Form"
+  mode       = "managed"
+  domains    = [local.prod_frontend] # Only cv.arnoldcartagena.com (not root domain)
+  # Bot fight mode is automatically enabled
+}
+
+# Dev Turnstile widget (separate for testing)
+resource "cloudflare_turnstile_widget" "contact_form_dev" {
+  count = var.enable_dev_environment ? 1 : 0
+
+  account_id = var.cloudflare_account_id
+  name       = "CV Contact Form (Dev)"
+  mode       = "managed"
+  domains    = [local.dev_frontend, "localhost"]
+}
+
+# =============================================================================
+# Worker Secrets - Production API
+# =============================================================================
+# These secrets are injected into the Worker at runtime
+# Note: Secrets appear in Terraform state. For enterprise compliance, use:
+# - Terraform Cloud with encrypted state
+# - S3 backend with server-side encryption
+# - Azure Blob with encryption at rest
+
+resource "cloudflare_workers_secret" "resend_api_key_prod" {
+  account_id  = var.cloudflare_account_id
+  script_name = local.api_worker_prod
+  name        = "RESEND_API_KEY"
+  secret_text = var.resend_api_key
+}
+
+resource "cloudflare_workers_secret" "turnstile_secret_prod" {
+  account_id  = var.cloudflare_account_id
+  script_name = local.api_worker_prod
+  name        = "TURNSTILE_SECRET_KEY"
+  secret_text = cloudflare_turnstile_widget.contact_form.secret
+}
+
+# =============================================================================
+# Worker Secrets - Dev API
+# =============================================================================
+
+resource "cloudflare_workers_secret" "resend_api_key_dev" {
+  count = var.enable_dev_environment ? 1 : 0
+
+  account_id  = var.cloudflare_account_id
+  script_name = local.api_worker_dev
+  name        = "RESEND_API_KEY"
+  secret_text = var.resend_api_key
+}
+
+resource "cloudflare_workers_secret" "turnstile_secret_dev" {
+  count = var.enable_dev_environment ? 1 : 0
+
+  account_id  = var.cloudflare_account_id
+  script_name = local.api_worker_dev
+  name        = "TURNSTILE_SECRET_KEY"
+  # Dev can use test key or real dev turnstile secret
+  secret_text = cloudflare_turnstile_widget.contact_form_dev[0].secret
+}
+
+# =============================================================================
 # Zone Settings (Security Headers at Edge)
 # =============================================================================
 
