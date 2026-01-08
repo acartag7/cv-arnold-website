@@ -133,6 +133,70 @@ const data = CVDataSchema.parse(kvData)
 4. ✅ Add tests for the new schema
 5. ✅ Test round-trip: CMS save → KV → public site displays correctly
 
+## 🔴 CRITICAL: Cloudflare Resources MUST Be Managed by Terraform
+
+**All Cloudflare infrastructure resources MUST be created and managed via Terraform (OpenTofu).**
+
+### Why This Matters
+
+Resources created manually via `wrangler` CLI or Cloudflare Dashboard:
+
+- ❌ **Get lost** - Not tracked in version control
+- ❌ **Break deployments** - Terraform state conflicts
+- ❌ **Cannot be reproduced** - No infrastructure-as-code audit trail
+- ❌ **Team confusion** - Others don't know what exists
+
+### The Rule
+
+**NEVER create Cloudflare resources directly via:**
+
+- `wrangler` CLI (except for deploying code and secrets)
+- Cloudflare Dashboard UI
+
+**ALWAYS use Terraform for:**
+
+- KV Namespaces
+- R2 Buckets
+- Turnstile Widgets
+- Workers Domains/Routes
+- Cloudflare Access policies
+- Zone settings
+
+### Exception: Wrangler for Code & Secrets Only
+
+```bash
+# ✅ ALLOWED - Deploy worker code
+wrangler deploy
+wrangler deploy --env dev
+
+# ✅ ALLOWED - Manage secrets (never in code/terraform)
+wrangler secret put RESEND_API_KEY
+wrangler secret put TURNSTILE_SECRET_KEY --env dev
+
+# ❌ NEVER - Create infrastructure
+wrangler kv:namespace create MY_KV  # Use Terraform instead!
+```
+
+### Workflow
+
+```bash
+# 1. Add resource to infrastructure/cloudflare/*.tf
+# 2. Plan and apply
+cd infrastructure/cloudflare
+terraform plan
+terraform apply
+
+# 3. Get output values for wrangler.toml
+terraform output kv_namespace_ids_prod
+terraform output turnstile_site_keys
+```
+
+### Terraform Locations
+
+- `infrastructure/cloudflare/main.tf` - Resource definitions
+- `infrastructure/cloudflare/variables.tf` - Input variables
+- `infrastructure/cloudflare/outputs.tf` - Output values (KV IDs, site keys, etc.)
+
 ## 🚨 MANDATORY SESSION START CHECKLIST
 
 **⚠️ DO THIS FIRST - Before responding to ANY user request:**

@@ -44,6 +44,8 @@ env:
   TF_VAR_github_oauth_client_secret: ${{ secrets.CF_ACCESS_GITHUB_CLIENT_SECRET }}
   # Access Control
   TF_VAR_access_allowed_emails: ${{ secrets.CF_ACCESS_ALLOWED_EMAILS }}
+  # Contact Form Secrets
+  TF_VAR_resend_api_key: ${{ secrets.RESEND_API_KEY }}
 
 jobs:
   terraform:

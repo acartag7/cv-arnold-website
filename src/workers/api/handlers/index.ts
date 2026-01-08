@@ -22,3 +22,5 @@ export {
   handleCreateSnapshot,
   handleDeleteSnapshot,
 } from './history'
+
+export { type ContactHandlerEnv, handlePostContact } from './contact'

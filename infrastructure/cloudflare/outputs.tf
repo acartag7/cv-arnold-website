@@ -93,6 +93,39 @@ output "access_application_ids" {
 }
 
 # =============================================================================
+# Contact Form KV Namespace IDs
+# =============================================================================
+
+output "contact_submissions_kv_ids" {
+  description = "Contact submissions KV namespace IDs"
+  value = {
+    production = cloudflare_workers_kv_namespace.contact_submissions.id
+    dev        = cloudflare_workers_kv_namespace.contact_submissions_dev.id
+  }
+}
+
+# =============================================================================
+# Turnstile Configuration
+# =============================================================================
+
+output "turnstile_site_keys" {
+  description = "Cloudflare Turnstile site keys (public, safe to expose)"
+  value = {
+    production = cloudflare_turnstile_widget.contact_form.id
+    dev        = var.enable_dev_environment ? cloudflare_turnstile_widget.contact_form_dev[0].id : null
+  }
+}
+
+output "turnstile_secret_keys" {
+  description = "Cloudflare Turnstile secret keys (SENSITIVE - use wrangler secret)"
+  sensitive   = true
+  value = {
+    production = cloudflare_turnstile_widget.contact_form.secret
+    dev        = var.enable_dev_environment ? cloudflare_turnstile_widget.contact_form_dev[0].secret : null
+  }
+}
+
+# =============================================================================
 # Domain Configuration (for reference)
 # =============================================================================
 

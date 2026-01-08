@@ -30,6 +30,12 @@ id = "30a87d8776c04d54a423fdd4e84cba5f"
 binding = "CV_HISTORY"
 id = "0c0ada9ed85a427fb87b97bd5761e407"
 
+# Contact form submissions backup (optional)
+# ID from: terraform output contact_submissions_kv_ids
+# [[kv_namespaces]]
+# binding = "CONTACT_SUBMISSIONS"
+# id = "TODO: Run terraform apply and get ID from output"
+
 # =============================================================================
 # R2 Bucket (shared between environments)
 # =============================================================================
@@ -45,6 +51,21 @@ bucket_name = "cv-assets"
 [vars]
 ENVIRONMENT = "production"
 ALLOWED_ORIGINS = "https://cv.arnoldcartagena.com,https://api.arnoldcartagena.com,http://localhost:3000"
+# Contact form configuration
+CONTACT_EMAIL = "cartagena.arnold@gmail.com"
+# Public Turnstile site key - from: terraform output turnstile_site_keys
+# TURNSTILE_SITE_KEY = "TODO: Get from terraform output"
+# Cal.com scheduling link
+CAL_LINK = "arnold-wesly-cartagena-3kgqze"
+
+# =============================================================================
+# Secrets (managed by Terraform - see infrastructure/cloudflare/main.tf)
+# =============================================================================
+# RESEND_API_KEY - Email delivery (via cloudflare_worker_secret.resend_api_key_prod)
+# TURNSTILE_SECRET_KEY - Spam protection (via cloudflare_worker_secret.turnstile_secret_prod)
+#
+# Secrets are automatically provisioned when running terraform apply.
+# The values come from GitHub secrets via TF_VAR_resend_api_key.
 
 # =============================================================================
 # Observability
@@ -75,6 +96,12 @@ id = "07d3925af5594accb6bae93f7e9ba4ec"
 binding = "CV_HISTORY"
 id = "169821c5c47344688128023a671f74a5"
 
+# Dev contact form submissions (optional)
+# ID from: terraform output contact_submissions_kv_ids
+# [[env.dev.kv_namespaces]]
+# binding = "CONTACT_SUBMISSIONS"
+# id = "TODO: Run terraform apply and get ID from output"
+
 # Dev R2 Bucket (same bucket, different prefix could be used)
 [[env.dev.r2_buckets]]
 binding = "CV_ASSETS"
@@ -84,3 +111,12 @@ bucket_name = "cv-assets"
 [env.dev.vars]
 ENVIRONMENT = "dev"
 ALLOWED_ORIGINS = "https://dev-cv.arnoldcartagena.com,https://api-dev.arnoldcartagena.com,http://localhost:3000"
+# Contact form configuration (dev)
+CONTACT_EMAIL = "cartagena.arnold@gmail.com"
+# Public Turnstile site key - for dev use test key or terraform output
+TURNSTILE_SITE_KEY = "1x00000000000000000000AA"  # Cloudflare test key (always passes)
+# Cal.com scheduling link
+CAL_LINK = "arnold-wesly-cartagena-3kgqze"
+
+# Dev secrets (use 'wrangler secret put --env dev')
+# RESEND_API_KEY, TURNSTILE_SECRET_KEY
