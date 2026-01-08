@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.1.7](https://github.com/acartag7/cv-arnold-website/compare/v0.1.6...v0.1.7) (2026-01-08)
+
+
+### ✨ Features
+
+* **admin:** UX improvements and section visibility per-page controls ([#69](https://github.com/acartag7/cv-arnold-website/issues/69)) ([2adaff4](https://github.com/acartag7/cv-arnold-website/commit/2adaff48ef4440e599ca777c662ee6cf872a7390))
+* **cv:** add section visibility, expandable experience cards, and UI improvements ([#65](https://github.com/acartag7/cv-arnold-website/issues/65)) ([ac235b7](https://github.com/acartag7/cv-arnold-website/commit/ac235b7a0de73508058fc998252ae4234fe89d99))
+* **cv:** frontend improvements phase 1 & 2 ([#70](https://github.com/acartag7/cv-arnold-website/issues/70)) ([c885c2c](https://github.com/acartag7/cv-arnold-website/commit/c885c2c54da7bceee488ad2811bab642c5c5d3a9))
+
+
+### 🐛 Bug Fixes
+
+* **admin:** add drag-and-drop reordering and polish dashboard ([#71](https://github.com/acartag7/cv-arnold-website/issues/71)) ([87ea3d7](https://github.com/acartag7/cv-arnold-website/commit/87ea3d7fcffee3529ac9128d44f22dca4b404103))
+* UI consistency and admin logout improvements ([#67](https://github.com/acartag7/cv-arnold-website/issues/67)) ([a9be374](https://github.com/acartag7/cv-arnold-website/commit/a9be374d1ccf4e143ba809e7d78b7a96aad255d1))
+
 ## [0.1.6](https://github.com/acartag7/cv-arnold-website/compare/v0.1.5...v0.1.6) (2026-01-05)
 
 
