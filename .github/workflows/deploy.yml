@@ -97,10 +97,20 @@ jobs:
             echo "API_URL=https://api-dev.arnoldcartagena.com" >> $GITHUB_ENV
           fi
 
+      - name: Set Turnstile site key based on environment
+        run: |
+          if [ "${{ env.DEPLOY_ENV }}" = "production" ]; then
+            echo "TURNSTILE_KEY=${{ secrets.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}" >> $GITHUB_ENV
+          else
+            echo "TURNSTILE_KEY=${{ secrets.NEXT_PUBLIC_TURNSTILE_SITE_KEY_DEV }}" >> $GITHUB_ENV
+          fi
+
       - name: Build with OpenNext
         run: pnpm pages:build
         env:
           NEXT_PUBLIC_API_URL: ${{ env.API_URL }}
+          NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${{ env.TURNSTILE_KEY }}
+          NEXT_PUBLIC_CAL_LINK: ${{ secrets.NEXT_PUBLIC_CAL_LINK }}
 
       - name: Deploy to Production
         if: env.DEPLOY_ENV == 'production' && github.event_name != 'pull_request'
