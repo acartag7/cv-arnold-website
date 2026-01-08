@@ -14,6 +14,11 @@ import {
   RefreshCw,
   Clock,
   AlertCircle,
+  User,
+  BarChart3,
+  Type,
+  Palette,
+  Settings,
 } from 'lucide-react'
 import { useAdminData, useExportData } from '@/hooks/useAdminData'
 
@@ -128,6 +133,16 @@ export function AdminDashboard() {
   const stats = useMemo(() => {
     if (!data) return null
 
+    // Count section titles that are customized (non-empty)
+    const sectionTitlesCount = data.sectionTitles
+      ? Object.values(data.sectionTitles).filter(Boolean).length
+      : 0
+
+    // Count configured theme modes (light/dark)
+    const themeCount = data.themeConfig
+      ? (data.themeConfig.light ? 1 : 0) + (data.themeConfig.dark ? 1 : 0)
+      : 0
+
     return {
       experience: data.experience?.length || 0,
       skills:
@@ -137,6 +152,9 @@ export function AdminDashboard() {
       education: data.education?.length || 0,
       languages: data.languages?.length || 0,
       achievements: data.achievements?.length || 0,
+      heroStats: data.heroStats?.length || 0,
+      sectionTitles: sectionTitlesCount,
+      themes: themeCount,
     }
   }, [data])
 
@@ -224,51 +242,112 @@ export function AdminDashboard() {
         </div>
       </div>
 
-      {/* Overview Cards */}
+      {/* Content Sections */}
       {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <OverviewCard
-            title="Experience"
-            count={stats.experience}
-            icon={Briefcase}
-            href="/admin/experience"
-            color="bg-blue-500"
-          />
-          <OverviewCard
-            title="Skills"
-            count={stats.skills}
-            icon={Code}
-            href="/admin/skills"
-            color="bg-green-500"
-          />
-          <OverviewCard
-            title="Certifications"
-            count={stats.certifications}
-            icon={Award}
-            href="/admin/certifications"
-            color="bg-purple-500"
-          />
-          <OverviewCard
-            title="Education"
-            count={stats.education}
-            icon={GraduationCap}
-            href="/admin/education"
-            color="bg-orange-500"
-          />
-          <OverviewCard
-            title="Languages"
-            count={stats.languages}
-            icon={Languages}
-            href="/admin/languages"
-            color="bg-pink-500"
-          />
-          <OverviewCard
-            title="Achievements"
-            count={stats.achievements}
-            icon={Trophy}
-            href="/admin/achievements"
-            color="bg-yellow-500"
-          />
+        <div className="space-y-6">
+          {/* Personal & Content */}
+          <div>
+            <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
+              Content Sections
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <OverviewCard
+                title="Personal Info"
+                count={1}
+                icon={User}
+                href="/admin/personal"
+                color="bg-indigo-500"
+              />
+              <OverviewCard
+                title="Experience"
+                count={stats.experience}
+                icon={Briefcase}
+                href="/admin/experience"
+                color="bg-blue-500"
+              />
+              <OverviewCard
+                title="Skills"
+                count={stats.skills}
+                icon={Code}
+                href="/admin/skills"
+                color="bg-green-500"
+              />
+              <OverviewCard
+                title="Certifications"
+                count={stats.certifications}
+                icon={Award}
+                href="/admin/certifications"
+                color="bg-purple-500"
+              />
+              <OverviewCard
+                title="Education"
+                count={stats.education}
+                icon={GraduationCap}
+                href="/admin/education"
+                color="bg-orange-500"
+              />
+              <OverviewCard
+                title="Languages"
+                count={stats.languages}
+                icon={Languages}
+                href="/admin/languages"
+                color="bg-pink-500"
+              />
+              <OverviewCard
+                title="Achievements"
+                count={stats.achievements}
+                icon={Trophy}
+                href="/admin/achievements"
+                color="bg-yellow-500"
+              />
+            </div>
+          </div>
+
+          {/* Homepage Customization */}
+          <div>
+            <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
+              Homepage Customization
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <OverviewCard
+                title="Hero Stats"
+                count={stats.heroStats}
+                icon={BarChart3}
+                href="/admin/hero-stats"
+                color="bg-cyan-500"
+              />
+              <OverviewCard
+                title="Section Titles"
+                count={stats.sectionTitles}
+                icon={Type}
+                href="/admin/section-titles"
+                color="bg-teal-500"
+              />
+            </div>
+          </div>
+
+          {/* Site Settings */}
+          <div>
+            <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
+              Site Settings
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <OverviewCard
+                title="Theme"
+                count={stats.themes}
+                icon={Palette}
+                href="/admin/theme"
+                color="bg-rose-500"
+              />
+              <OverviewCard
+                title="Site Config"
+                count={1}
+                icon={Settings}
+                href="/admin/site-config"
+                color="bg-slate-500"
+              />
+            </div>
+          </div>
         </div>
       )}
 

@@ -265,4 +265,132 @@ describe('TagInput', () => {
       })
     })
   })
+
+  describe('drag and drop reordering', () => {
+    it('shows drag handles by default (reorderable=true)', () => {
+      render(<TagInput {...defaultProps} />)
+      // GripVertical icons are rendered for each tag when reorderable
+      const tags = screen.getAllByText(/React|TypeScript/)
+      expect(tags.length).toBe(2)
+      // Tags should have draggable attribute
+      const tagElements = document.querySelectorAll('[draggable="true"]')
+      expect(tagElements.length).toBe(2)
+    })
+
+    it('hides drag handles when reorderable is false', () => {
+      render(<TagInput {...defaultProps} reorderable={false} />)
+      const tagElements = document.querySelectorAll('[draggable="true"]')
+      expect(tagElements.length).toBe(0)
+    })
+
+    it('disables dragging when disabled', () => {
+      render(<TagInput {...defaultProps} disabled />)
+      // When disabled, tags should not be draggable
+      const tagElements = document.querySelectorAll('[draggable="true"]')
+      expect(tagElements.length).toBe(0)
+    })
+
+    it('reorders tags on drag and drop', () => {
+      const onChange = vi.fn()
+      render(
+        <TagInput
+          value={['React', 'TypeScript', 'Node.js']}
+          onChange={onChange}
+        />
+      )
+
+      const tagElements = document.querySelectorAll('[draggable="true"]')
+      expect(tagElements.length).toBe(3)
+
+      // Create mock DataTransfer
+      const dataTransfer = {
+        effectAllowed: '',
+        dropEffect: '',
+        setDragImage: vi.fn(),
+      }
+
+      // Simulate drag from first tag (index 0) to third tag (index 2)
+      fireEvent.dragStart(tagElements[0] as Element, { dataTransfer })
+      fireEvent.dragOver(tagElements[2] as Element, { dataTransfer })
+      fireEvent.dragEnd(tagElements[0] as Element)
+
+      // Should call onChange with reordered array
+      expect(onChange).toHaveBeenCalledWith(['TypeScript', 'Node.js', 'React'])
+    })
+
+    it('does not reorder when dropping on same position', () => {
+      const onChange = vi.fn()
+      render(<TagInput value={['React', 'TypeScript']} onChange={onChange} />)
+
+      const tagElements = document.querySelectorAll('[draggable="true"]')
+      const dataTransfer = {
+        effectAllowed: '',
+        dropEffect: '',
+        setDragImage: vi.fn(),
+      }
+
+      // Drag and drop to same position
+      fireEvent.dragStart(tagElements[0] as Element, { dataTransfer })
+      fireEvent.dragOver(tagElements[0] as Element, { dataTransfer })
+      fireEvent.dragEnd(tagElements[0] as Element)
+
+      // Should not call onChange
+      expect(onChange).not.toHaveBeenCalled()
+    })
+
+    it('handles dragEnd without valid drop target', () => {
+      const onChange = vi.fn()
+      render(<TagInput value={['React', 'TypeScript']} onChange={onChange} />)
+
+      const tagElements = document.querySelectorAll('[draggable="true"]')
+      const dataTransfer = {
+        effectAllowed: '',
+        dropEffect: '',
+        setDragImage: vi.fn(),
+      }
+
+      // Only start drag, never set a drop target
+      fireEvent.dragStart(tagElements[0] as Element, { dataTransfer })
+      fireEvent.dragEnd(tagElements[0] as Element)
+
+      // Should not reorder since no valid drop target was set
+      expect(onChange).not.toHaveBeenCalled()
+    })
+
+    it('applies visual styles during drag', () => {
+      render(<TagInput value={['React', 'TypeScript']} onChange={vi.fn()} />)
+
+      const tagElements = document.querySelectorAll('[draggable="true"]')
+      const dataTransfer = {
+        effectAllowed: '',
+        dropEffect: '',
+        setDragImage: vi.fn(),
+      }
+
+      // Start dragging
+      fireEvent.dragStart(tagElements[0] as Element, { dataTransfer })
+
+      // The dragged element should have opacity-50 class (isDragging)
+      expect(tagElements[0]).toHaveClass('opacity-50')
+    })
+
+    it('applies drag over styles to target', () => {
+      render(<TagInput value={['React', 'TypeScript']} onChange={vi.fn()} />)
+
+      const tagElements = document.querySelectorAll('[draggable="true"]')
+      const dataTransfer = {
+        effectAllowed: '',
+        dropEffect: '',
+        setDragImage: vi.fn(),
+      }
+
+      // Start dragging first element
+      fireEvent.dragStart(tagElements[0] as Element, { dataTransfer })
+      // Drag over second element
+      fireEvent.dragOver(tagElements[1] as Element, { dataTransfer })
+
+      // The target element should have ring styles (isDragOver)
+      expect(tagElements[1]).toHaveClass('ring-2')
+    })
+  })
 })
