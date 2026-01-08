@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.8](https://github.com/acartag7/cv-arnold-website/compare/v0.1.7...v0.1.8) (2026-01-08)
+
+
+### ✨ Features
+
+* **contact:** add contact form with Turnstile spam protection ([#72](https://github.com/acartag7/cv-arnold-website/issues/72)) ([3efc5e1](https://github.com/acartag7/cv-arnold-website/commit/3efc5e13f97ed1cc617a5dfeeab3a55a02476673))
+
+
+### 🐛 Bug Fixes
+
+* add frontend env vars for Turnstile and Cal.com ([#75](https://github.com/acartag7/cv-arnold-website/issues/75)) ([3331d4c](https://github.com/acartag7/cv-arnold-website/commit/3331d4c83e68ddfb70aac625564d12ce405a0ae6))
+
 ## [0.1.7](https://github.com/acartag7/cv-arnold-website/compare/v0.1.6...v0.1.7) (2026-01-08)
 
 
