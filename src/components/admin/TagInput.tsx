@@ -14,7 +14,7 @@
  */
 
 import { useState, useRef, useCallback, KeyboardEvent } from 'react'
-import { X, Plus } from 'lucide-react'
+import { X, Plus, GripVertical } from 'lucide-react'
 
 export interface TagInputProps {
   /** Current array of tags */
@@ -35,6 +35,8 @@ export interface TagInputProps {
   label?: string
   /** Additional CSS classes */
   className?: string
+  /** Enable drag-and-drop reordering (default: true) */
+  reorderable?: boolean
 }
 
 export function TagInput({
@@ -47,10 +49,13 @@ export function TagInput({
   error,
   label,
   className = '',
+  reorderable = true,
 }: TagInputProps) {
   const [inputValue, setInputValue] = useState('')
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [selectedSuggestion, setSelectedSuggestion] = useState(-1)
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   // Filter suggestions based on input and existing tags
@@ -81,6 +86,53 @@ export function TagInput({
     },
     [value, onChange]
   )
+
+  // Drag and drop handlers for reordering
+  const handleDragStart = useCallback(
+    (e: React.DragEvent<HTMLSpanElement>, index: number) => {
+      setDraggedIndex(index)
+      e.dataTransfer.effectAllowed = 'move'
+      // Set a transparent drag image
+      const dragImage = document.createElement('div')
+      dragImage.style.opacity = '0'
+      document.body.appendChild(dragImage)
+      e.dataTransfer.setDragImage(dragImage, 0, 0)
+      setTimeout(() => document.body.removeChild(dragImage), 0)
+    },
+    []
+  )
+
+  const handleDragOver = useCallback(
+    (e: React.DragEvent<HTMLSpanElement>, index: number) => {
+      e.preventDefault()
+      e.dataTransfer.dropEffect = 'move'
+      if (draggedIndex !== null && draggedIndex !== index) {
+        setDragOverIndex(index)
+      }
+    },
+    [draggedIndex]
+  )
+
+  const handleDragEnd = useCallback(() => {
+    if (
+      draggedIndex !== null &&
+      dragOverIndex !== null &&
+      draggedIndex !== dragOverIndex
+    ) {
+      const newTags = [...value]
+      const [draggedTag] = newTags.splice(draggedIndex, 1)
+      if (draggedTag) {
+        newTags.splice(dragOverIndex, 0, draggedTag)
+        onChange(newTags)
+      }
+    }
+    setDraggedIndex(null)
+    setDragOverIndex(null)
+  }, [draggedIndex, dragOverIndex, value, onChange])
+
+  const handleDragLeave = useCallback(() => {
+    setDragOverIndex(null)
+  }, [])
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     // Add tag on Enter or comma
@@ -173,16 +225,31 @@ export function TagInput({
         `}
       >
         {/* Existing tags */}
-        {value.map(tag => (
+        {value.map((tag, index) => (
           <span
             key={tag}
-            className="
+            draggable={reorderable && !disabled}
+            onDragStart={e => reorderable && handleDragStart(e, index)}
+            onDragOver={e => reorderable && handleDragOver(e, index)}
+            onDragEnd={handleDragEnd}
+            onDragLeave={handleDragLeave}
+            className={`
               inline-flex items-center gap-1 px-2.5 py-1
               bg-blue-50 dark:bg-blue-900/30
               text-blue-700 dark:text-blue-300
               text-sm font-medium rounded-lg
-            "
+              transition-all duration-150
+              ${reorderable && !disabled ? 'cursor-grab active:cursor-grabbing' : ''}
+              ${draggedIndex === index ? 'opacity-50 scale-95' : ''}
+              ${dragOverIndex === index ? 'ring-2 ring-blue-400 ring-offset-1' : ''}
+            `}
           >
+            {reorderable && !disabled && (
+              <GripVertical
+                size={12}
+                className="text-blue-400 dark:text-blue-500 flex-shrink-0"
+              />
+            )}
             {tag}
             {!disabled && (
               <button

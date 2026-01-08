@@ -295,6 +295,40 @@ export function SkillsEditor() {
     [data, updateData, toast]
   )
 
+  // Reorder skills within a category
+  const handleReorderSkills = useCallback(
+    (categoryId: string, reorderedSkills: Skill[]) => {
+      if (!data) return
+
+      const categoryIndex = data.skills.findIndex(c => c.id === categoryId)
+      if (categoryIndex === -1) return
+
+      const updatedCategories = [...data.skills]
+      const category = updatedCategories[categoryIndex]
+      if (!category) return
+
+      updatedCategories[categoryIndex] = {
+        ...category,
+        skills: reorderedSkills,
+      }
+
+      updateData(
+        { ...data, skills: updatedCategories },
+        {
+          onSuccess: () => {
+            toast.success('Skills reordered')
+          },
+          onError: err => {
+            toast.error(
+              err instanceof Error ? err.message : 'Failed to reorder skills'
+            )
+          },
+        }
+      )
+    },
+    [data, updateData, toast]
+  )
+
   // Loading state
   if (isLoading) {
     return (
@@ -434,6 +468,7 @@ export function SkillsEditor() {
             onEditSkill={handleEditSkill}
             onDeleteSkill={handleDeleteSkillClick}
             onReorder={handleReorderCategories}
+            onReorderSkills={handleReorderSkills}
             isSaving={isSaving}
           />
         ) : (

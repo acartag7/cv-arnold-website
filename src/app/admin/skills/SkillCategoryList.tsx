@@ -10,8 +10,16 @@
  */
 
 import { SortableList } from '@/components/admin'
-import { Edit2, Trash2, Plus, Star, ChevronDown, ChevronUp } from 'lucide-react'
-import { useState } from 'react'
+import {
+  Edit2,
+  Trash2,
+  Plus,
+  Star,
+  ChevronDown,
+  ChevronUp,
+  GripVertical,
+} from 'lucide-react'
+import { useState, useCallback } from 'react'
 import type { SkillCategory, Skill } from '@/types/cv'
 
 interface SkillCategoryListProps {
@@ -22,6 +30,7 @@ interface SkillCategoryListProps {
   onEditSkill: (skill: Skill, categoryId: string) => void
   onDeleteSkill: (skill: Skill, categoryId: string) => void
   onReorder: (categories: SkillCategory[]) => void
+  onReorderSkills: (categoryId: string, skills: Skill[]) => void
   isSaving?: boolean
 }
 
@@ -54,14 +63,28 @@ const skillLevelConfig: Record<
 
 function SkillBadge({
   skill,
+  index,
   onEdit,
   onDelete,
   isSaving = false,
+  isDragging = false,
+  isDragOver = false,
+  onDragStart,
+  onDragOver,
+  onDragEnd,
+  onDragLeave,
 }: {
   skill: Skill
+  index: number
   onEdit: () => void
   onDelete: () => void
   isSaving?: boolean
+  isDragging?: boolean
+  isDragOver?: boolean
+  onDragStart?: (e: React.DragEvent<HTMLDivElement>, index: number) => void
+  onDragOver?: (e: React.DragEvent<HTMLDivElement>, index: number) => void
+  onDragEnd?: () => void
+  onDragLeave?: () => void
 }) {
   const levelConfig = skillLevelConfig[skill.level]
   const level = levelConfig ??
@@ -73,13 +96,25 @@ function SkillBadge({
 
   return (
     <div
+      draggable={!isSaving}
+      onDragStart={e => onDragStart?.(e, index)}
+      onDragOver={e => onDragOver?.(e, index)}
+      onDragEnd={onDragEnd}
+      onDragLeave={onDragLeave}
       className={`
         group relative inline-flex items-center gap-1.5 px-3 py-1.5
         ${level.bg} ${level.color}
         rounded-lg text-sm font-medium
-        transition-colors
+        transition-all duration-150
+        ${!isSaving ? 'cursor-grab active:cursor-grabbing' : ''}
+        ${isDragging ? 'opacity-50 scale-95' : ''}
+        ${isDragOver ? 'ring-2 ring-blue-400 ring-offset-1' : ''}
       `}
     >
+      <GripVertical
+        size={12}
+        className="text-current opacity-40 flex-shrink-0"
+      />
       {skill.featured && <Star size={12} className="text-amber-500" />}
       <span>{skill.name}</span>
 
@@ -125,6 +160,7 @@ function SkillCategoryCard({
   onAddSkill,
   onEditSkill,
   onDeleteSkill,
+  onReorderSkills,
   isSaving = false,
 }: {
   category: SkillCategory
@@ -133,9 +169,58 @@ function SkillCategoryCard({
   onAddSkill: () => void
   onEditSkill: (skill: Skill) => void
   onDeleteSkill: (skill: Skill) => void
+  onReorderSkills: (skills: Skill[]) => void
   isSaving?: boolean
 }) {
   const [isExpanded, setIsExpanded] = useState(true)
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
+
+  const handleDragStart = useCallback(
+    (e: React.DragEvent<HTMLDivElement>, index: number) => {
+      setDraggedIndex(index)
+      e.dataTransfer.effectAllowed = 'move'
+      // Set a transparent drag image
+      const dragImage = document.createElement('div')
+      dragImage.style.opacity = '0'
+      document.body.appendChild(dragImage)
+      e.dataTransfer.setDragImage(dragImage, 0, 0)
+      setTimeout(() => document.body.removeChild(dragImage), 0)
+    },
+    []
+  )
+
+  const handleDragOver = useCallback(
+    (e: React.DragEvent<HTMLDivElement>, index: number) => {
+      e.preventDefault()
+      e.dataTransfer.dropEffect = 'move'
+      if (draggedIndex !== null && draggedIndex !== index) {
+        setDragOverIndex(index)
+      }
+    },
+    [draggedIndex]
+  )
+
+  const handleDragEnd = useCallback(() => {
+    if (
+      draggedIndex !== null &&
+      dragOverIndex !== null &&
+      draggedIndex !== dragOverIndex
+    ) {
+      const newSkills = [...category.skills]
+      const [draggedSkill] = newSkills.splice(draggedIndex, 1)
+      if (draggedSkill) {
+        newSkills.splice(dragOverIndex, 0, draggedSkill)
+        onReorderSkills(newSkills)
+      }
+    }
+    setDraggedIndex(null)
+    setDragOverIndex(null)
+  }, [draggedIndex, dragOverIndex, category.skills, onReorderSkills])
+
+  const handleDragLeave = useCallback(() => {
+    setDragOverIndex(null)
+  }, [])
 
   return (
     <div
@@ -207,13 +292,20 @@ function SkillCategoryCard({
         <div className="p-4">
           {category.skills.length > 0 ? (
             <div className="flex flex-wrap gap-2">
-              {category.skills.map(skill => (
+              {category.skills.map((skill, index) => (
                 <SkillBadge
                   key={skill.name}
                   skill={skill}
+                  index={index}
                   onEdit={() => onEditSkill(skill)}
                   onDelete={() => onDeleteSkill(skill)}
                   isSaving={isSaving}
+                  isDragging={draggedIndex === index}
+                  isDragOver={dragOverIndex === index}
+                  onDragStart={handleDragStart}
+                  onDragOver={handleDragOver}
+                  onDragEnd={handleDragEnd}
+                  onDragLeave={handleDragLeave}
                 />
               ))}
             </div>
@@ -242,6 +334,7 @@ export function SkillCategoryList({
   onEditSkill,
   onDeleteSkill,
   onReorder,
+  onReorderSkills,
   isSaving = false,
 }: SkillCategoryListProps) {
   return (
@@ -257,6 +350,7 @@ export function SkillCategoryList({
           onAddSkill={() => onAddSkill(category.id)}
           onEditSkill={skill => onEditSkill(skill, category.id)}
           onDeleteSkill={skill => onDeleteSkill(skill, category.id)}
+          onReorderSkills={skills => onReorderSkills(category.id, skills)}
           isSaving={isSaving}
         />
       )}
