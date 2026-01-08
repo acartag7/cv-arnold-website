@@ -133,6 +133,16 @@ export function AdminDashboard() {
   const stats = useMemo(() => {
     if (!data) return null
 
+    // Count section titles that are customized (non-empty)
+    const sectionTitlesCount = data.sectionTitles
+      ? Object.values(data.sectionTitles).filter(Boolean).length
+      : 0
+
+    // Count configured theme modes (light/dark)
+    const themeCount = data.themeConfig
+      ? (data.themeConfig.light ? 1 : 0) + (data.themeConfig.dark ? 1 : 0)
+      : 0
+
     return {
       experience: data.experience?.length || 0,
       skills:
@@ -143,6 +153,8 @@ export function AdminDashboard() {
       languages: data.languages?.length || 0,
       achievements: data.achievements?.length || 0,
       heroStats: data.heroStats?.length || 0,
+      sectionTitles: sectionTitlesCount,
+      themes: themeCount,
     }
   }, [data])
 
@@ -306,7 +318,7 @@ export function AdminDashboard() {
               />
               <OverviewCard
                 title="Section Titles"
-                count={5}
+                count={stats.sectionTitles}
                 icon={Type}
                 href="/admin/section-titles"
                 color="bg-teal-500"
@@ -322,7 +334,7 @@ export function AdminDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <OverviewCard
                 title="Theme"
-                count={2}
+                count={stats.themes}
                 icon={Palette}
                 href="/admin/theme"
                 color="bg-rose-500"

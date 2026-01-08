@@ -84,7 +84,7 @@ function SkillBadge({
   onDragStart?: (e: React.DragEvent<HTMLDivElement>, index: number) => void
   onDragOver?: (e: React.DragEvent<HTMLDivElement>, index: number) => void
   onDragEnd?: () => void
-  onDragLeave?: () => void
+  onDragLeave?: (e: React.DragEvent<HTMLDivElement>) => void
 }) {
   const levelConfig = skillLevelConfig[skill.level]
   const level = levelConfig ??
@@ -100,7 +100,7 @@ function SkillBadge({
       onDragStart={e => onDragStart?.(e, index)}
       onDragOver={e => onDragOver?.(e, index)}
       onDragEnd={onDragEnd}
-      onDragLeave={onDragLeave}
+      onDragLeave={e => onDragLeave?.(e)}
       className={`
         group relative inline-flex items-center gap-1.5 px-3 py-1.5
         ${level.bg} ${level.color}
@@ -111,10 +111,12 @@ function SkillBadge({
         ${isDragOver ? 'ring-2 ring-blue-400 ring-offset-1' : ''}
       `}
     >
-      <GripVertical
-        size={12}
-        className="text-current opacity-40 flex-shrink-0"
-      />
+      {!isSaving && (
+        <GripVertical
+          size={12}
+          className="text-current opacity-40 flex-shrink-0"
+        />
+      )}
       {skill.featured && <Star size={12} className="text-amber-500" />}
       <span>{skill.name}</span>
 
@@ -180,12 +182,19 @@ function SkillCategoryCard({
     (e: React.DragEvent<HTMLDivElement>, index: number) => {
       setDraggedIndex(index)
       e.dataTransfer.effectAllowed = 'move'
-      // Set a transparent drag image
+      // Set a transparent drag image - use requestAnimationFrame for safe cleanup
       const dragImage = document.createElement('div')
       dragImage.style.opacity = '0'
+      dragImage.style.position = 'absolute'
+      dragImage.style.pointerEvents = 'none'
       document.body.appendChild(dragImage)
       e.dataTransfer.setDragImage(dragImage, 0, 0)
-      setTimeout(() => document.body.removeChild(dragImage), 0)
+      // Use requestAnimationFrame to ensure cleanup happens after browser processes drag
+      requestAnimationFrame(() => {
+        if (dragImage.parentNode) {
+          dragImage.parentNode.removeChild(dragImage)
+        }
+      })
     },
     []
   )
@@ -218,8 +227,11 @@ function SkillCategoryCard({
     setDragOverIndex(null)
   }, [draggedIndex, dragOverIndex, category.skills, onReorderSkills])
 
-  const handleDragLeave = useCallback(() => {
-    setDragOverIndex(null)
+  const handleDragLeave = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    // Only reset if leaving the actual element, not child elements
+    if (e.currentTarget === e.target) {
+      setDragOverIndex(null)
+    }
   }, [])
 
   return (

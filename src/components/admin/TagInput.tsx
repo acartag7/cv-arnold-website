@@ -92,12 +92,19 @@ export function TagInput({
     (e: React.DragEvent<HTMLSpanElement>, index: number) => {
       setDraggedIndex(index)
       e.dataTransfer.effectAllowed = 'move'
-      // Set a transparent drag image
+      // Set a transparent drag image - use requestAnimationFrame for safe cleanup
       const dragImage = document.createElement('div')
       dragImage.style.opacity = '0'
+      dragImage.style.position = 'absolute'
+      dragImage.style.pointerEvents = 'none'
       document.body.appendChild(dragImage)
       e.dataTransfer.setDragImage(dragImage, 0, 0)
-      setTimeout(() => document.body.removeChild(dragImage), 0)
+      // Use requestAnimationFrame to ensure cleanup happens after browser processes drag
+      requestAnimationFrame(() => {
+        if (dragImage.parentNode) {
+          dragImage.parentNode.removeChild(dragImage)
+        }
+      })
     },
     []
   )
@@ -130,8 +137,11 @@ export function TagInput({
     setDragOverIndex(null)
   }, [draggedIndex, dragOverIndex, value, onChange])
 
-  const handleDragLeave = useCallback(() => {
-    setDragOverIndex(null)
+  const handleDragLeave = useCallback((e: React.DragEvent<HTMLSpanElement>) => {
+    // Only reset if leaving the actual element, not child elements
+    if (e.currentTarget === e.target) {
+      setDragOverIndex(null)
+    }
   }, [])
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
@@ -232,7 +242,7 @@ export function TagInput({
             onDragStart={e => reorderable && handleDragStart(e, index)}
             onDragOver={e => reorderable && handleDragOver(e, index)}
             onDragEnd={handleDragEnd}
-            onDragLeave={handleDragLeave}
+            onDragLeave={e => reorderable && handleDragLeave(e)}
             className={`
               inline-flex items-center gap-1 px-2.5 py-1
               bg-blue-50 dark:bg-blue-900/30
