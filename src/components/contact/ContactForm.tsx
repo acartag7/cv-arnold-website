@@ -271,7 +271,7 @@ export function ContactForm({
               <button
                 type="submit"
                 disabled={status === 'submitting' || !isValid}
-                className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-[var(--primary)] text-white rounded-lg hover:bg-[var(--primary-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-all font-semibold"
+                className="w-full flex items-center justify-center gap-2 px-6 py-3 border border-[var(--color-border)] bg-[var(--surface)] text-[var(--text)] rounded-lg hover:border-[var(--primary)] hover:text-[var(--primary)] disabled:opacity-50 disabled:cursor-not-allowed transition-all font-mono"
               >
                 {status === 'submitting' ? (
                   <>
