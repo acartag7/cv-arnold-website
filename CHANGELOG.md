@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.9](https://github.com/acartag7/cv-arnold-website/compare/v0.1.8...v0.1.9) (2026-01-08)
+
+
+### 🐛 Bug Fixes
+
+* **ui:** update contact button styling to match terminal theme ([#76](https://github.com/acartag7/cv-arnold-website/issues/76)) ([0d8b539](https://github.com/acartag7/cv-arnold-website/commit/0d8b539d7b1f4cd1cbaa4f25d3ab0a8e7dd63fc3))
+
 ## [0.1.8](https://github.com/acartag7/cv-arnold-website/compare/v0.1.7...v0.1.8) (2026-01-08)
 
 
