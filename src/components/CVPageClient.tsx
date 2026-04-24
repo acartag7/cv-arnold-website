@@ -1609,10 +1609,13 @@ export function CVPageClient({
                 {contactTab === 'message' &&
                   showContactForm &&
                   turnstileSiteKey && (
-                    <ContactForm turnstileSiteKey={turnstileSiteKey} />
+                    <ContactForm
+                      turnstileSiteKey={turnstileSiteKey}
+                      colors={colors}
+                    />
                   )}
                 {contactTab === 'schedule' && showCalendar && calLink && (
-                  <CalEmbed calLink={calLink} />
+                  <CalEmbed calLink={calLink} colors={colors} />
                 )}
               </motion.div>
             )}

@@ -17,7 +17,7 @@ import { Section } from '@/components/ui/Section'
 import { Container } from '@/components/ui/Container'
 import { Stack } from '@/components/ui/Stack'
 import { Flex } from '@/components/ui/Flex'
-import { ContactForm, CalEmbed } from '@/components/contact'
+import { ContactForm, CalEmbed, type ThemeColors } from '@/components/contact'
 
 interface ContactSectionProps {
   data: CVData
@@ -25,6 +25,8 @@ interface ContactSectionProps {
   turnstileSiteKey?: string
   /** Cal.com username for scheduling */
   calLink?: string
+  /** Theme colors from CMS config */
+  colors: ThemeColors
 }
 
 type ContactTab = 'message' | 'schedule'
@@ -42,6 +44,7 @@ export default function ContactSection({
   data,
   turnstileSiteKey,
   calLink,
+  colors,
 }: ContactSectionProps) {
   const { personalInfo } = data
   const [activeTab, setActiveTab] = useState<ContactTab>('message')
@@ -233,12 +236,15 @@ export default function ContactSection({
               <div className="text-left">
                 {showContactForm && turnstileSiteKey && (
                   <div className={activeTab !== 'message' ? 'hidden' : ''}>
-                    <ContactForm turnstileSiteKey={turnstileSiteKey} />
+                    <ContactForm
+                      turnstileSiteKey={turnstileSiteKey}
+                      colors={colors}
+                    />
                   </div>
                 )}
                 {showCalendar && calLink && (
                   <div className={activeTab !== 'schedule' ? 'hidden' : ''}>
-                    <CalEmbed calLink={calLink} />
+                    <CalEmbed calLink={calLink} colors={colors} />
                   </div>
                 )}
               </div>

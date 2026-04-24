@@ -11,9 +11,21 @@ import {
 } from '@/schemas/contact.schema'
 import { motion, AnimatePresence } from 'framer-motion'
 
+/** Theme colors passed from parent component */
+export interface ThemeColors {
+  accent: string
+  bg: string
+  surface: string
+  text: string
+  textMuted: string
+  border: string
+}
+
 interface ContactFormProps {
   /** Cloudflare Turnstile site key */
   turnstileSiteKey: string
+  /** Theme colors from CMS config */
+  colors: ThemeColors
   /** API endpoint for form submission */
   apiEndpoint?: string
 }
@@ -31,6 +43,7 @@ type FormStatus = 'idle' | 'submitting' | 'success' | 'error'
  */
 export function ContactForm({
   turnstileSiteKey,
+  colors,
   apiEndpoint = '/api/v1/contact',
 }: ContactFormProps) {
   const [status, setStatus] = useState<FormStatus>('idle')
@@ -100,15 +113,24 @@ export function ContactForm({
   }
 
   return (
-    <div className="rounded-xl border border-[var(--color-border)] overflow-hidden bg-[var(--background)]">
+    <div
+      className="rounded-xl overflow-hidden"
+      style={{ border: `1px solid ${colors.border}`, background: colors.bg }}
+    >
       {/* Terminal Header */}
-      <div className="flex items-center gap-2 px-4 py-3 bg-[var(--surface)] border-b border-[var(--color-border)]">
+      <div
+        className="flex items-center gap-2 px-4 py-3"
+        style={{
+          background: colors.surface,
+          borderBottom: `1px solid ${colors.border}`,
+        }}
+      >
         <div className="flex gap-1.5">
           <span className="w-3 h-3 rounded-full bg-red-500" />
           <span className="w-3 h-3 rounded-full bg-yellow-500" />
           <span className="w-3 h-3 rounded-full bg-green-500" />
         </div>
-        <span className="text-sm text-[var(--text-muted)] font-mono">
+        <span className="text-sm font-mono" style={{ color: colors.textMuted }}>
           send-message.sh
         </span>
       </div>
@@ -124,16 +146,23 @@ export function ContactForm({
               exit={{ opacity: 0, y: -10 }}
               className="flex flex-col items-center justify-center py-12 text-center"
             >
-              <CheckCircle2 className="w-16 h-16 text-green-500 mb-4" />
-              <h3 className="text-xl font-semibold text-[var(--text)] mb-2">
+              <CheckCircle2
+                className="w-16 h-16 mb-4"
+                style={{ color: colors.accent }}
+              />
+              <h3
+                className="text-xl font-semibold mb-2"
+                style={{ color: colors.text }}
+              >
                 Message Sent!
               </h3>
-              <p className="text-[var(--text-muted)] mb-6">
+              <p className="mb-6" style={{ color: colors.textMuted }}>
                 Thank you for reaching out. I&apos;ll get back to you soon.
               </p>
               <button
                 onClick={() => setStatus('idle')}
-                className="px-4 py-2 text-sm font-medium text-[var(--primary)] hover:underline"
+                className="px-4 py-2 text-sm font-medium hover:underline"
+                style={{ color: colors.accent }}
               >
                 Send another message
               </button>
@@ -159,15 +188,23 @@ export function ContactForm({
 
               {/* Name Field */}
               <div>
-                <label className="flex items-center gap-2 text-sm font-mono text-[var(--text-muted)] mb-2">
-                  <span className="text-[var(--primary)]">$</span>
+                <label
+                  className="flex items-center gap-2 text-sm font-mono mb-2"
+                  style={{ color: colors.textMuted }}
+                >
+                  <span style={{ color: colors.accent }}>$</span>
                   name
                 </label>
                 <input
                   type="text"
                   {...register('name')}
                   placeholder="Your Name"
-                  className="w-full px-4 py-3 rounded-lg bg-[var(--surface)] border border-[var(--color-border)] text-[var(--text)] placeholder:text-[var(--text-muted)]/50 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/50 focus:border-[var(--primary)] transition-all"
+                  className="w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2 transition-all"
+                  style={{
+                    background: colors.surface,
+                    border: `1px solid ${colors.border}`,
+                    color: colors.text,
+                  }}
                 />
                 {errors.name && (
                   <p className="mt-1 text-sm text-red-500">
@@ -178,15 +215,23 @@ export function ContactForm({
 
               {/* Email Field */}
               <div>
-                <label className="flex items-center gap-2 text-sm font-mono text-[var(--text-muted)] mb-2">
-                  <span className="text-[var(--primary)]">$</span>
+                <label
+                  className="flex items-center gap-2 text-sm font-mono mb-2"
+                  style={{ color: colors.textMuted }}
+                >
+                  <span style={{ color: colors.accent }}>$</span>
                   email
                 </label>
                 <input
                   type="email"
                   {...register('email')}
                   placeholder="you@example.com"
-                  className="w-full px-4 py-3 rounded-lg bg-[var(--surface)] border border-[var(--color-border)] text-[var(--text)] placeholder:text-[var(--text-muted)]/50 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/50 focus:border-[var(--primary)] transition-all"
+                  className="w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2 transition-all"
+                  style={{
+                    background: colors.surface,
+                    border: `1px solid ${colors.border}`,
+                    color: colors.text,
+                  }}
                 />
                 {errors.email && (
                   <p className="mt-1 text-sm text-red-500">
@@ -197,15 +242,23 @@ export function ContactForm({
 
               {/* Subject Field */}
               <div>
-                <label className="flex items-center gap-2 text-sm font-mono text-[var(--text-muted)] mb-2">
-                  <span className="text-[var(--primary)]">$</span>
+                <label
+                  className="flex items-center gap-2 text-sm font-mono mb-2"
+                  style={{ color: colors.textMuted }}
+                >
+                  <span style={{ color: colors.accent }}>$</span>
                   subject
                 </label>
                 <input
                   type="text"
                   {...register('subject')}
                   placeholder="Project Inquiry"
-                  className="w-full px-4 py-3 rounded-lg bg-[var(--surface)] border border-[var(--color-border)] text-[var(--text)] placeholder:text-[var(--text-muted)]/50 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/50 focus:border-[var(--primary)] transition-all"
+                  className="w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2 transition-all"
+                  style={{
+                    background: colors.surface,
+                    border: `1px solid ${colors.border}`,
+                    color: colors.text,
+                  }}
                 />
                 {errors.subject && (
                   <p className="mt-1 text-sm text-red-500">
@@ -216,10 +269,13 @@ export function ContactForm({
 
               {/* Message Field */}
               <div>
-                <label className="flex items-center gap-2 text-sm font-mono text-[var(--text-muted)] mb-2">
-                  <span className="text-[var(--primary)]">$</span>
+                <label
+                  className="flex items-center gap-2 text-sm font-mono mb-2"
+                  style={{ color: colors.textMuted }}
+                >
+                  <span style={{ color: colors.accent }}>$</span>
                   message{' '}
-                  <span className="text-[var(--text-muted)]/60">
+                  <span style={{ color: colors.textMuted, opacity: 0.6 }}>
                     &lt;&lt; EOF
                   </span>
                 </label>
@@ -227,7 +283,12 @@ export function ContactForm({
                   {...register('message')}
                   rows={5}
                   placeholder="Tell me about your project or idea..."
-                  className="w-full px-4 py-3 rounded-lg bg-[var(--surface)] border border-[var(--color-border)] text-[var(--text)] placeholder:text-[var(--text-muted)]/50 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/50 focus:border-[var(--primary)] transition-all resize-none"
+                  className="w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2 transition-all resize-none"
+                  style={{
+                    background: colors.surface,
+                    border: `1px solid ${colors.border}`,
+                    color: colors.text,
+                  }}
                 />
                 {errors.message && (
                   <p className="mt-1 text-sm text-red-500">
@@ -271,7 +332,12 @@ export function ContactForm({
               <button
                 type="submit"
                 disabled={status === 'submitting' || !isValid}
-                className="w-full flex items-center justify-center gap-2 px-6 py-3 border border-[var(--color-border)] bg-[var(--surface)] text-[var(--text)] rounded-lg hover:border-[var(--primary)] hover:text-[var(--primary)] disabled:opacity-50 disabled:cursor-not-allowed transition-all font-mono"
+                className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all font-mono"
+                style={{
+                  border: `1px solid ${colors.border}`,
+                  background: colors.surface,
+                  color: colors.text,
+                }}
               >
                 {status === 'submitting' ? (
                   <>
